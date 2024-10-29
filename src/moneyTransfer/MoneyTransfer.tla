@@ -235,6 +235,19 @@ LimitedIndInv ==
     /\ \A a \in Account: accountDebits(a) \in BalanceSmall
     /\ \A t \in Transfer: transAmount(t) \in AmountSmall
 
+
+LEMMA transAmountNat == ASSUME TypeOK, NEW self \in Transfer
+PROVE transAmount(self) \in Nat
+BY DEF TypeOK, transAmount
+
+
+LEMMA transSetIsFinite == ASSUME NTransferAssumption
+PROVE IsFiniteSet(Transfer)
+<1>1 Transfer \in SUBSET (Nat) BY DEF Transfer
+<1>2 \A t \in Transfer: t <= NTransfer BY DEF Transfer
+<1> QED BY <1>1, <1>2, FS_BoundedSetOfNaturals DEF NNat
+
+
 LEMMA ASSUME Init, NAccountAssumption
 PROVE Imbalance = 0
 <1> USE DEF Init, Account, Transfer
@@ -245,12 +258,7 @@ PROVE Imbalance = 0
 <1> QED BY <1>1, <1>2, <1>3 DEF Imbalance
 
 
-LEMMA transAmountNat == ASSUME TypeOK, NEW self \in Transfer
-PROVE transAmount(self) \in Nat
-BY DEF TypeOK, transAmount
-
-
-LEMMA ASSUME IndInv, NEW self \in Transfer, debit(self),
+LEMMA debit_DebitTotal == ASSUME IndInv, NEW self \in Transfer, debit(self),
 debitPrecond(self)
 PROVE DebitTotal' = DebitTotal + transAmount(self)
 <1> DEFINE a == accounts[self][1]
@@ -268,14 +276,7 @@ PROVE DebitTotal' = DebitTotal + transAmount(self)
 <1> QED BY <1>6 DEF opAmount
 
 
-LEMMA transSetIsFinite == ASSUME NTransferAssumption
-PROVE IsFiniteSet(Transfer)
-<1>1 Transfer \in SUBSET (Nat) BY DEF Transfer
-<1>2 \A t \in Transfer: t <= NTransfer BY DEF Transfer
-<1> QED BY <1>1, <1>2, FS_BoundedSetOfNaturals DEF NNat
-
-
-LEMMA ASSUME IndInv, NEW self \in Transfer, debit(self),
+LEMMA debit_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, debit(self),
 debitPrecond(self)
 PROVE AmountPendingTotal' = AmountPendingTotal + transAmount(self)
 <1>1 transPending' = transPending \cup {self}
@@ -296,6 +297,17 @@ PROVE AmountPendingTotal' = AmountPendingTotal + transAmount(self)
 <1>9 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending)'
     BY <1>7, <1>8
 <1> QED BY <1>6, <1>9 DEF AmountPendingTotal
+
+
+LEMMA debit_CreditTotal == ASSUME IndInv, NEW self \in Transfer, debit(self)
+PROVE CreditTotal' = CreditTotal
+PROOF BY DEF IndInv, debit
+
+
+LEMMA debit_Imbalance == ASSUME IndInv, NEW self \in Transfer, debit(self),
+debitPrecond(self)
+PROVE Imbalance' = Imbalance
+PROOF BY debit_DebitTotal, debit_CreditTotal, debit_AmountPendingTotal DEF debit, Imbalance
 
 
 LEMMA ASSUME IndInv, NEW self \in Transfer, debit(self),
