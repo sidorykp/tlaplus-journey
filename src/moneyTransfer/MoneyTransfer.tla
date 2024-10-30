@@ -27,17 +27,17 @@ Transfer -> amount
        accounts = [t \in Transfer |-> <<Empty, Empty>>]
 
     define {
-        opAmount(dc) == dc[3]
+        opAmount(dc) == dc[2]
         
         transAmount(t) == amount[t]
     
-        accountCredits(a) == MapThenSumSet(LAMBDA c: IF c[1] = a THEN opAmount(c) ELSE 0, credits)
+        accountCredits(a) == MapThenSumSet(LAMBDA c: IF c[1][1] = a THEN opAmount(c) ELSE 0, credits)
         
-        accountDebits(a) == MapThenSumSet(LAMBDA d: IF d[1] = a THEN opAmount(d) ELSE 0, debits)
+        accountDebits(a) == MapThenSumSet(LAMBDA d: IF d[1][1] = a THEN opAmount(d) ELSE 0, debits)
         
         amountAvail(a) == NAvail + accountCredits(a) - accountDebits(a)
         
-        isTransKnownToItem(t, a, dc) == dc[1] = a /\ dc[2] = t
+        isTransKnownToItem(t, a, dc) == dc[1][1] = a /\ dc[1][2] = t
         
         isTransKnown(t, a, bal) == \E dc \in bal: isTransKnownToItem(t, a, dc)
         
@@ -64,7 +64,7 @@ Transfer -> amount
         debit:
             with (a = accounts[self][1]) {
                 if (debitPrecond(self)) {
-                    debits := debits \cup {<<a, self, transAmount(self)>>};
+                    debits := debits \cup {<<<<a, self>>, transAmount(self)>>};
                 } else {
                     skip;
                 }
@@ -76,27 +76,27 @@ Transfer -> amount
         credit:
             with (a = accounts[self][2]) {
                 if (creditPrecond(self)) {
-                    credits := credits \cup {<<a, self, transAmount(self)>>};
+                    credits := credits \cup {<<<<a, self>>, transAmount(self)>>};
                 }
             };
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "9bf29fc2" /\ chksum(tla) = "b3d8e08")
+\* BEGIN TRANSLATION (chksum(pcal) = "eaf9e9f3" /\ chksum(tla) = "cc4f09fe")
 VARIABLES credits, debits, amount, accounts, pc
 
 (* define statement *)
-opAmount(dc) == dc[3]
+opAmount(dc) == dc[2]
 
 transAmount(t) == amount[t]
 
-accountCredits(a) == MapThenSumSet(LAMBDA c: IF c[1] = a THEN opAmount(c) ELSE 0, credits)
+accountCredits(a) == MapThenSumSet(LAMBDA c: IF c[1][1] = a THEN opAmount(c) ELSE 0, credits)
 
-accountDebits(a) == MapThenSumSet(LAMBDA d: IF d[1] = a THEN opAmount(d) ELSE 0, debits)
+accountDebits(a) == MapThenSumSet(LAMBDA d: IF d[1][1] = a THEN opAmount(d) ELSE 0, debits)
 
 amountAvail(a) == NAvail + accountCredits(a) - accountDebits(a)
 
-isTransKnownToItem(t, a, dc) == dc[1] = a /\ dc[2] = t
+isTransKnownToItem(t, a, dc) == dc[1][1] = a /\ dc[1][2] = t
 
 isTransKnown(t, a, bal) == \E dc \in bal: isTransKnownToItem(t, a, dc)
 
@@ -135,7 +135,7 @@ init(self) == /\ pc[self] = "init"
 debit(self) == /\ pc[self] = "debit"
                /\ LET a == accounts[self][1] IN
                     IF debitPrecond(self)
-                       THEN /\ debits' = (debits \cup {<<a, self, transAmount(self)>>})
+                       THEN /\ debits' = (debits \cup {<<<<a, self>>, transAmount(self)>>})
                        ELSE /\ TRUE
                             /\ UNCHANGED debits
                /\ pc' = [pc EXCEPT ![self] = "crash"]
@@ -150,7 +150,7 @@ crash(self) == /\ pc[self] = "crash"
 credit(self) == /\ pc[self] = "credit"
                 /\ LET a == accounts[self][2] IN
                      IF creditPrecond(self)
-                        THEN /\ credits' = (credits \cup {<<a, self, transAmount(self)>>})
+                        THEN /\ credits' = (credits \cup {<<<<a, self>>, transAmount(self)>>})
                         ELSE /\ TRUE
                              /\ UNCHANGED credits
                 /\ pc' = [pc EXCEPT ![self] = "Done"]
@@ -186,9 +186,9 @@ AmountPendingTotal == MapThenSumSet(transAmount, transPending)
 Imbalance == CreditTotal - DebitTotal + AmountPendingTotal
 
 TypeOK ==
-    /\ credits \in SUBSET (Account \X Transfer \X Nat)
+    /\ credits \in SUBSET ((Account \X Transfer) \X Nat)
     /\ \A a \in Account, t \in Transfer: Cardinality({c \in credits: isTransKnownToItem(t, a, c)}) \in 0..1
-    /\ debits \in SUBSET (Account \X Transfer \X Nat)
+    /\ debits \in SUBSET ((Account \X Transfer) \X Nat)
     /\ \A a \in Account, t \in Transfer: Cardinality({d \in debits: isTransKnownToItem(t, a, d)}) \in 0..1
     /\ IsFiniteSet(credits)
     /\ IsFiniteSet(debits)

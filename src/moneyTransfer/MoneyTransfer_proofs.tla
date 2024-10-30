@@ -21,6 +21,13 @@ PROVE IsFiniteSet(Transfer)
 <1> QED BY <1>1, <1>2, FS_BoundedSetOfNaturals DEF NNat
 
 
+LEMMA accountSetIsFinite == ASSUME NAccountAssumption
+PROVE IsFiniteSet(Account)
+<1>1 Account \in SUBSET (Nat) BY DEF Account
+<1>2 \A a \in Account: a <= NAccount BY DEF Account
+<1> QED BY <1>1, <1>2, FS_BoundedSetOfNaturals DEF NNat
+
+
 LEMMA init_Imbalance == ASSUME Init
 PROVE Imbalance = 0
 <1> USE DEF Init, Account, Transfer
@@ -56,7 +63,7 @@ LEMMA debit_DebitTotal == ASSUME IndInv, NEW self \in Transfer, debit(self),
 debitPrecond(self)
 PROVE DebitTotal' = DebitTotal + transAmount(self)
 <1> DEFINE a == accounts[self][1]
-<1> DEFINE nadd == <<a, self, transAmount(self)>>
+<1> DEFINE nadd == <<<<a, self>>, transAmount(self)>>
 <1> USE DEF IndInv, TypeOK, debitPrecond
 <1>1 nadd \notin debits BY DEF isTransKnown, isTransKnownToItem
 <1>2 debits' = debits \cup {nadd} BY DEF debit
@@ -74,7 +81,7 @@ LEMMA debit_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, debit(se
 debitPrecond(self)
 PROVE AmountPendingTotal' = AmountPendingTotal + transAmount(self)
 <1>1 transPending' = transPending \cup {self}
-    BY DEF transPending, debit, AmountIsPending, isTransKnown
+    BY DEF transPending, debit, AmountIsPending, isTransKnown, creditPrecond, isTransKnownToItem
 <1> USE DEF IndInv, TypeOK
 <1>2 self \notin transPending
     BY DEF transPending, AmountIsPending, isTransKnown, isTransKnownToItem, debitPrecond, creditPrecond
@@ -87,7 +94,8 @@ PROVE AmountPendingTotal' = AmountPendingTotal + transAmount(self)
     MapThenSumSet(transAmount, transPending) + transAmount(self)
     BY <1>1, <1>2, <1>3, <1>4, <1>5, MapThenSumSetAddElem
 <1>7 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
-<1>8 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') BY DEF debit, transPending, AmountIsPending
+<1>8 AmountPendingTotal' = MapThenSumSet(transAmount, transPending')
+    BY DEF debit, transPending, AmountIsPending, creditPrecond
 <1>9 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending)'
     BY <1>7, <1>8
 <1> QED BY <1>6, <1>9 DEF AmountPendingTotal
@@ -101,9 +109,10 @@ PROOF BY DEF IndInv, debit
 LEMMA debit_Imbalance == ASSUME IndInv, NEW self \in Transfer, debit(self)
 PROVE Imbalance' = Imbalance
 <1>1 CASE debitPrecond(self)
-    <2> QED BY debit_DebitTotal, debit_CreditTotal, debit_AmountPendingTotal DEF debit, Imbalance
+    <2> QED BY debit_DebitTotal, debit_CreditTotal, debit_AmountPendingTotal
+        DEF debit, Imbalance, debitPrecond, isTransKnown, isTransKnownToItem
 <1>2 CASE ~debitPrecond(self)
-    <2> QED BY DEF debit, Imbalance
+    <2> QED BY DEF debit, Imbalance, debitPrecond
 <1> QED BY <1>1, <1>2
 
 
@@ -112,7 +121,7 @@ NEW a, a = accounts[self][1],
 debitPrecond(self)
 PROVE Cardinality({d \in debits': isTransKnownToItem(self, a, d)}) \in 0..1
 <1> USE DEF IndInv, TypeOK
-<1> DEFINE nadd == <<a, self, transAmount(self)>>
+<1> DEFINE nadd == <<<<a, self>>, transAmount(self)>>
 <1> DEFINE selfDebit == {d \in debits: isTransKnownToItem(self, a, d)}
 <1> DEFINE selfDebitNext == {d \in debits': isTransKnownToItem(self, a, d)}
 <1>1 selfDebit = {} BY DEF isTransKnown, isTransKnownToItem, debitPrecond
