@@ -1,6 +1,8 @@
 ---- MODULE MoneyTransfer_proofs ----
 EXTENDS MoneyTransfer, FiniteSetsExt_theorems, FiniteSetTheorems
 
+ASSUME NTransferAssumption == NTransfer \in NNat
+
 ASSUME NAccountAssumption == NAccount \in NNat
 
 ASSUME NAvailAssumption == NAvail \in NNat
@@ -19,7 +21,7 @@ PROVE IsFiniteSet(Transfer)
 <1> QED BY <1>1, <1>2, FS_BoundedSetOfNaturals DEF NNat
 
 
-LEMMA init_Imbalance == ASSUME Init, NAccountAssumption
+LEMMA init_Imbalance == ASSUME Init
 PROVE Imbalance = 0
 <1> USE DEF Init, Account, Transfer
 <1>1 CreditTotal = 0 BY MapThenSumSetEmpty DEF CreditTotal
@@ -56,7 +58,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal + transAmount(self)
 <1>2 self \notin transPending
     BY DEF transPending, AmountIsPending, isTransKnown, isTransKnownToItem, debitPrecond, creditPrecond
 <1>3 transAmount(self) \in Nat BY transAmountNat
-<1>4 IsFiniteSet(transPending) BY transSetIsFinite, FS_Subset DEF transPending
+<1>4 IsFiniteSet(transPending) BY transSetIsFinite, FS_Subset, NTransferAssumption DEF transPending
 <1>5 \A am \in transPending: transAmount(am) \in Nat
     BY DEF AmountIsPending, isTransKnown, transAmount, transPending
 <1> HIDE DEF IndInv, TypeOK

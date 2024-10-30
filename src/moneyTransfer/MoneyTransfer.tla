@@ -5,8 +5,6 @@ CONSTANTS Empty, NAccount, NTransfer, NAvail
 
 NNat == Nat \ {0}
 
-ASSUME NTransferAssumption == NTransfer \in NNat
-
 Account == 1..NAccount
 
 Transfer == 1..NTransfer
@@ -197,7 +195,6 @@ TypeOK ==
     /\ amount \in [Transfer -> Nat]
     /\ accounts \in [Transfer -> EAccount \X EAccount]
     /\ pc \in [Transfer -> {"Done","init","debit","credit", "crash"}]
-    /\ NTransferAssumption
 
 Inv ==
     /\ TypeOK
