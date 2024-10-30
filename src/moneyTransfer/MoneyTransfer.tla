@@ -304,10 +304,13 @@ PROVE CreditTotal' = CreditTotal
 PROOF BY DEF IndInv, debit
 
 
-LEMMA debit_Imbalance == ASSUME IndInv, NEW self \in Transfer, debit(self),
-debitPrecond(self)
+LEMMA debit_Imbalance == ASSUME IndInv, NEW self \in Transfer, debit(self)
 PROVE Imbalance' = Imbalance
-PROOF BY debit_DebitTotal, debit_CreditTotal, debit_AmountPendingTotal DEF debit, Imbalance
+<1>1 CASE debitPrecond(self)
+    <2> QED BY debit_DebitTotal, debit_CreditTotal, debit_AmountPendingTotal DEF debit, Imbalance
+<1>2 CASE ~debitPrecond(self)
+    <2> QED BY DEF debit, Imbalance
+<1> QED BY <1>1, <1>2
 
 
 LEMMA ASSUME IndInv, NEW self \in Transfer, debit(self),
