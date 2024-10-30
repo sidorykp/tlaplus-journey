@@ -31,6 +31,27 @@ PROVE Imbalance = 0
 <1> QED BY <1>1, <1>2, <1>3 DEF Imbalance
 
 
+THEOREM ASSUME Init
+PROVE IndInv
+<1> USE DEF Init, IndInv, TypeOK
+<1>1 \A a \in Account, t \in Transfer: Cardinality({c \in credits: isTransKnownToItem(t, a, c)}) \in 0..1
+    BY FS_EmptySet
+<1>2 \A a \in Account, t \in Transfer: Cardinality({d \in debits: isTransKnownToItem(t, a, d)}) \in 0..1
+    BY FS_EmptySet
+<1>3 IsFiniteSet(credits) BY FS_EmptySet
+<1>4 IsFiniteSet(debits) BY FS_EmptySet
+<1>5 accounts \in [Transfer -> EAccount \X EAccount] BY DEF EAccount
+<1>6 pc \in [Transfer -> {"Done","init","debit","credit", "crash"}] BY DEF ProcSet
+<1>7 \A t \in Transfer: pc[t] = "init" => ~\E a \in Account: isTransKnown(t, a, debits)
+    BY DEF isTransKnown, isTransKnownToItem
+<1>8 \A t \in Transfer:
+        pc[t] \notin {"init"} <=>
+            /\ accounts[t][1] # Empty
+            /\ accounts[t][2] # Empty
+    BY DEF ProcSet
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>7, <1>8, init_Imbalance
+
+
 LEMMA debit_DebitTotal == ASSUME IndInv, NEW self \in Transfer, debit(self),
 debitPrecond(self)
 PROVE DebitTotal' = DebitTotal + transAmount(self)
