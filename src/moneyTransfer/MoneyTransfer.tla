@@ -327,4 +327,36 @@ PROVE Cardinality({d \in debits': isTransKnownToItem(self, a, d)}) \in 0..1
 <1>4 Cardinality(selfDebitNext) = 1 BY <1>2, FS_Singleton
 <1> QED BY <1>3, <1>4
 
+
+THEOREM nextNonTerminating == ASSUME IndInv, Next, ~Terminating
+PROVE IndInv'
+<1> SUFFICES ASSUME IndInv, NEW self \in Transfer, trans(self)
+    PROVE IndInv'
+    BY DEF Next, trans
+<1>1 CASE init(self)
+    <2> QED OMITTED
+<1>2 CASE debit(self)
+    <2> QED OMITTED
+<1>3 CASE crash(self)
+    <2> QED OMITTED
+<1>4 CASE credit(self)
+    <2> QED OMITTED
+<1> QED BY <1>1, <1>2, <1>3, <1>4 DEF trans
+
+
+THEOREM nextTerminating == ASSUME IndInv, Next, Terminating
+PROVE IndInv'
+<1> QED OMITTED
+
+
+THEOREM ASSUME IndInv, Next
+PROVE IndInv'
+<1> USE DEF IndInv, Next, Terminating
+<1>1 CASE ~Terminating
+    <2> QED BY <1>1, nextNonTerminating
+<1>2 CASE Terminating
+    <2> QED BY <1>2, nextTerminating    
+<1> QED BY <1>1, <1>2
+
+
 ====
