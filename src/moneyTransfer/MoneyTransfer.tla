@@ -5,13 +5,7 @@ CONSTANTS Empty, NAccount, NTransfer, NAvail
 
 NNat == Nat \ {0}
 
-ASSUME NAccountAssumption == NAccount \in NNat
-
 ASSUME NTransferAssumption == NTransfer \in NNat
-
-ASSUME NAvailAssumption == NAvail \in NNat
-
-ASSUME EmptyAssumption == Empty = 0
 
 Account == 1..NAccount
 

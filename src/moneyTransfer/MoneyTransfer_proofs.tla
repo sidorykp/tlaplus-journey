@@ -1,6 +1,11 @@
 ---- MODULE MoneyTransfer_proofs ----
 EXTENDS MoneyTransfer, FiniteSetsExt_theorems, FiniteSetTheorems
 
+ASSUME NAccountAssumption == NAccount \in NNat
+
+ASSUME NAvailAssumption == NAvail \in NNat
+
+ASSUME EmptyAssumption == Empty = 0
 
 LEMMA transAmountNat == ASSUME TypeOK, NEW self \in Transfer
 PROVE transAmount(self) \in Nat
