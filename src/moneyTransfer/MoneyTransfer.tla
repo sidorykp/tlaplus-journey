@@ -9,6 +9,8 @@ Account == 1..NAccount
 
 Transfer == 1..NTransfer
 
+AT == Account \X Transfer
+
 EAccount == Account \cup {Empty}
 
 ETransfer == Transfer \cup {Empty}
@@ -40,6 +42,8 @@ Transfer -> amount
         isTransKnownToItem(t, a, dc) == dc[1][1] = a /\ dc[1][2] = t
         
         isTransKnown(t, a, bal) == \E dc \in bal: isTransKnownToItem(t, a, dc)
+        
+        initPrecond(t) == ~\E a \in Account: isTransKnown(t, a, debits)
         
         debitPrecond(t) == ~\E a \in Account:
             \/ isTransKnown(t, a, debits)
@@ -82,7 +86,7 @@ Transfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "eaf9e9f3" /\ chksum(tla) = "cc4f09fe")
+\* BEGIN TRANSLATION (chksum(pcal) = "3523dab0" /\ chksum(tla) = "eb1643c6")
 VARIABLES credits, debits, amount, accounts, pc
 
 (* define statement *)
@@ -99,6 +103,8 @@ amountAvail(a) == NAvail + accountCredits(a) - accountDebits(a)
 isTransKnownToItem(t, a, dc) == dc[1][1] = a /\ dc[1][2] = t
 
 isTransKnown(t, a, bal) == \E dc \in bal: isTransKnownToItem(t, a, dc)
+
+initPrecond(t) == ~\E a \in Account: isTransKnown(t, a, debits)
 
 debitPrecond(t) == ~\E a \in Account:
     \/ isTransKnown(t, a, debits)
@@ -186,11 +192,9 @@ AmountPendingTotal == MapThenSumSet(transAmount, transPending)
 Imbalance == CreditTotal - DebitTotal + AmountPendingTotal
 
 TypeOK ==
-    /\ credits \in SUBSET ((Account \X Transfer) \X Nat)
-    /\ \A a \in Account, t \in Transfer: Cardinality({c \in credits: isTransKnownToItem(t, a, c)}) \in 0..1
-    /\ debits \in SUBSET ((Account \X Transfer) \X Nat)
-    /\ \A a \in Account, t \in Transfer: Cardinality({d \in debits: isTransKnownToItem(t, a, d)}) \in 0..1
+    /\ credits \in SUBSET (AT \X Nat)
     /\ IsFiniteSet(credits)
+    /\ debits \in SUBSET (AT \X Nat)
     /\ IsFiniteSet(debits)
     /\ amount \in [Transfer -> Nat]
     /\ accounts \in [Transfer -> EAccount \X EAccount]
@@ -208,7 +212,7 @@ IndInv ==
         \/ /\ accounts[t][1] # accounts[t][2]
             /\ accounts[t][1] # Empty
             /\ accounts[t][2] # Empty
-    /\ \A t \in Transfer: pc[t] = "init" => ~\E a \in Account: isTransKnown(t, a, debits)
+    /\ \A t \in Transfer: pc[t] = "init" => initPrecond(t)
     /\ \A t \in Transfer:
         pc[t] \notin {"init"} <=>
             /\ accounts[t][1] # Empty
