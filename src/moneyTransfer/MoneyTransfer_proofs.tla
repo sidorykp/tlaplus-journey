@@ -104,11 +104,12 @@ PROVE Imbalance' = Imbalance
 <1> QED BY <1>1, <1>2
 
 
-LEMMA ASSUME IndInv, NEW self \in Transfer, debit(self),
-NEW a, a = accounts[self][1],
-debitPrecond(self)
+LEMMA debit_debitIsFinite == ASSUME IndInv, NEW self \in Transfer, debit(self),
+NEW a, a = accounts[self][1]
 PROVE IsFiniteSet(debits)'
-BY FS_AddElement DEF IndInv, TypeOK, debit
+<1>1 CASE debitPrecond(self) BY FS_AddElement DEF IndInv, TypeOK, debit
+<1>2 CASE ~debitPrecond(self) BY DEF debit
+<1> QED BY <1>1, <1>2
 
 
 THEOREM nextNonTerminating == ASSUME IndInv, Next, ~Terminating
