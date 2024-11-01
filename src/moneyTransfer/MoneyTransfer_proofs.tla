@@ -34,20 +34,16 @@ PROVE Imbalance = 0
 THEOREM ASSUME Init
 PROVE IndInv
 <1> USE DEF Init, IndInv, TypeOK
-<1>1 \A a \in Account, t \in Transfer: Cardinality({c \in credits: isTransKnownToItem(t, a, c)}) \in 0..1
-    BY FS_EmptySet
-<1>2 \A a \in Account, t \in Transfer: Cardinality({d \in debits: isTransKnownToItem(t, a, d)}) \in 0..1
-    BY FS_EmptySet
-<1>3 IsFiniteSet(credits) BY FS_EmptySet
-<1>4 IsFiniteSet(debits) BY FS_EmptySet
-<1>5 accounts \in [Transfer -> EAccounts] BY DEF EAccount, EmptyAccounts, EAccounts
-<1>6 pc \in [Transfer -> {"Done","init","debit","credit", "crash"}] BY DEF ProcSet
-<1>7 \A t \in Transfer: pc[t] = "init" => initPrecond(t)
+<1>1 IsFiniteSet(credits) BY FS_EmptySet
+<1>2 IsFiniteSet(debits) BY FS_EmptySet
+<1>3 accounts \in [Transfer -> EAccounts] BY DEF EAccount, EmptyAccounts, EAccounts
+<1>4 pc \in [Transfer -> {"Done","init","debit","credit", "crash"}] BY DEF ProcSet
+<1>5 \A t \in Transfer: pc[t] = "init" => initPrecond(t)
     BY DEF initPrecond, isTransKnown, isTransKnownToItem
-<1>8 \A t \in Transfer:
+<1>6 \A t \in Transfer:
         pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
     BY DEF ProcSet, NonEmptyAccounts, EmptyAccounts
-<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>7, <1>8, init_Imbalance
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, init_Imbalance
 
 
 LEMMA debit_DebitTotal == ASSUME IndInv, NEW self \in Transfer, debit(self),

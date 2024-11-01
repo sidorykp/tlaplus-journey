@@ -9,8 +9,6 @@ Account == 1..NAccount
 
 Transfer == 1..NTransfer
 
-AT == [a: Account, t: Transfer]
-
 EAccount == Account \cup {Empty}
 
 ETransfer == Transfer \cup {Empty}
@@ -200,6 +198,8 @@ NonEmptyAccounts(t) ==
 DifferentAccounts(t) == accounts[t].from # accounts[t].to
 
 EAccounts == [from: EAccount, to: EAccount]
+
+AT == [a: Account, t: Transfer]
 
 TypeOK ==
     /\ credits \in SUBSET (AT \X Nat)
