@@ -94,18 +94,13 @@ PROVE AmountPendingTotal' = AmountPendingTotal + transAmount(self)
 <1> QED BY <1>6, <1>9 DEF AmountPendingTotal
 
 
-LEMMA debit_CreditTotal == ASSUME IndInv, NEW self \in Transfer, debit(self)
-PROVE CreditTotal' = CreditTotal
-PROOF BY DEF IndInv, debit, CreditTotal
-
-
 LEMMA debit_Imbalance == ASSUME IndInv, NEW self \in Transfer, debit(self)
 PROVE Imbalance' = Imbalance
 <1>1 CASE debitPrecond(self)
-    <2> QED BY debit_DebitTotal, debit_CreditTotal, debit_AmountPendingTotal
-        DEF debit, Imbalance, debitPrecond, isTransKnown, isTransKnownToItem
+    <2> QED BY debit_DebitTotal, debit_AmountPendingTotal
+        DEF debit, Imbalance, debitPrecond, isTransKnown, isTransKnownToItem, CreditTotal
 <1>2 CASE ~debitPrecond(self)
-    <2> QED BY DEF debit, Imbalance, debitPrecond
+    <2> QED BY DEF debit, Imbalance, debitPrecond, CreditTotal
 <1> QED BY <1>1, <1>2
 
 
