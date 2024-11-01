@@ -54,7 +54,7 @@ LEMMA debit_DebitTotal == ASSUME IndInv, NEW self \in Transfer, debit(self),
 debitPrecond(self)
 PROVE DebitTotal' = DebitTotal + transAmount(self)
 <1> DEFINE a == accounts[self].from
-<1> DEFINE nadd == <<<<a, self>>, transAmount(self)>>
+<1> DEFINE nadd == <<[a |-> a, t |-> self], transAmount(self)>>
 <1> USE DEF IndInv, TypeOK, debitPrecond
 <1>1 nadd \notin debits BY DEF isTransKnown, isTransKnownToItem, AT
 <1>2 debits' = debits \cup {nadd} BY DEF debit
@@ -105,10 +105,11 @@ PROVE Imbalance' = Imbalance
 
 LEMMA debit_debitIsFinite == ASSUME IndInv, NEW self \in Transfer, debit(self)
 PROVE IsFiniteSet(debits)'
-<1>1 CASE debitPrecond(self) BY FS_AddElement DEF IndInv, TypeOK, debit
+<1> USE DEF IndInv, TypeOK
+<1>1 CASE debitPrecond(self) BY FS_AddElement DEF debit
 <1>2 CASE ~debitPrecond(self)
-    <2>1 IsFiniteSet(debits) BY DEF IndInv, TypeOK
-    <2> QED BY <1>2 DEF debit
+    <2>1 IsFiniteSet(debits) OBVIOUS
+    <2> QED BY <1>2, <2>1 DEF debit
 <1> QED BY <1>1, <1>2
 
 
