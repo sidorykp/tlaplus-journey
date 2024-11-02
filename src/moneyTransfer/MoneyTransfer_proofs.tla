@@ -37,7 +37,7 @@ PROVE IndInv
 <1>1 IsFiniteSet(credits) BY FS_EmptySet
 <1>2 IsFiniteSet(debits) BY FS_EmptySet
 <1>3 accounts \in [Transfer -> EAccounts] BY DEF EAccount, EmptyAccounts, EAccounts
-<1>4 pc \in [Transfer -> {"Done","init","debit","credit", "crash"}] BY DEF ProcSet
+<1>4 pcLabels BY DEF pcLabels, ProcSet
 <1>5 \A t \in Transfer: pc[t] = "init" => initPrecond(t)
     BY DEF initPrecond, isTransKnown, isTransKnownToItem
 <1>6 \A t \in Transfer:
@@ -69,7 +69,7 @@ debitPrecond(self)
 PROVE AmountPendingTotal' = AmountPendingTotal + transAmount(self)
 <1>1 transPending' = transPending \cup {self}
     BY DEF transPending, debit, AmountIsPending, isTransKnown, debitPrecond, isTransKnownToItem,
-    AT, creditPrecond, transAmount, EAccounts
+    AT, creditPrecond, transAmount, EAccounts, pcLabels
 <1> USE DEF IndInv, TypeOK
 <1>2 self \notin transPending
     BY DEF transPending, AmountIsPending, isTransKnown, isTransKnownToItem, debitPrecond, creditPrecond, AT
@@ -93,9 +93,9 @@ LEMMA debit_Imbalance == ASSUME IndInv, NEW self \in Transfer, debit(self)
 PROVE Imbalance' = Imbalance
 <1>1 CASE debitPrecond(self)
     <2> QED BY debit_DebitTotal, debit_AmountPendingTotal
-        DEF debit, Imbalance, debitPrecond, isTransKnown, isTransKnownToItem, CreditTotal
+        DEF debit, Imbalance, debitPrecond, isTransKnown, isTransKnownToItem, CreditTotal, pcLabels
 <1>2 CASE ~debitPrecond(self)
-    <2> QED BY DEF debit, Imbalance, debitPrecond, CreditTotal
+    <2> QED BY DEF debit, Imbalance, debitPrecond, CreditTotal, pcLabels
 <1> QED BY <1>1, <1>2
 
 
@@ -107,6 +107,72 @@ PROVE IsFiniteSet(debits)'
     <2>1 IsFiniteSet(debits) OBVIOUS
     <2> QED BY <1>2, <2>1 DEF debit
 <1> QED BY <1>1, <1>2
+
+
+THEOREM ASSUME IndInv, NEW self \in Transfer, debit(self)
+PROVE IndInv'
+<1> DEFINE a == accounts[self].from
+<1> DEFINE nadd == <<[a |-> a, t |-> self], transAmount(self)>>
+<1> USE DEF IndInv, TypeOK
+<1>1 CASE debitPrecond(self)
+    <2>1 credits' \in SUBSET (AT \X Nat) BY DEF debit
+    
+    <2>2 IsFiniteSet(credits)' BY DEF debit
+    
+    <2>3 debits' = debits \cup {nadd} BY <1>1 DEF debit
+    <2>4 a \in EAccount BY DEF EAccounts
+    <2>5 a # Empty BY DEF debit, NonEmptyAccounts
+    <2>6 a \in Account BY <2>4, <2>5 DEF EAccount
+    <2>7 nadd \in AT \X Nat BY <2>6, transAmountInNat DEF AT
+    <2>8 debits' \in SUBSET (AT \X Nat)
+        BY <2>3, <2>7
+    
+    <2>9 IsFiniteSet(debits)' BY <1>1, FS_AddElement DEF debit
+    
+    <2>10 amount' \in [Transfer -> Nat] BY DEF debit
+
+    <2>11 accounts' \in [Transfer -> EAccounts] BY DEF debit
+    
+    <2>12 pcLabels' BY DEF debit, pcLabels, ProcSet
+    
+    <2>13 \A t \in Transfer:
+        \/ accounts'[t] = EmptyAccounts
+        \/ DifferentAccounts(t)' /\ NonEmptyAccounts(t)'
+        BY DEF debit, EmptyAccounts, DifferentAccounts, NonEmptyAccounts
+
+    <2>14 pc' = [pc EXCEPT ![self] = "crash"] BY DEF debit
+    <2>15 pc'[self] = "crash" BY <2>14 DEF pcLabels
+    <2>16 pc'[self] = "init" => initPrecond(self)' BY <2>15
+    <2>17 \A t \in Transfer \ {self}: pc[t]' = pc[t]
+        BY <2>14 DEF pcLabels
+    <2>18 \A t \in Transfer: pc'[t] = "init" => initPrecond(t)'
+        BY <2>16, <2>17
+
+    <2>19 \A t \in Transfer: pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
+        BY DEF IndInv
+    <2>20 \A t \in Transfer: NonEmptyAccounts(t)' = NonEmptyAccounts(t)
+        BY DEF debit, NonEmptyAccounts
+    <2>21 NonEmptyAccounts(self)' = NonEmptyAccounts(self)
+        BY <2>20
+    <2>22 pc[self] \notin {"init"} <=> NonEmptyAccounts(self)
+        BY <2>19
+    <2>23 pc[self] \notin {"init"} BY DEF debit
+    <2>24 pc'[self] \notin {"init"} BY <2>15
+    <2>25 pc'[self] \notin {"init"} <=> NonEmptyAccounts(self)'
+        BY <2>21, <2>22, <2>23, <2>24
+
+    <2>26 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> pc[t] \notin {"init"}
+        BY <2>17
+    <2>27 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
+        BY <2>19, <2>20, <2>26
+
+    <2>28 \A t \in Transfer: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
+        BY <2>25, <2>27
+
+    <2> QED BY <2>1, <2>2, <2>8, <2>9, <2>10, <2>11, <2>12, <2>13, <2>18, <2>28, <1>1, debit_Imbalance
+<1>2 CASE ~debitPrecond(self)
+    <2> QED OMITTED
+<1> QED OMITTED
 
 
 THEOREM nextNonTerminating == ASSUME IndInv, Next, ~Terminating
