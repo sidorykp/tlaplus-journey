@@ -99,26 +99,75 @@ PROVE Imbalance' = Imbalance
 <1> QED BY <1>1, <1>2
 
 
-LEMMA debit_debitIsFinite == ASSUME IndInv, NEW self \in Transfer, debit(self)
-PROVE IsFiniteSet(debits)'
+THEOREM debit_IndInv_common == ASSUME IndInv, NEW self \in Transfer, debit(self)
+PROVE (
+    /\ credits \in SUBSET (AT \X Nat)
+    /\ IsFiniteSet(credits)
+    /\ amount \in [Transfer -> Nat]
+    /\ accounts \in [Transfer -> EAccounts]
+    /\ pcLabels
+    /\ Imbalance = 0
+    /\ \A t \in Transfer:
+        \/ accounts[t] = EmptyAccounts
+        \/ DifferentAccounts(t) /\ NonEmptyAccounts(t)
+    /\ \A t \in Transfer: pc[t] = "init" => initPrecond(t)
+    /\ \A t \in Transfer:
+        pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
+)'
 <1> USE DEF IndInv, TypeOK
-<1>1 CASE debitPrecond(self) BY FS_AddElement DEF debit
-<1>2 CASE ~debitPrecond(self)
-    <2>1 IsFiniteSet(debits) OBVIOUS
-    <2> QED BY <1>2, <2>1 DEF debit
-<1> QED BY <1>1, <1>2
+<1>1 credits' \in SUBSET (AT \X Nat) BY DEF debit
+
+<1>2 IsFiniteSet(credits)' BY DEF debit
+
+<1>10 amount' \in [Transfer -> Nat] BY DEF debit
+
+<1>11 accounts' \in [Transfer -> EAccounts] BY DEF debit
+
+<1>12 pcLabels' BY DEF debit, pcLabels, ProcSet
+
+<1>13 \A t \in Transfer:
+    \/ accounts'[t] = EmptyAccounts
+    \/ DifferentAccounts(t)' /\ NonEmptyAccounts(t)'
+    BY DEF debit, EmptyAccounts, DifferentAccounts, NonEmptyAccounts
+
+<1>14 pc' = [pc EXCEPT ![self] = "crash"] BY DEF debit
+<1>15 pc'[self] = "crash" BY <1>14 DEF pcLabels
+<1>16 pc'[self] = "init" => initPrecond(self)' BY <1>15
+<1>17 \A t \in Transfer \ {self}: pc[t]' = pc[t]
+    BY <1>14 DEF pcLabels
+<1>18 \A t \in Transfer: pc'[t] = "init" => initPrecond(t)'
+    BY <1>16, <1>17
+
+<1>19 \A t \in Transfer: pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
+    BY DEF IndInv
+<1>20 \A t \in Transfer: NonEmptyAccounts(t)' = NonEmptyAccounts(t)
+    BY DEF debit, NonEmptyAccounts
+<1>21 NonEmptyAccounts(self)' = NonEmptyAccounts(self)
+    BY <1>20
+<1>22 pc[self] \notin {"init"} <=> NonEmptyAccounts(self)
+    BY <1>19
+<1>23 pc[self] \notin {"init"} BY DEF debit
+<1>24 pc'[self] \notin {"init"} BY <1>15
+<1>25 pc'[self] \notin {"init"} <=> NonEmptyAccounts(self)'
+    BY <1>21, <1>22, <1>23, <1>24
+
+<1>26 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> pc[t] \notin {"init"}
+    BY <1>17
+<1>27 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
+    BY <1>19, <1>20, <1>26
+
+<1>28 \A t \in Transfer: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
+    BY <1>25, <1>27
+
+<1> QED BY <1>1, <1>2, <1>10, <1>11, <1>12, <1>13, <1>18, <1>28, debit_Imbalance
 
 
-THEOREM ASSUME IndInv, NEW self \in Transfer, debit(self)
+THEOREM debit_IndInv == ASSUME IndInv, NEW self \in Transfer, debit(self)
 PROVE IndInv'
 <1> DEFINE a == accounts[self].from
 <1> DEFINE nadd == <<[a |-> a, t |-> self], transAmount(self)>>
 <1> USE DEF IndInv, TypeOK
 <1>1 CASE debitPrecond(self)
-    <2>1 credits' \in SUBSET (AT \X Nat) BY DEF debit
-    
-    <2>2 IsFiniteSet(credits)' BY DEF debit
-    
     <2>3 debits' = debits \cup {nadd} BY <1>1 DEF debit
     <2>4 a \in EAccount BY DEF EAccounts
     <2>5 a # Empty BY DEF debit, NonEmptyAccounts
@@ -126,53 +175,13 @@ PROVE IndInv'
     <2>7 nadd \in AT \X Nat BY <2>6, transAmountInNat DEF AT
     <2>8 debits' \in SUBSET (AT \X Nat)
         BY <2>3, <2>7
-    
     <2>9 IsFiniteSet(debits)' BY <1>1, FS_AddElement DEF debit
-    
-    <2>10 amount' \in [Transfer -> Nat] BY DEF debit
-
-    <2>11 accounts' \in [Transfer -> EAccounts] BY DEF debit
-    
-    <2>12 pcLabels' BY DEF debit, pcLabels, ProcSet
-    
-    <2>13 \A t \in Transfer:
-        \/ accounts'[t] = EmptyAccounts
-        \/ DifferentAccounts(t)' /\ NonEmptyAccounts(t)'
-        BY DEF debit, EmptyAccounts, DifferentAccounts, NonEmptyAccounts
-
-    <2>14 pc' = [pc EXCEPT ![self] = "crash"] BY DEF debit
-    <2>15 pc'[self] = "crash" BY <2>14 DEF pcLabels
-    <2>16 pc'[self] = "init" => initPrecond(self)' BY <2>15
-    <2>17 \A t \in Transfer \ {self}: pc[t]' = pc[t]
-        BY <2>14 DEF pcLabels
-    <2>18 \A t \in Transfer: pc'[t] = "init" => initPrecond(t)'
-        BY <2>16, <2>17
-
-    <2>19 \A t \in Transfer: pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
-        BY DEF IndInv
-    <2>20 \A t \in Transfer: NonEmptyAccounts(t)' = NonEmptyAccounts(t)
-        BY DEF debit, NonEmptyAccounts
-    <2>21 NonEmptyAccounts(self)' = NonEmptyAccounts(self)
-        BY <2>20
-    <2>22 pc[self] \notin {"init"} <=> NonEmptyAccounts(self)
-        BY <2>19
-    <2>23 pc[self] \notin {"init"} BY DEF debit
-    <2>24 pc'[self] \notin {"init"} BY <2>15
-    <2>25 pc'[self] \notin {"init"} <=> NonEmptyAccounts(self)'
-        BY <2>21, <2>22, <2>23, <2>24
-
-    <2>26 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> pc[t] \notin {"init"}
-        BY <2>17
-    <2>27 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
-        BY <2>19, <2>20, <2>26
-
-    <2>28 \A t \in Transfer: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
-        BY <2>25, <2>27
-
-    <2> QED BY <2>1, <2>2, <2>8, <2>9, <2>10, <2>11, <2>12, <2>13, <2>18, <2>28, <1>1, debit_Imbalance
+    <2> QED BY <2>8, <2>9, <1>1, debit_IndInv_common, debit_Imbalance
 <1>2 CASE ~debitPrecond(self)
-    <2> QED OMITTED
-<1> QED OMITTED
+    <2>3 debits' \in SUBSET (AT \X Nat) BY <1>2 DEF debit
+    <2>4 IsFiniteSet(debits)' BY <1>2 DEF debit
+    <2> QED BY <2>3, <2>4, <1>1, debit_IndInv_common, debit_Imbalance
+<1> QED BY <1>1, <1>2
 
 
 THEOREM nextNonTerminating == ASSUME IndInv, Next, ~Terminating
@@ -182,8 +191,7 @@ PROVE IndInv'
     BY DEF Next, trans
 <1>1 CASE init(self)
     <2> QED OMITTED
-<1>2 CASE debit(self)
-    <2> QED OMITTED
+<1>2 CASE debit(self) BY debit_IndInv DEF debit
 <1>3 CASE crash(self)
     <2> QED OMITTED
 <1>4 CASE credit(self)
