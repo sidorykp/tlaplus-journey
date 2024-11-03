@@ -53,6 +53,62 @@ PROVE IndInv
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, init_Imbalance
 
 
+THEOREM crash_IndInv == ASSUME IndInv, NEW self \in Transfer, crash(self)
+PROVE (
+    /\ credits \in SUBSET (AT \X Nat)
+    /\ IsFiniteSet(credits)
+    /\ debits \in SUBSET (AT \X Nat)
+    /\ IsFiniteSet(debits)
+    /\ CommonIndInv)'
+<1> USE DEF IndInv, TypeOK, CommonIndInv
+<1>1 credits' \in SUBSET (AT \X Nat) BY DEF crash
+<1>2 IsFiniteSet(credits)' BY DEF crash
+<1>3 debits' \in SUBSET (AT \X Nat) BY DEF crash
+<1>4 IsFiniteSet(debits)' BY DEF crash
+<1>5 amount' \in [Transfer -> Nat] BY DEF crash
+<1>6 accounts' \in [Transfer -> EAccounts] BY DEF crash
+
+<1>7 pc'[self] \in {"credit", "debit"} BY DEF crash 
+<1>8 pcLabels' BY <1>7 DEF crash, pcLabels
+
+<1>9 Imbalance' = Imbalance BY DEF crash, Imbalance, creditPrecond, CreditTotal, DebitTotal, pcLabels
+<1>10 Imbalance' = 0 BY <1>9
+
+<1>11 \A t \in Transfer:
+    (\/ accounts[t] = EmptyAccounts
+     \/ DifferentAccounts(t) /\ NonEmptyAccounts(t))'
+    BY DEF crash, EmptyAccounts, DifferentAccounts, NonEmptyAccounts
+
+<1>12 \A t \in Transfer: pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
+    BY DEF IndInv
+<1>13 \A t \in Transfer: NonEmptyAccounts(t)' = NonEmptyAccounts(t)
+    BY DEF crash, NonEmptyAccounts
+<1>14 NonEmptyAccounts(self)' = NonEmptyAccounts(self)
+    BY <1>13
+<1>15 pc[self] \notin {"init"} <=> NonEmptyAccounts(self)
+    BY <1>12
+<1>16 pc[self] \notin {"init"} BY DEF crash
+<1>17 pc'[self] \notin {"init"} BY <1>7
+<1>18 pc'[self] \notin {"init"} <=> NonEmptyAccounts(self)'
+    BY <1>14, <1>15, <1>16, <1>17
+
+<1>19 pc'[self] = "init" => initPrecond(self)' BY <1>7
+<1>20 \A t \in Transfer \ {self}: pc[t]' = pc[t]
+    BY DEF crash, pcLabels, IndInv, TypeOK
+<1>21 \A t \in Transfer: pc'[t] = "init" => initPrecond(t)'
+    BY <1>19, <1>20 DEF IndInv
+
+<1>22 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> pc[t] \notin {"init"}
+    BY <1>20
+<1>23 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
+    BY <1>12, <1>13, <1>22
+
+<1>24 \A t \in Transfer: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
+    BY <1>18, <1>23
+
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>8, <1>10, <1>11, <1>21, <1>24 DEF IndInv
+
+
 THEOREM init_IndInv == ASSUME IndInv, NEW self \in Transfer, init(self)
 PROVE (
     /\ credits \in SUBSET (AT \X Nat)
@@ -370,8 +426,7 @@ PROVE IndInv'
     BY DEF Next, trans
 <1>1 CASE init(self) BY init_IndInv DEF init, CommonIndInv
 <1>2 CASE debit(self) BY debit_IndInv DEF debit
-<1>3 CASE crash(self)
-    <2> QED OMITTED
+<1>3 CASE crash(self) BY crash_IndInv DEF crash, CommonIndInv
 <1>4 CASE credit(self) BY credit_IndInv DEF credit
 <1> QED BY <1>1, <1>2, <1>3, <1>4 DEF trans
 
