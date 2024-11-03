@@ -16,7 +16,7 @@ ETransfer == Transfer \cup {Empty}
 EmptyAccounts == [from |-> Empty, to |-> Empty]
 
 (***************************************
-Transfer -> Account -> credits/debits
+Transfer -> Account -> credit or debit
 Transfer -> amount
 ***************************************)
 
