@@ -185,9 +185,9 @@ PROVE IndInv'
 LEMMA credit_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, credit(self),
 creditPrecond(self)
 PROVE AmountPendingTotal' = AmountPendingTotal - transAmount(self)
-<1> USE DEF IndInv, TypeOK
 <1>1 self \in transPending
     BY DEF credit, transPending, AmountIsPending
+<1> USE DEF IndInv, TypeOK
 <1>2 transPending' = transPending \ {self}
     BY DEF transPending, credit, AmountIsPending, isTransKnown, creditPrecond, isTransKnownToItem,
     AT, transAmount, EAccounts, pcLabels
@@ -201,7 +201,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal - transAmount(self)
     
 <1>7 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
 <1>8 AmountPendingTotal' = MapThenSumSet(transAmount, transPending')
-    BY DEF credit, transPending, AmountIsPending
+    BY DEF credit, transPending, AmountIsPending, isTransKnown, creditPrecond, isTransKnownToItem
 <1>9 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending)'
     BY <1>7, <1>8
     
