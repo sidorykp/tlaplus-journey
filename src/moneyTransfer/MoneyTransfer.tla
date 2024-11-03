@@ -201,7 +201,7 @@ EAccounts == [from: EAccount, to: EAccount]
 
 AT == [a: Account, t: Transfer]
 
-pcLabels == pc \in [Transfer -> {"Done","init","debit","credit", "crash"}]
+pcLabels == pc \in [Transfer -> {"Done", "init", "debit", "credit", "crash"}]
 
 TypeOK ==
     /\ credits \in SUBSET (AT \X Nat)
@@ -225,7 +225,6 @@ IndInv ==
     /\ \A t \in Transfer: pc[t] = "init" => initPrecond(t)
     /\ \A t \in Transfer:
         pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
-        
 
 IndSpec == /\ IndInv /\ [][Next]_vars
 
@@ -237,6 +236,5 @@ LimitedIndInv ==
     /\ \A a \in Account: accountCredits(a) \in BalanceSmall
     /\ \A a \in Account: accountDebits(a) \in BalanceSmall
     /\ \A t \in Transfer: transAmount(t) \in AmountSmall
-
 
 ====
