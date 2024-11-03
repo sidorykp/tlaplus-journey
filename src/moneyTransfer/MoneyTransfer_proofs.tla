@@ -59,21 +59,12 @@ PROVE (
     /\ IsFiniteSet(credits)
     /\ debits \in SUBSET (AT \X Nat)
     /\ IsFiniteSet(debits)
-    /\ amount \in [Transfer -> Nat]
-    /\ accounts \in [Transfer -> EAccounts]
-    /\ pcLabels
-    /\ Imbalance = 0
-    /\ \A t \in Transfer:
-        \/ accounts[t] = EmptyAccounts
-        \/ DifferentAccounts(t) /\ NonEmptyAccounts(t)
-    /\ \A t \in Transfer: pc[t] = "init" => initPrecond(t)
-    /\ \A t \in Transfer:
-        pc[t] \notin {"init"} <=> NonEmptyAccounts(t))'
+    /\ CommonIndInv)'
 <1> DEFINE am == amount'[self]
 <1> DEFINE selfAccounts == accounts'[self]
 <1> DEFINE account1 == selfAccounts.from
 <1> DEFINE account2 == selfAccounts.to
-<1> USE DEF IndInv, TypeOK
+<1> USE DEF IndInv, TypeOK, CommonIndInv
 <1>1 credits' \in SUBSET (AT \X Nat) BY DEF init
 <1>2 IsFiniteSet(credits)' BY DEF init
 <1>3 debits' \in SUBSET (AT \X Nat) BY DEF init
@@ -135,8 +126,7 @@ LEMMA debit_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, debit(se
 debitPrecond(self)
 PROVE AmountPendingTotal' = AmountPendingTotal + transAmount(self)
 <1>1 transPending' = transPending \cup {self}
-    BY DEF transPending, debit, AmountIsPending, isTransKnown, debitPrecond, isTransKnownToItem,
-    AT, creditPrecond, transAmount, EAccounts, pcLabels
+    BY DEF transPending, debit, AmountIsPending, isTransKnown
 <1> USE DEF IndInv, TypeOK
 <1>2 self \notin transPending
     BY DEF transPending, AmountIsPending, isTransKnown, isTransKnownToItem, debitPrecond, creditPrecond, AT
@@ -157,28 +147,22 @@ PROVE AmountPendingTotal' = AmountPendingTotal + transAmount(self)
 
 LEMMA debit_Imbalance == ASSUME IndInv, NEW self \in Transfer, debit(self)
 PROVE Imbalance' = Imbalance
-<1>1 CASE debitPrecond(self)
-    <2> QED BY debit_DebitTotal, debit_AmountPendingTotal
-        DEF debit, Imbalance, debitPrecond, isTransKnown, isTransKnownToItem, CreditTotal, pcLabels
-<1>2 CASE ~debitPrecond(self)
-    <2> QED BY DEF debit, Imbalance, debitPrecond, CreditTotal, pcLabels
-<1> QED BY <1>1, <1>2
+<1>1 credits' = credits BY DEF debit
+<1>2 CreditTotal' = CreditTotal
+    BY <1>1 DEF CreditTotal
+<1>3 CASE debitPrecond(self)
+    <2> QED BY <1>3, <1>2, debit_DebitTotal, debit_AmountPendingTotal DEF Imbalance, debit
+<1>4 CASE ~debitPrecond(self)
+    <2> QED BY <1>4, <1>2 DEF debit, Imbalance
+<1> QED BY <1>3, <1>4
 
 
 THEOREM debit_IndInv_common == ASSUME IndInv, NEW self \in Transfer, debit(self)
 PROVE (
     /\ credits \in SUBSET (AT \X Nat)
     /\ IsFiniteSet(credits)
-    /\ amount \in [Transfer -> Nat]
-    /\ accounts \in [Transfer -> EAccounts]
-    /\ pcLabels
-    /\ Imbalance = 0
-    /\ \A t \in Transfer:
-        \/ accounts[t] = EmptyAccounts
-        \/ DifferentAccounts(t) /\ NonEmptyAccounts(t)
-    /\ \A t \in Transfer: pc[t] = "init" => initPrecond(t)
-    /\ \A t \in Transfer:
-        pc[t] \notin {"init"} <=> NonEmptyAccounts(t))'
+    /\ CommonIndInv)'
+<1> USE DEF CommonIndInv
 <1>1 credits' \in SUBSET (AT \X Nat) BY DEF debit
 <1>2 IsFiniteSet(credits)' BY DEF debit
 <1>3 amount' \in [Transfer -> Nat] BY DEF debit, IndInv
@@ -225,7 +209,7 @@ THEOREM debit_IndInv == ASSUME IndInv, NEW self \in Transfer, debit(self)
 PROVE IndInv'
 <1> DEFINE a == accounts[self].from
 <1> DEFINE nadd == <<[a |-> a, t |-> self], transAmount(self)>>
-<1> USE DEF IndInv, TypeOK
+<1> USE DEF IndInv, TypeOK, CommonIndInv
 <1>1 CASE debitPrecond(self)
     <2>3 debits' = debits \cup {nadd} BY <1>1 DEF debit
     <2>4 a \in EAccount BY DEF EAccounts
@@ -250,8 +234,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal - transAmount(self)
     BY DEF credit, transPending, AmountIsPending
 <1> USE DEF IndInv, TypeOK
 <1>2 transPending' = transPending \ {self}
-    BY DEF transPending, credit, AmountIsPending, isTransKnown, creditPrecond, isTransKnownToItem,
-    AT, transAmount, EAccounts, pcLabels
+    BY DEF transPending, credit, AmountIsPending, isTransKnown, creditPrecond
 <1>3 transAmount(self) \in Nat BY transAmountInNat
 <1>4 IsFiniteSet(transPending) BY transPendingIsFinite
 <1>5 \A t \in transPending: transAmount(t) \in Nat BY transPendingAmountNat
@@ -300,28 +283,22 @@ PROVE CreditTotal' = CreditTotal + transAmount(self)
 
 LEMMA credit_Imbalance == ASSUME IndInv, NEW self \in Transfer, credit(self)
 PROVE Imbalance' = Imbalance
-<1>1 CASE creditPrecond(self)
-    <2> QED BY credit_CreditTotal, credit_AmountPendingTotal
-        DEF credit, Imbalance, creditPrecond, isTransKnown, isTransKnownToItem, CreditTotal, pcLabels
-<1>2 CASE ~creditPrecond(self)
-    <2> QED BY DEF credit, Imbalance, creditPrecond, CreditTotal, pcLabels
-<1> QED BY <1>1, <1>2
+<1>1 debits' = debits BY DEF credit
+<1>2 DebitTotal' = DebitTotal
+    BY <1>1 DEF DebitTotal
+<1>3 CASE creditPrecond(self)
+    <2> QED BY <1>3, <1>2, credit_CreditTotal, credit_AmountPendingTotal DEF Imbalance, credit
+<1>4 CASE ~creditPrecond(self)
+    <2> QED BY <1>4, <1>2 DEF credit, Imbalance, pcLabels
+<1> QED BY <1>3, <1>4
 
 
 THEOREM credit_IndInv_common == ASSUME IndInv, NEW self \in Transfer, credit(self)
 PROVE (
     /\ debits \in SUBSET (AT \X Nat)
     /\ IsFiniteSet(debits)
-    /\ amount \in [Transfer -> Nat]
-    /\ accounts \in [Transfer -> EAccounts]
-    /\ pcLabels
-    /\ Imbalance = 0
-    /\ \A t \in Transfer:
-        \/ accounts[t] = EmptyAccounts
-        \/ DifferentAccounts(t) /\ NonEmptyAccounts(t)
-    /\ \A t \in Transfer: pc[t] = "init" => initPrecond(t)
-    /\ \A t \in Transfer:
-        pc[t] \notin {"init"} <=> NonEmptyAccounts(t))'
+    /\ CommonIndInv)'
+<1> USE DEF CommonIndInv
 <1>1 debits' \in SUBSET (AT \X Nat) BY DEF credit
 <1>2 IsFiniteSet(debits)' BY DEF credit
 <1>3 amount' \in [Transfer -> Nat] BY DEF credit, IndInv, TypeOK
@@ -368,7 +345,7 @@ THEOREM credit_IndInv == ASSUME IndInv, NEW self \in Transfer, credit(self)
 PROVE IndInv'
 <1> DEFINE a == accounts[self].to
 <1> DEFINE nadd == <<[a |-> a, t |-> self], transAmount(self)>>
-<1> USE DEF IndInv, TypeOK
+<1> USE DEF IndInv, TypeOK, CommonIndInv
 <1>1 CASE creditPrecond(self)
     <2>3 credits' = credits \cup {nadd} BY <1>1 DEF credit
     <2>4 a \in EAccount BY DEF EAccounts
@@ -391,7 +368,7 @@ PROVE IndInv'
 <1> SUFFICES ASSUME IndInv, NEW self \in Transfer, trans(self)
     PROVE IndInv'
     BY DEF Next, trans
-<1>1 CASE init(self) BY init_IndInv DEF init
+<1>1 CASE init(self) BY init_IndInv DEF init, CommonIndInv
 <1>2 CASE debit(self) BY debit_IndInv DEF debit
 <1>3 CASE crash(self)
     <2> QED OMITTED

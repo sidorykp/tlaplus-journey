@@ -228,6 +228,18 @@ IndInv ==
 
 IndSpec == /\ IndInv /\ [][Next]_vars
 
+CommonIndInv ==
+    /\ amount \in [Transfer -> Nat]
+    /\ accounts \in [Transfer -> EAccounts]
+    /\ pcLabels
+    /\ Imbalance = 0
+    /\ \A t \in Transfer:
+        \/ accounts[t] = EmptyAccounts
+        \/ DifferentAccounts(t) /\ NonEmptyAccounts(t)
+    /\ \A t \in Transfer: pc[t] = "init" => initPrecond(t)
+    /\ \A t \in Transfer:
+        pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
+
 BalanceSmall == 0..1
 
 AmountSmall == 0..2
