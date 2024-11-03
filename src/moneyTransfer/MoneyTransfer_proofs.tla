@@ -27,6 +27,7 @@ LEMMA transPendingAmountNat == ASSUME IndInv
 PROVE \A am \in transPending: transAmount(am) \in Nat
 BY DEF AmountIsPending, isTransKnown, transAmount, transPending, IndInv, TypeOK
 
+
 LEMMA init_Imbalance == ASSUME Init
 PROVE Imbalance = 0
 <1> USE DEF Init, Account, Transfer
