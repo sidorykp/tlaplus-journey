@@ -53,9 +53,25 @@ PROVE IndInv
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, init_Imbalance
 
 
+THEOREM crash_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, crash(self)
+PROVE AmountPendingTotal' = AmountPendingTotal
+<1>1 self \in transPending BY DEF crash, pcLabels, IndInv, TypeOK,
+    transPending, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+<1>2 pc'[self] \in {"credit", "debit"} BY DEF crash, IndInv, TypeOK
+<1>3 self \in transPending' BY <1>2 DEF crash, pcLabels, IndInv, TypeOK,
+    transPending, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+<1>4 transPending' = transPending BY <1>1, <1>3 DEF crash, pcLabels, IndInv, TypeOK,
+    transPending, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+<1>5 \A t \in Transfer: transAmount(t)' = transAmount(t) BY DEF crash, transAmount
+<1>6 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) BY <1>4, <1>5
+<1>7 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
+<1>8 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') BY DEF crash, transPending, AmountIsPending,
+    pcLabels, IndInv, TypeOK
+<1> QED BY <1>6, <1>7, <1>8 DEF AmountPendingTotal
+
 THEOREM crash_IndInv == ASSUME IndInv, NEW self \in Transfer, crash(self)
 PROVE IndInv'
-<1> USE DEF IndInv, TypeOK, CommonIndInv
+<1> USE DEF IndInv, TypeOK
 <1>1 credits' \in SUBSET (AT \X Nat) BY DEF crash
 <1>2 IsFiniteSet(credits)' BY DEF crash
 <1>3 debits' \in SUBSET (AT \X Nat) BY DEF crash
@@ -66,7 +82,7 @@ PROVE IndInv'
 <1>7 pc'[self] \in {"credit", "debit"} BY DEF crash 
 <1>8 pcLabels' BY <1>7 DEF crash, pcLabels
 
-<1>9 Imbalance' = Imbalance BY DEF crash, Imbalance, creditPrecond, CreditTotal, DebitTotal, pcLabels
+<1>9 Imbalance' = Imbalance BY crash_AmountPendingTotal DEF crash, Imbalance, creditPrecond, CreditTotal, DebitTotal
 <1>10 Imbalance' = 0 BY <1>9
 
 <1>11 \A t \in Transfer:
@@ -88,34 +104,41 @@ PROVE IndInv'
     BY <1>14, <1>15, <1>16, <1>17
 
 <1>19 pc'[self] = "init" => initPrecond(self)' BY <1>7
-<1>20 \A t \in Transfer \ {self}: pc[t]' = pc[t]
-    BY DEF crash, pcLabels, IndInv, TypeOK
-<1>21 \A t \in Transfer: pc'[t] = "init" => initPrecond(t)'
-    BY <1>19, <1>20 DEF IndInv
+<1>20 \A t \in Transfer: pc'[t] = "init" => initPrecond(t)'
+    BY <1>19 DEF crash, pcLabels
 
-<1>22 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> pc[t] \notin {"init"}
-    BY <1>20
-<1>23 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
-    BY <1>12, <1>13, <1>22
+<1>21 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> pc[t] \notin {"init"}
+    BY DEF crash, pcLabels
+<1>22 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
+    BY <1>12, <1>13, <1>21
 
-<1>24 \A t \in Transfer: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
-    BY <1>18, <1>23
+<1>23 \A t \in Transfer: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
+    BY <1>18, <1>22
 
-<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>8, <1>10, <1>11, <1>21, <1>24
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>8, <1>10, <1>11, <1>20, <1>23
 
+
+THEOREM init_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, init(self)
+PROVE AmountPendingTotal' = AmountPendingTotal
+<1>1 self \notin transPending BY DEF init, pcLabels, transPending, AmountIsPending
+<1>2 ~AmountIsPending(self)' BY DEF init, pcLabels, AmountIsPending, creditPrecond, IndInv, TypeOK
+<1>3 self \notin transPending' BY <1>2 DEF transPending
+<1>4 transPending' = transPending BY <1>1, <1>3 DEF init, pcLabels, IndInv, TypeOK,
+    transPending, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+<1>5 \A t \in Transfer \ {self}: transAmount(t)' = transAmount(t) BY DEF init, transAmount, IndInv, TypeOK
+<1>6 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) BY <1>1, <1>4, <1>5
+<1>7 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
+<1>8 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') BY DEF init, transPending, AmountIsPending,
+    pcLabels, IndInv, TypeOK
+<1> QED BY <1>6, <1>7, <1>8 DEF AmountPendingTotal
 
 THEOREM init_IndInv == ASSUME IndInv, NEW self \in Transfer, init(self)
-PROVE (
-    /\ credits \in SUBSET (AT \X Nat)
-    /\ IsFiniteSet(credits)
-    /\ debits \in SUBSET (AT \X Nat)
-    /\ IsFiniteSet(debits)
-    /\ CommonIndInv)'
+PROVE IndInv'
 <1> DEFINE am == amount'[self]
 <1> DEFINE selfAccounts == accounts'[self]
 <1> DEFINE account1 == selfAccounts.from
 <1> DEFINE account2 == selfAccounts.to
-<1> USE DEF IndInv, TypeOK, CommonIndInv
+<1> USE DEF IndInv, TypeOK
 <1>1 credits' \in SUBSET (AT \X Nat) BY DEF init
 <1>2 IsFiniteSet(credits)' BY DEF init
 <1>3 debits' \in SUBSET (AT \X Nat) BY DEF init
@@ -129,7 +152,7 @@ PROVE (
 
 <1>9 pcLabels' BY DEF init, ProcSet
 
-<1>10 Imbalance' = Imbalance BY DEF init, Imbalance, creditPrecond, CreditTotal, DebitTotal, pcLabels
+<1>10 Imbalance' = Imbalance BY init_AmountPendingTotal DEF init, Imbalance, creditPrecond, CreditTotal, DebitTotal
 <1>11 Imbalance' = 0 BY <1>10
 
 <1>12 Empty \notin Account BY EmptyAssumption DEF Account
@@ -150,9 +173,18 @@ PROVE (
 
 <1>21 NonEmptyAccounts(self)' BY <1>13, <1>14 DEF NonEmptyAccounts
 <1>22 pc'[self] \notin {"init"} <=> NonEmptyAccounts(self)' BY <1>21 DEF init, ProcSet, pcLabels
-<1>23 \A t \in Transfer: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
-    BY <1>22 DEF init, ProcSet, pcLabels
-<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>6, <1>8, <1>9, <1>11, <1>17, <1>20, <1>23
+
+<1>23 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> pc[t] \notin {"init"}
+    BY DEF init, pcLabels
+<1>24 \A t \in Transfer \ {self}: NonEmptyAccounts(t)' = NonEmptyAccounts(t)
+    BY DEF init, NonEmptyAccounts
+<1>25 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
+    BY <1>23, <1>24 DEF IndInv
+
+<1>26 \A t \in Transfer: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
+    BY <1>22, <1>25 DEF init, ProcSet, pcLabels
+
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>6, <1>8, <1>9, <1>11, <1>17, <1>20, <1>26
 
 
 LEMMA debit_DebitTotal == ASSUME IndInv, NEW self \in Transfer, debit(self),
@@ -419,7 +451,7 @@ PROVE IndInv'
 <1> SUFFICES ASSUME IndInv, NEW self \in Transfer, trans(self)
     PROVE IndInv'
     BY DEF Next, trans
-<1>1 CASE init(self) BY init_IndInv DEF init, CommonIndInv
+<1>1 CASE init(self) BY <1>1, init_IndInv
 <1>2 CASE debit(self) BY <1>2, debit_IndInv
 <1>3 CASE crash(self) BY <1>3, crash_IndInv
 <1>4 CASE credit(self) BY <1>4, credit_IndInv
