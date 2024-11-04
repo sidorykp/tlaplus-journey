@@ -54,12 +54,7 @@ PROVE IndInv
 
 
 THEOREM crash_IndInv == ASSUME IndInv, NEW self \in Transfer, crash(self)
-PROVE (
-    /\ credits \in SUBSET (AT \X Nat)
-    /\ IsFiniteSet(credits)
-    /\ debits \in SUBSET (AT \X Nat)
-    /\ IsFiniteSet(debits)
-    /\ CommonIndInv)'
+PROVE IndInv'
 <1> USE DEF IndInv, TypeOK, CommonIndInv
 <1>1 credits' \in SUBSET (AT \X Nat) BY DEF crash
 <1>2 IsFiniteSet(credits)' BY DEF crash
@@ -106,7 +101,7 @@ PROVE (
 <1>24 \A t \in Transfer: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
     BY <1>18, <1>23
 
-<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>8, <1>10, <1>11, <1>21, <1>24 DEF IndInv
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>8, <1>10, <1>11, <1>21, <1>24
 
 
 THEOREM init_IndInv == ASSUME IndInv, NEW self \in Transfer, init(self)
@@ -157,7 +152,7 @@ PROVE (
 <1>22 pc'[self] \notin {"init"} <=> NonEmptyAccounts(self)' BY <1>21 DEF init, ProcSet, pcLabels
 <1>23 \A t \in Transfer: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
     BY <1>22 DEF init, ProcSet, pcLabels
-<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>6, <1>8, <1>9, <1>11, <1>17, <1>20, <1>23 DEF IndInv
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>6, <1>8, <1>9, <1>11, <1>17, <1>20, <1>23
 
 
 LEMMA debit_DebitTotal == ASSUME IndInv, NEW self \in Transfer, debit(self),
@@ -425,9 +420,9 @@ PROVE IndInv'
     PROVE IndInv'
     BY DEF Next, trans
 <1>1 CASE init(self) BY init_IndInv DEF init, CommonIndInv
-<1>2 CASE debit(self) BY debit_IndInv DEF debit
-<1>3 CASE crash(self) BY crash_IndInv DEF crash, CommonIndInv
-<1>4 CASE credit(self) BY credit_IndInv DEF credit
+<1>2 CASE debit(self) BY <1>2, debit_IndInv
+<1>3 CASE crash(self) BY <1>3, crash_IndInv
+<1>4 CASE credit(self) BY <1>4, credit_IndInv
 <1> QED BY <1>1, <1>2, <1>3, <1>4 DEF trans
 
 
