@@ -30,8 +30,6 @@ Transfer -> amount
 
     define {
         opAmount(dc) == dc[2]
-        
-        transAmount(t) == amount[t]
     
         accountCredits(a) == MapThenSumSet(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, credits)
         
@@ -53,6 +51,8 @@ Transfer -> amount
             /\ ~\E a \in Account: isTransKnown(t, a, credits)
             /\ ~isTransKnown(t, accounts[t].to, debits)
             /\ isTransKnown(t, accounts[t].from, debits)
+            
+        transAmount(t) == IF creditPrecond(t) /\ debitPrecond(t) THEN amount[t] ELSE 0
     }
 
     process (trans \in Transfer)    
@@ -86,13 +86,11 @@ Transfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "a0f3b54f" /\ chksum(tla) = "901f83a3")
+\* BEGIN TRANSLATION (chksum(pcal) = "6e034816" /\ chksum(tla) = "9eeed9d7")
 VARIABLES credits, debits, amount, accounts, pc
 
 (* define statement *)
 opAmount(dc) == dc[2]
-
-transAmount(t) == amount[t]
 
 accountCredits(a) == MapThenSumSet(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, credits)
 
@@ -114,6 +112,8 @@ creditPrecond(t) ==
     /\ ~\E a \in Account: isTransKnown(t, a, credits)
     /\ ~isTransKnown(t, accounts[t].to, debits)
     /\ isTransKnown(t, accounts[t].from, debits)
+
+transAmount(t) == IF creditPrecond(t) /\ debitPrecond(t) THEN amount[t] ELSE 0
 
 
 vars == << credits, debits, amount, accounts, pc >>
