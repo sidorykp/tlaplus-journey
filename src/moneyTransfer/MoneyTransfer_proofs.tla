@@ -499,29 +499,18 @@ THEOREM unchangedVarsProperty == IndInv /\ UNCHANGED vars => IndInv'
       /\ \A t \in Transfer:
         pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
     BY <1>1 DEF vars, NonEmptyAccounts
-
-<1>6 credits' = credits BY <1>1 DEF vars
-<1>7 \A dc \in credits: dc[2] \in Nat BY DEF IndInv, TypeOK
-<1>8 \A dc \in credits: opAmount(dc) \in Nat BY <1>7 DEF opAmount
-<1>9 CreditTotal' = CreditTotal BY <1>6, <1>8 DEF CreditTotal
-
-<1>10 debits' = debits BY <1>1 DEF vars
-<1>11 \A dc \in debits: dc[2] \in Nat BY DEF IndInv, TypeOK
-<1>12 \A dc \in debits: opAmount(dc) \in Nat BY <1>11 DEF opAmount
-<1>13 DebitTotal' = DebitTotal BY <1>10, <1>12 DEF DebitTotal
-
-<1>14 amount' = amount BY <1>1 DEF vars
-<1>15 \A t \in Transfer: transAmount(t) \in Nat BY transAmountInNat DEF IndInv
-<1>16 \A t \in Transfer: transAmount(t)' = transAmount(t) BY <1>1 DEF vars, transAmount, creditPrecond, debitPrecond
-<1>17 transPending' = transPending BY <1>1 DEF vars, transPending, AmountIsPending,
+<1>6 CreditTotal' = CreditTotal BY <1>1 DEF vars, CreditTotal
+<1>7 DebitTotal' = DebitTotal BY <1>1 DEF vars, DebitTotal
+<1>8 \A t \in Transfer: transAmount(t)' = transAmount(t) BY <1>1 DEF vars, transAmount, creditPrecond, debitPrecond
+<1>9 transPending' = transPending BY <1>1 DEF vars, transPending, AmountIsPending,
     creditPrecond, isTransKnown, isTransKnownToItem
-<1>18 MapThenSumSet(transAmount, transPending) = MapThenSumSet(transAmount, transPending') BY <1>16, <1>17
-<1>19 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
-<1>20 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') OMITTED
-<1>21 AmountPendingTotal' = AmountPendingTotal BY <1>18, <1>19, <1>20 DEF AmountPendingTotal
+<1>10 MapThenSumSet(transAmount, transPending) = MapThenSumSet(transAmount, transPending') BY <1>8, <1>9
+<1>11 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
+<1>12 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') OMITTED
+<1>13 AmountPendingTotal' = AmountPendingTotal BY <1>10, <1>11, <1>12 DEF AmountPendingTotal
 
-<1>22 (Imbalance = 0)' = (Imbalance = 0) BY <1>9, <1>13, <1>21 DEF Imbalance
-<1> QED BY <1>2, <1>3, <1>4, <1>5, <1>6, <1>22 DEF IndInv
+<1>14 (Imbalance = 0)' = (Imbalance = 0) BY <1>6, <1>7, <1>13 DEF Imbalance
+<1> QED BY <1>2, <1>3, <1>4, <1>5, <1>14 DEF IndInv
 
 
 THEOREM nextTerminating == ASSUME IndInv, Next, Terminating
