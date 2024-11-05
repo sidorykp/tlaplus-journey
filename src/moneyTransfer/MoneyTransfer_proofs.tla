@@ -366,6 +366,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal
 <1> QED BY <1>6, <1>7, <1>8 DEF AmountPendingTotal
 
 
+\* practically a copy of debit_DebitTotal
 LEMMA credit_CreditTotal == ASSUME IndInv, NEW self \in Transfer, credit(self),
 creditPrecond(self)
 PROVE CreditTotal' = CreditTotal + transAmount(self)
@@ -401,6 +402,7 @@ PROVE Imbalance' = Imbalance
 <1> QED BY <1>3, <1>4
 
 
+\* practically a copy of debit_IndInv_common
 THEOREM credit_IndInv_common == ASSUME IndInv, NEW self \in Transfer, credit(self)
 PROVE (
     /\ debits \in SUBSET (AT \X Nat)
