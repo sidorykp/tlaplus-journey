@@ -483,26 +483,26 @@ THEOREM unchangedVarsProperty == IndInv /\ UNCHANGED vars => IndInv'
 <1> SUFFICES ASSUME IndInv, UNCHANGED vars
     PROVE IndInv'
     OBVIOUS
-<1>1 UNCHANGED vars OBVIOUS
-<1>2 TypeOK' = TypeOK BY <1>1 DEF vars, TypeOK, pcLabels
+<1> USE DEF vars
+<1>2 TypeOK' = TypeOK BY DEF TypeOK, pcLabels
 <1>3 (/\ \A t \in Transfer:
         \/ accounts[t] = EmptyAccounts
         \/ DifferentAccounts(t) /\ NonEmptyAccounts(t))' =
       /\ \A t \in Transfer:
         \/ accounts[t] = EmptyAccounts
         \/ DifferentAccounts(t) /\ NonEmptyAccounts(t)
-    BY <1>1 DEF vars, DifferentAccounts, NonEmptyAccounts
+    BY DEF DifferentAccounts, NonEmptyAccounts
 <1>4 (/\ \A t \in Transfer: pc[t] = "init" => initPrecond(t))' = /\ \A t \in Transfer: pc[t] = "init" => initPrecond(t)
-    BY <1>1 DEF vars, initPrecond
+    BY DEF initPrecond
 <1>5 (/\ \A t \in Transfer:
         pc[t] \notin {"init"} <=> NonEmptyAccounts(t))' =
       /\ \A t \in Transfer:
         pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
-    BY <1>1 DEF vars, NonEmptyAccounts
-<1>6 CreditTotal' = CreditTotal BY <1>1 DEF vars, CreditTotal
-<1>7 DebitTotal' = DebitTotal BY <1>1 DEF vars, DebitTotal
-<1>8 \A t \in Transfer: transAmount(t)' = transAmount(t) BY <1>1 DEF vars, transAmount, creditPrecond, debitPrecond
-<1>9 transPending' = transPending BY <1>1 DEF vars, transPending, AmountIsPending,
+    BY DEF NonEmptyAccounts
+<1>6 CreditTotal' = CreditTotal BY DEF CreditTotal
+<1>7 DebitTotal' = DebitTotal BY DEF DebitTotal
+<1>8 \A t \in Transfer: transAmount(t)' = transAmount(t) BY DEF transAmount, creditPrecond, debitPrecond
+<1>9 transPending' = transPending BY DEF transPending, AmountIsPending,
     creditPrecond, isTransKnown, isTransKnownToItem
 <1>10 MapThenSumSet(transAmount, transPending) = MapThenSumSet(transAmount, transPending') BY <1>8, <1>9
 <1>11 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
