@@ -79,14 +79,12 @@ Transfer -> amount
 
         credit:
             with (a = accounts[self].to) {
-                if (creditPrecond(self)) {
-                    credits := credits \cup {<<[a |-> a, t |-> self], transAmount(self)>>};
-                }
+                credits := credits \cup {<<[a |-> a, t |-> self], transAmount(self)>>};
             };
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "6e034816" /\ chksum(tla) = "9eeed9d7")
+\* BEGIN TRANSLATION (chksum(pcal) = "7446469e" /\ chksum(tla) = "89aceed8")
 VARIABLES credits, debits, amount, accounts, pc
 
 (* define statement *)
@@ -155,10 +153,7 @@ crash(self) == /\ pc[self] = "crash"
 
 credit(self) == /\ pc[self] = "credit"
                 /\ LET a == accounts[self].to IN
-                     IF creditPrecond(self)
-                        THEN /\ credits' = (credits \cup {<<[a |-> a, t |-> self], transAmount(self)>>})
-                        ELSE /\ TRUE
-                             /\ UNCHANGED credits
+                     credits' = (credits \cup {<<[a |-> a, t |-> self], transAmount(self)>>})
                 /\ pc' = [pc EXCEPT ![self] = "Done"]
                 /\ UNCHANGED << debits, amount, accounts >>
 
