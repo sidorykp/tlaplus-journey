@@ -1,5 +1,5 @@
 ----MODULE MoneyTransfer----
-EXTENDS Naturals, FiniteSets, FiniteSetsExt, Sequences
+EXTENDS Naturals, FiniteSets, FiniteSetsExt
 
 CONSTANTS Empty, NAccount, NTransfer, NAvail
 
