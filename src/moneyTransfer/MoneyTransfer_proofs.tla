@@ -1,5 +1,5 @@
 ---- MODULE MoneyTransfer_proofs ----
-EXTENDS MoneyTransfer, FiniteSetsExt_theorems, FiniteSetTheorems
+EXTENDS MoneyTransfer, FiniteSetsExt_theorems, FiniteSetTheorems, TLAPS
 
 ASSUME NTransferAssumption == NTransfer \in NNat
 
@@ -38,8 +38,7 @@ PROVE Imbalance = 0
 <1> QED BY <1>1, <1>2, <1>3 DEF Imbalance
 
 
-THEOREM ASSUME Init
-PROVE IndInv
+THEOREM initProperty == ASSUME Init PROVE IndInv
 <1> USE DEF Init, IndInv, TypeOK
 <1>1 IsFiniteSet(credits) BY FS_EmptySet
 <1>2 IsFiniteSet(debits) BY FS_EmptySet
@@ -479,17 +478,77 @@ PROVE IndInv'
 <1> QED BY <1>1, <1>2, <1>3, <1>4 DEF trans
 
 
+
+THEOREM unchangedVarsproperty == IndInv /\ UNCHANGED vars => IndInv'
+<1> SUFFICES ASSUME IndInv, UNCHANGED vars
+    PROVE IndInv'
+    OBVIOUS
+<1>3 UNCHANGED vars OBVIOUS
+<1>4 TypeOK' = TypeOK BY <1>3 DEF vars, TypeOK, pcLabels
+<1>5 (/\ \A t \in Transfer:
+        \/ accounts[t] = EmptyAccounts
+        \/ DifferentAccounts(t) /\ NonEmptyAccounts(t))' =
+      /\ \A t \in Transfer:
+        \/ accounts[t] = EmptyAccounts
+        \/ DifferentAccounts(t) /\ NonEmptyAccounts(t)
+    BY <1>3 DEF vars, DifferentAccounts, NonEmptyAccounts
+<1>6 (/\ \A t \in Transfer: pc[t] = "init" => initPrecond(t))' = /\ \A t \in Transfer: pc[t] = "init" => initPrecond(t)
+    BY <1>3 DEF vars, initPrecond
+<1>7 (/\ \A t \in Transfer:
+        pc[t] \notin {"init"} <=> NonEmptyAccounts(t))' =
+      /\ \A t \in Transfer:
+        pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
+    BY <1>3 DEF vars, NonEmptyAccounts
+
+<1>8 credits' = credits BY <1>3 DEF vars
+<1>9 \A dc \in credits: dc[2] \in Nat BY DEF IndInv, TypeOK
+<1>10 \A dc \in credits: opAmount(dc) \in Nat BY <1>9 DEF opAmount
+<1>11 CreditTotal' = CreditTotal BY <1>8, <1>10 DEF CreditTotal
+
+<1>12 debits' = debits BY <1>3 DEF vars
+<1>13 \A dc \in debits: dc[2] \in Nat BY DEF IndInv, TypeOK
+<1>14 \A dc \in debits: opAmount(dc) \in Nat BY <1>13 DEF opAmount
+<1>15 DebitTotal' = DebitTotal BY <1>12, <1>14 DEF DebitTotal
+
+<1>16 amount' = amount BY <1>3 DEF vars
+<1>17 \A t \in Transfer: amount[t] \in Nat BY DEF IndInv, TypeOK
+<1>18 \A t \in Transfer: transAmount(t) \in Nat BY <1>17 DEF transAmount
+<1>19 \A t \in Transfer: transAmount(t)' = transAmount(t) BY <1>3 DEF vars, transAmount, creditPrecond, debitPrecond
+<1>20 transPending' = transPending BY <1>3 DEF vars, transPending, AmountIsPending,
+    creditPrecond, isTransKnown, isTransKnownToItem
+<1>21 MapThenSumSet(transAmount, transPending) = MapThenSumSet(transAmount, transPending') BY <1>19, <1>20
+<1>22 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
+<1>23 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') OMITTED
+<1>24 AmountPendingTotal' = AmountPendingTotal BY <1>21, <1>22, <1>23 DEF AmountPendingTotal
+
+<1>25 (Imbalance = 0)' = (Imbalance = 0) BY <1>11, <1>15, <1>24 DEF Imbalance
+<1> QED BY <1>4, <1>5, <1>6, <1>7, <1>25 DEF IndInv
+
+
 THEOREM nextTerminating == ASSUME IndInv, Next, Terminating
 PROVE IndInv'
-<1> QED OMITTED
+<1> SUFFICES ASSUME IndInv, Terminating
+    PROVE IndInv'
+    BY DEF Next, Terminating
+<1>1 UNCHANGED vars BY DEF Terminating
+<1> QED BY <1>1, unchangedVarsproperty
 
 
-THEOREM ASSUME IndInv, Next
-PROVE IndInv'
+THEOREM nextProperty == IndInv /\ Next => IndInv'
+<1> SUFFICES ASSUME IndInv, Next
+    PROVE IndInv'
+    OBVIOUS
 <1> USE DEF IndInv, Next, Terminating
 <1>1 CASE ~Terminating
     <2> QED BY <1>1, nextNonTerminating
 <1>2 CASE Terminating
     <2> QED BY <1>2, nextTerminating    
 <1> QED BY <1>1, <1>2
+
+
+THEOREM IndInvPreserved == Spec => []IndInv
+<1>1 IndInv /\ UNCHANGED vars => IndInv'
+    BY unchangedVarsproperty
+<1> QED BY PTL, initProperty, nextProperty, <1>1 DEF Spec
+
 ====
