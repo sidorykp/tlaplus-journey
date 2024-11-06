@@ -52,7 +52,7 @@ Transfer -> amount
             /\ ~isTransKnown(t, accounts[t].to, debits)
             /\ isTransKnown(t, accounts[t].from, debits)
             
-        transAmount(t) == IF creditPrecond(t) /\ debitPrecond(t) THEN amount[t] ELSE 0
+        transAmount(t) == IF creditPrecond(t) THEN amount[t] ELSE 0
     }
 
     process (trans \in Transfer)    
@@ -68,7 +68,7 @@ Transfer -> amount
         debit:
             with (a = accounts[self].from) {
                 if (debitPrecond(self)) {
-                    debits := debits \cup {<<[a |-> a, t |-> self], transAmount(self)>>};
+                    debits := debits \cup {<<[a |-> a, t |-> self], amount[self]>>};
                 } else {
                     skip;
                 }
@@ -84,7 +84,7 @@ Transfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "7446469e" /\ chksum(tla) = "89aceed8")
+\* BEGIN TRANSLATION (chksum(pcal) = "6470cf4c" /\ chksum(tla) = "74e8b775")
 VARIABLES credits, debits, amount, accounts, pc
 
 (* define statement *)
@@ -111,7 +111,7 @@ creditPrecond(t) ==
     /\ ~isTransKnown(t, accounts[t].to, debits)
     /\ isTransKnown(t, accounts[t].from, debits)
 
-transAmount(t) == IF creditPrecond(t) /\ debitPrecond(t) THEN amount[t] ELSE 0
+transAmount(t) == IF creditPrecond(t) THEN amount[t] ELSE 0
 
 
 vars == << credits, debits, amount, accounts, pc >>
@@ -139,7 +139,7 @@ init(self) == /\ pc[self] = "init"
 debit(self) == /\ pc[self] = "debit"
                /\ LET a == accounts[self].from IN
                     IF debitPrecond(self)
-                       THEN /\ debits' = (debits \cup {<<[a |-> a, t |-> self], transAmount(self)>>})
+                       THEN /\ debits' = (debits \cup {<<[a |-> a, t |-> self], amount[self]>>})
                        ELSE /\ TRUE
                             /\ UNCHANGED debits
                /\ pc' = [pc EXCEPT ![self] = "crash"]
