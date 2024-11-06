@@ -319,34 +319,35 @@ PROVE AmountPendingTotal' = AmountPendingTotal - transAmount(self)
 <1>1 self \in transPending
     BY DEF credit, transPending, AmountIsPending
 <1> USE DEF IndInv, TypeOK
-<1>2 transPending' = transPending \ {self}
-    BY <1>1 DEF transPending, credit, AmountIsPending, isTransKnown, creditPrecond
-<1>3 transAmount(self) \in Nat BY transAmountInNat
-<1>4 IsFiniteSet(transPending) BY transPendingIsFinite
-<1>5 \A t \in transPending: transAmount(t) \in Nat BY transPendingAmountNat
+<1>2 ~AmountIsPending(self) BY DEF credit, creditPrecond, AmountIsPending
+<1>3 transPending' = transPending \ {self}
+    BY <1>1, <1>2 DEF transPending
+<1>4 transAmount(self) \in Nat BY transAmountInNat
+<1>5 IsFiniteSet(transPending) BY transPendingIsFinite
+<1>6 \A t \in transPending: transAmount(t) \in Nat BY transPendingAmountNat
 <1> HIDE DEF IndInv, TypeOK
-<1>6 MapThenSumSet(transAmount, transPending) =
+<1>7 MapThenSumSet(transAmount, transPending) =
     MapThenSumSet(transAmount, transPending') + transAmount(self)
-    BY <1>1, <1>2, <1>3, <1>4, <1>5, MapThenSumSetRemElem
+    BY <1>1, <1>3, <1>4, <1>5, <1>6,  MapThenSumSetRemElem
     
-<1>7 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
-<1>8 AmountPendingTotal' = MapThenSumSet(transAmount, transPending')
+<1>8 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
+<1>9 AmountPendingTotal' = MapThenSumSet(transAmount, transPending')
     BY DEF credit, transPending, AmountIsPending, isTransKnown, creditPrecond, isTransKnownToItem
-<1>9 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending)'
-    BY <1>7, <1>8
+<1>10 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending)'
+    BY <1>8, <1>9
     
-<1>10 MapThenSumSet(transAmount, transPending) \in Nat
-    BY <1>4, <1>5, MapThenSumSetType
+<1>11 MapThenSumSet(transAmount, transPending) \in Nat
+    BY <1>5, <1>6, MapThenSumSetType
     
-<1>11 IsFiniteSet(transPending') BY <1>2, <1>4, FS_RemoveElement
-<1>12 \A t \in transPending': transAmount(t) \in Nat
-    BY <1>2, <1>5
-<1>13 MapThenSumSet(transAmount, transPending') \in Nat
-    BY <1>11, <1>12, MapThenSumSetType
+<1>12 IsFiniteSet(transPending') BY <1>3, <1>5, FS_RemoveElement
+<1>13 \A t \in transPending': transAmount(t) \in Nat
+    BY <1>3, <1>6
+<1>14 MapThenSumSet(transAmount, transPending') \in Nat
+    BY <1>12, <1>13, MapThenSumSetType
 
-<1>14 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) - transAmount(self)
-    BY <1>6, <1>10, <1>3, <1>13
-<1> QED BY <1>14, <1>9 DEF AmountPendingTotal
+<1>15 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) - transAmount(self)
+    BY <1>7, <1>11, <1>4, <1>14
+<1> QED BY <1>15, <1>10 DEF AmountPendingTotal
 
 
 \* practically a copy of init_AmountPendingTotal
