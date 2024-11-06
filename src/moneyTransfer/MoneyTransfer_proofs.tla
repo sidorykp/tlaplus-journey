@@ -13,12 +13,12 @@ LEMMA transAmountInNat == ASSUME TypeOK, NEW self \in Transfer
 PROVE transAmount(self) \in Nat
 BY DEF TypeOK, transAmount
 
-
 LEMMA transSetIsFinite == ASSUME NTransferAssumption
 PROVE IsFiniteSet(Transfer)
 <1>1 Transfer \in SUBSET (Nat) BY DEF Transfer
 <1>2 \A t \in Transfer: t <= NTransfer BY DEF Transfer
 <1> QED BY <1>1, <1>2, FS_BoundedSetOfNaturals DEF NNat
+
 
 LEMMA transPendingIsFinite == IsFiniteSet(transPending)
 BY transSetIsFinite, FS_Subset, NTransferAssumption DEF transPending
@@ -206,27 +206,29 @@ PROVE DebitTotal' = DebitTotal + amount[self]
 <1> QED BY <1>6 DEF opAmount
 
 
-LEMMA debit_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, debit(self),
-debitPrecond(self)
-PROVE AmountPendingTotal' = AmountPendingTotal + transAmount(self)
+LEMMA debit_AmountPendingTotal_creditPrecond == ASSUME IndInv, NEW self \in Transfer, debit(self),
+debitPrecond(self),
+creditPrecond(self)
+PROVE AmountPendingTotal' = AmountPendingTotal + amount[self]
 <1>1 transPending' = transPending \cup {self}
-    BY DEF transPending, debit, AmountIsPending, isTransKnown
+    BY DEF transPending, debit, AmountIsPending, creditPrecond, isTransKnown
 <1> USE DEF IndInv, TypeOK
 <1>2 self \notin transPending
     BY DEF transPending, AmountIsPending, isTransKnown, isTransKnownToItem, debitPrecond, creditPrecond, AT
-<1>3 transAmount(self) \in Nat BY transAmountInNat
-<1>4 IsFiniteSet(transPending) BY transPendingIsFinite
-<1>5 \A t \in transPending: transAmount(t) \in Nat BY transPendingAmountNat
+<1>3 transAmount(self) = amount[self] BY DEF transAmount
+<1>4 transAmount(self) \in Nat BY transAmountInNat
+<1>5 IsFiniteSet(transPending) BY transPendingIsFinite
+<1>6 \A t \in transPending: transAmount(t) \in Nat BY transPendingAmountNat
 <1> HIDE DEF IndInv, TypeOK
-<1>6 MapThenSumSet(transAmount, transPending') =
+<1>7 MapThenSumSet(transAmount, transPending') =
     MapThenSumSet(transAmount, transPending) + transAmount(self)
-    BY <1>1, <1>2, <1>3, <1>4, <1>5, MapThenSumSetAddElem
-<1>7 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
-<1>8 AmountPendingTotal' = MapThenSumSet(transAmount, transPending')
+    BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, MapThenSumSetAddElem
+<1>8 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
+<1>9 AmountPendingTotal' = MapThenSumSet(transAmount, transPending')
     BY DEF debit, transPending, AmountIsPending
-<1>9 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending)'
-    BY <1>7, <1>8
-<1> QED BY <1>6, <1>9 DEF AmountPendingTotal
+<1>10 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending)'
+    BY <1>8, <1>9
+<1> QED BY <1>7, <1>10, <1>3 DEF AmountPendingTotal
 
 
 LEMMA debit_Imbalance == ASSUME IndInv, NEW self \in Transfer, debit(self)
@@ -235,7 +237,7 @@ PROVE Imbalance' = Imbalance
 <1>2 CreditTotal' = CreditTotal
     BY <1>1 DEF CreditTotal
 <1>3 CASE debitPrecond(self)
-    <2> QED BY <1>3, <1>2, debit_DebitTotal, debit_AmountPendingTotal DEF Imbalance, debit
+    <2> QED BY <1>3, <1>2, debit_DebitTotal, debit_AmountPendingTotal_creditPrecond DEF Imbalance, debit
 <1>4 CASE ~debitPrecond(self)
     <2> QED BY <1>4, <1>2 DEF debit, Imbalance
 <1> QED BY <1>3, <1>4
