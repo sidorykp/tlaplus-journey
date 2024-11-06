@@ -190,9 +190,9 @@ PROVE IndInv'
 
 LEMMA debit_DebitTotal == ASSUME IndInv, NEW self \in Transfer, debit(self),
 debitPrecond(self)
-PROVE DebitTotal' = DebitTotal + transAmount(self)
+PROVE DebitTotal' = DebitTotal + amount[self]
 <1> DEFINE a == accounts[self].from
-<1> DEFINE nadd == <<[a |-> a, t |-> self], transAmount(self)>>
+<1> DEFINE nadd == <<[a |-> a, t |-> self], amount[self]>>
 <1> USE DEF IndInv, TypeOK, debitPrecond
 <1>1 nadd \notin debits BY DEF isTransKnown, isTransKnownToItem, AT
 <1>2 debits' = debits \cup {nadd} BY DEF debit
