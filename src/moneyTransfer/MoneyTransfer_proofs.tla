@@ -250,9 +250,9 @@ PROVE (
     /\ CommonIndInv)'
 <1> USE DEF CommonIndInv
 <1>1 credits' \in SUBSET (AT \X Nat) BY DEF debit
-<1>2 IsFiniteSet(credits)' BY DEF debit
-<1>3 amount' \in [Transfer -> Nat] BY DEF debit, IndInv
-<1>4 accounts' \in [Transfer -> EAccounts] BY DEF debit
+<1>2 IsFiniteSet(credits)' BY DEF debit, IndInv, TypeOK
+<1>3 amount' \in [Transfer -> Nat] BY DEF debit, IndInv, TypeOK
+<1>4 accounts' \in [Transfer -> EAccounts] BY DEF debit, IndInv, TypeOK
 <1>5 pcLabels' BY DEF debit, pcLabels, ProcSet
 <1>6 \A t \in Transfer:
     \/ accounts'[t] = EmptyAccounts
