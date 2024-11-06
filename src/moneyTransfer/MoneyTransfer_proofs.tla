@@ -294,7 +294,7 @@ PROVE (
 THEOREM debit_IndInv == ASSUME IndInv, NEW self \in Transfer, debit(self)
 PROVE IndInv'
 <1> DEFINE a == accounts[self].from
-<1> DEFINE nadd == <<[a |-> a, t |-> self], transAmount(self)>>
+<1> DEFINE nadd == <<[a |-> a, t |-> self], amount[self]>>
 <1> USE DEF IndInv, TypeOK, CommonIndInv
 <1>1 CASE debitPrecond(self)
     <2>3 debits' = debits \cup {nadd} BY <1>1 DEF debit
