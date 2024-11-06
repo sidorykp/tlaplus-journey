@@ -360,7 +360,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal
 <1>4 transPending' = transPending BY <1>1, <1>3 DEF credit, pcLabels, IndInv, TypeOK,
     transPending, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
 <1>5 \A t \in Transfer: transAmount(t)' = transAmount(t) BY DEF credit, transAmount, IndInv, TypeOK,
-    creditPrecond, debitPrecond
+    creditPrecond, isTransKnown, isTransKnownToItem
 <1>6 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) BY <1>1, <1>4, <1>5
 <1>7 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
 <1>8 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') BY <1>4, <1>5 DEF credit, transPending, transAmount,
