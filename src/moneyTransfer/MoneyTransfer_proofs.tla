@@ -58,23 +58,45 @@ THEOREM initProperty == ASSUME Init PROVE IndInv
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, init_Imbalance
 
 
-THEOREM crash_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, crash(self)
+THEOREM crash_AmountPendingTotal_creditPrecond == ASSUME IndInv, NEW self \in Transfer, crash(self),
+creditPrecond(self)
 PROVE AmountPendingTotal' = AmountPendingTotal
 <1>1 pc[self] = "crash" BY DEF crash, IndInv, TypeOK
 <1>2 self \in transPending BY <1>1 DEF crash, IndInv, TypeOK,
-    transPending, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
-<1>3 pc'[self] \in {"credit", "debit"} BY DEF crash, IndInv, TypeOK
+    transPending, AmountIsPending, creditPrecond
+<1>3 pc'[self] = "credit" \/ pc'[self] =  "debit" BY DEF crash, IndInv, TypeOK, pcLabels
 <1>4 self \in transPending' BY <1>3 DEF crash, IndInv, TypeOK,
-    transPending, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+    transPending, AmountIsPending, creditPrecond
 <1>5 transPending' = transPending BY <1>2, <1>4 DEF crash, pcLabels, IndInv, TypeOK,
-    transPending, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+    transPending, AmountIsPending, creditPrecond
 <1>6 \A t \in Transfer: transAmount(t)' = transAmount(t) BY DEF crash, transAmount,
     creditPrecond, debitPrecond
 <1>7 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) BY <1>5, <1>6
 <1>8 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
-<1>9 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') BY <1>5, <1>6
-    DEF crash, transPending, AmountIsPending, IndInv, TypeOK
+<1>9 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') BY <1>5, <1>6, AccountAssumption, TransferAssumption
+    DEF crash, transPending, transAmount, AmountIsPending, creditPrecond, pcLabels, IndInv, TypeOK
 <1> QED BY <1>7, <1>8, <1>9 DEF AmountPendingTotal
+
+
+THEOREM crash_AmountPendingTotal_notCreditPrecond == ASSUME IndInv, NEW self \in Transfer, crash(self),
+~creditPrecond(self)
+PROVE AmountPendingTotal' = AmountPendingTotal
+<1>1 pc[self] = "crash" BY DEF crash, IndInv, TypeOK
+<1>2 self \notin transPending BY <1>1 DEF crash, IndInv, TypeOK,
+    transPending, AmountIsPending, creditPrecond
+<1>3 pc'[self] = "credit" \/ pc'[self] =  "debit" BY DEF crash, IndInv, TypeOK, pcLabels
+<1>4 self \notin transPending' BY <1>3 DEF crash, IndInv, TypeOK,
+    transPending, AmountIsPending, creditPrecond
+<1>5 transPending' = transPending BY <1>2, <1>4 DEF crash, pcLabels, IndInv, TypeOK,
+    transPending, AmountIsPending, creditPrecond
+<1>6 \A t \in Transfer: transAmount(t)' = transAmount(t) BY DEF crash, transAmount,
+    creditPrecond, debitPrecond
+<1>7 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) BY <1>5, <1>6
+<1>8 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
+<1>9 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') BY <1>5, <1>6, AccountAssumption, TransferAssumption
+    DEF crash, transPending, transAmount, AmountIsPending, creditPrecond, pcLabels, IndInv, TypeOK
+<1> QED BY <1>7, <1>8, <1>9 DEF AmountPendingTotal
+
 
 THEOREM crash_IndInv == ASSUME IndInv, NEW self \in Transfer, crash(self)
 PROVE IndInv'
@@ -86,10 +108,11 @@ PROVE IndInv'
 <1>5 amount' \in [Transfer -> Nat] BY DEF crash
 <1>6 accounts' \in [Transfer -> EAccounts] BY DEF crash
 
-<1>7 pc'[self] \in {"credit", "debit"} BY DEF crash 
+<1>7 pc'[self] = "credit" \/ pc'[self] =  "debit" BY DEF crash 
 <1>8 pcLabels' BY <1>7 DEF crash, pcLabels
 
-<1>9 Imbalance' = Imbalance BY crash_AmountPendingTotal DEF crash, Imbalance, creditPrecond, CreditTotal, DebitTotal
+<1>9 Imbalance' = Imbalance BY crash_AmountPendingTotal_creditPrecond, crash_AmountPendingTotal_notCreditPrecond
+    DEF crash, Imbalance, creditPrecond, CreditTotal, DebitTotal
 <1>10 Imbalance' = 0 BY <1>9
 
 <1>11 \A t \in Transfer:
@@ -137,7 +160,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal
 <1>6 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) BY <1>1, <1>4, <1>5
 <1>7 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
 <1>8 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') BY <1>1, <1>4, <1>5 DEF init, transPending, transAmount,
-    AmountIsPending, pcLabels, IndInv, TypeOK
+    creditPrecond, AmountIsPending, pcLabels, IndInv, TypeOK
 <1> QED BY <1>6, <1>7, <1>8 DEF AmountPendingTotal
 
 THEOREM init_IndInv == ASSUME IndInv, NEW self \in Transfer, init(self)
@@ -158,7 +181,7 @@ PROVE IndInv'
 <1>7 selfAccounts \in EAccounts BY DEF init, EAccounts, EAccount
 <1>8 accounts' \in [Transfer -> EAccounts] BY <1>7 DEF init
 
-<1>9 pcLabels' BY AccountAssumption, TransferAssumption DEF init, ProcSet
+<1>9 pcLabels' BY AccountAssumption, TransferAssumption DEF init, ProcSet, pcLabels
 
 <1>10 Imbalance' = Imbalance BY init_AmountPendingTotal DEF init, Imbalance, creditPrecond, CreditTotal, DebitTotal
 <1>11 Imbalance' = 0 BY <1>10
@@ -195,7 +218,7 @@ PROVE IndInv'
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>6, <1>8, <1>9, <1>11, <1>17, <1>20, <1>26
 
 
-LEMMA debit_DebitTotal == ASSUME IndInv, NEW self \in Transfer, debit(self),
+LEMMA debit_DebitTotal_debitPrecond == ASSUME IndInv, NEW self \in Transfer, debit(self),
 debitPrecond(self)
 PROVE DebitTotal' = DebitTotal + amount[self]
 <1> DEFINE a == accounts[self].from
@@ -213,9 +236,14 @@ PROVE DebitTotal' = DebitTotal + amount[self]
 <1> QED BY <1>6 DEF opAmount
 
 
-LEMMA debit_AmountPendingTotal_creditPrecond == ASSUME IndInv, NEW self \in Transfer, debit(self),
-debitPrecond(self),
-creditPrecond(self)
+LEMMA debit_DebitTotal_notDebitPrecond == ASSUME IndInv, NEW self \in Transfer, debit(self),
+~debitPrecond(self)
+PROVE DebitTotal' = DebitTotal
+BY DEF debit, DebitTotal
+
+
+LEMMA debit_AmountPendingTotal_debitPrecond == ASSUME IndInv, NEW self \in Transfer, debit(self),
+debitPrecond(self)
 PROVE AmountPendingTotal' = AmountPendingTotal + amount[self]
 <1>1 transPending' = transPending \cup {self}
     BY DEF transPending, debit, AmountIsPending, creditPrecond, isTransKnown
@@ -238,15 +266,31 @@ PROVE AmountPendingTotal' = AmountPendingTotal + amount[self]
 <1> QED BY <1>7, <1>10, <1>3 DEF AmountPendingTotal
 
 
+LEMMA debit_AmountPendingTotal_notDebitPrecond == ASSUME IndInv, NEW self \in Transfer, debit(self),
+~debitPrecond(self)
+PROVE AmountPendingTotal' = AmountPendingTotal
+<1>2 self \notin transPending
+    BY DEF debit, transPending, AmountIsPending, debitPrecond, creditPrecond
+<1>3 self \notin transPending'
+    BY DEF debit, transPending, AmountIsPending, debitPrecond, creditPrecond
+<1>4 transPending' = transPending BY <1>2, <1>3 DEF debit
+<1>5 \A t \in Transfer: transAmount(t)' = transAmount(t) BY DEF debit, transAmount
+<1>6 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) 
+    BY <1>4, <1>5
+<1>7 AmountPendingTotal' = MapThenSumSet(transAmount, transPending')
+    BY DEF debit, transPending, AmountIsPending
+<1> QED BY <1>6, <1>7 DEF AmountPendingTotal
+
+
 LEMMA debit_Imbalance == ASSUME IndInv, NEW self \in Transfer, debit(self)
 PROVE Imbalance' = Imbalance
 <1>1 credits' = credits BY DEF debit
 <1>2 CreditTotal' = CreditTotal
     BY <1>1 DEF CreditTotal
 <1>3 CASE debitPrecond(self)
-    <2> QED BY <1>3, <1>2, debit_DebitTotal, debit_AmountPendingTotal_creditPrecond DEF Imbalance, debit
+    <2> QED BY <1>3, <1>2, debit_DebitTotal_debitPrecond, debit_AmountPendingTotal_debitPrecond DEF Imbalance, debit
 <1>4 CASE ~debitPrecond(self)
-    <2> QED BY <1>4, <1>2, TransferAssumption, AccountAssumption DEF debit, Imbalance
+    <2> QED BY <1>4, <1>2, debit_DebitTotal_notDebitPrecond, debit_AmountPendingTotal_notDebitPrecond  DEF debit, Imbalance
 <1> QED BY <1>3, <1>4
 
 
@@ -256,7 +300,7 @@ PROVE (
     /\ IsFiniteSet(credits)
     /\ CommonIndInv)'
 <1> USE DEF CommonIndInv
-<1>1 credits' \in SUBSET (AT \X Nat) BY DEF debit
+<1>1 credits' \in SUBSET (AT \X Nat) BY DEF debit, IndInv, TypeOK
 <1>2 IsFiniteSet(credits)' BY DEF debit, IndInv, TypeOK
 <1>3 amount' \in [Transfer -> Nat] BY DEF debit, IndInv, TypeOK
 <1>4 accounts' \in [Transfer -> EAccounts] BY DEF debit, IndInv, TypeOK
@@ -322,11 +366,12 @@ PROVE IndInv'
 
 LEMMA credit_AmountPendingTotal_creditPrecond == ASSUME IndInv, NEW self \in Transfer, credit(self),
 creditPrecond(self)
-PROVE AmountPendingTotal' = AmountPendingTotal - transAmount(self)
+PROVE AmountPendingTotal' = AmountPendingTotal - amount[self]
 <1>1 self \in transPending
     BY DEF credit, transPending, AmountIsPending
 <1> USE DEF IndInv, TypeOK
-<1>2 ~AmountIsPending(self) BY TransferAssumption, AccountAssumption DEF credit, creditPrecond, AmountIsPending
+<1>2 ~AmountIsPending(self) BY TransferAssumption, AccountAssumption DEF credit, creditPrecond, AmountIsPending,
+    transAmountPending, isTransKnown, creditPrecond, isTransKnownToItem
 <1>3 transPending' = transPending \ {self}
     BY <1>1, <1>2 DEF transPending
 <1>4 transAmount(self) \in Nat BY transAmountInNat
@@ -354,7 +399,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal - transAmount(self)
 
 <1>15 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) - transAmount(self)
     BY <1>7, <1>11, <1>4, <1>14
-<1> QED BY <1>15, <1>10 DEF AmountPendingTotal
+<1> QED BY <1>15, <1>10 DEF AmountPendingTotal, transAmount
 
 
 \* practically a copy of init_AmountPendingTotal
@@ -378,20 +423,20 @@ PROVE AmountPendingTotal' = AmountPendingTotal
 \* practically a copy of debit_DebitTotal
 LEMMA credit_CreditTotal == ASSUME IndInv, NEW self \in Transfer, credit(self),
 creditPrecond(self)
-PROVE CreditTotal' = CreditTotal + transAmount(self)
+PROVE CreditTotal' = CreditTotal + amount[self]
 <1> DEFINE a == accounts[self].to
-<1> DEFINE nadd == <<[a |-> a, t |-> self], transAmount(self)>>
+<1> DEFINE nadd == <<[a |-> a, t |-> self], transAmountPending(self)>>
 <1> USE DEF IndInv, TypeOK, creditPrecond
 <1>1 nadd \notin credits BY DEF isTransKnown, isTransKnownToItem, AT
 <1>2 credits' = credits \cup {nadd} BY DEF credit
 <1>3 \A nb \in credits: opAmount(nb) \in Nat BY DEF opAmount
-<1>4 opAmount(nadd) \in Nat BY transAmountInNat DEF opAmount
+<1>4 opAmount(nadd) \in Nat BY transAmountInNat DEF transAmountPending, opAmount
 <1>5 MapThenSumSet(opAmount, credits') =
     MapThenSumSet(opAmount, credits) + opAmount(nadd)
     BY <1>1, <1>2, <1>3, <1>4, MapThenSumSetAddElem
 <1>6 CreditTotal' = CreditTotal + opAmount(nadd)
     BY <1>5 DEF CreditTotal
-<1> QED BY <1>6 DEF opAmount
+<1> QED BY <1>6 DEF opAmount, transAmountPending
 
 
 LEMMA credit_Imbalance == ASSUME IndInv, NEW self \in Transfer, credit(self)
@@ -400,14 +445,17 @@ PROVE Imbalance' = Imbalance
 <1>2 DebitTotal' = DebitTotal
     BY <1>1 DEF DebitTotal
 <1>3 CASE creditPrecond(self)
-    <2>1 CreditTotal' = CreditTotal + transAmount(self) BY <1>3, credit_CreditTotal
-    <2>2 AmountPendingTotal' = AmountPendingTotal - transAmount(self) BY <1>3, credit_AmountPendingTotal_creditPrecond
-    <2> QED BY <2>1, <2>2, <1>2 DEF Imbalance, credit
+    <2>1 CreditTotal' = CreditTotal + amount[self] BY <1>3, credit_CreditTotal
+    <2>2 AmountPendingTotal' = AmountPendingTotal - amount[self] BY <1>3, credit_AmountPendingTotal_creditPrecond
+    <2>3 amount[self] \in Nat BY DEF IndInv, TypeOK
+    <2>4 \A c \in credits: opAmount(c) \in Nat BY DEF opAmount, IndInv, TypeOK
+    <2>5 CreditTotal \in Nat BY <2>4, MapThenSumSetType DEF CreditTotal, IndInv, TypeOK
+    <2>6 AmountPendingTotal \in Nat BY transPendingAmountNat, transPendingIsFinite, MapThenSumSetType DEF AmountPendingTotal
+    <2>7 CreditTotal' + AmountPendingTotal' = CreditTotal + AmountPendingTotal BY <2>1, <2>2, <2>3, <2>5, <2>6
+    <2> QED BY <2>7, <1>2 DEF Imbalance, credit
 <1>4 CASE ~creditPrecond(self)
-    <2>1 transAmount(self) = 0 BY <1>4 DEF transAmount
-    <2>2 transAmount(self)' = 0 BY <1>4 DEF credit, transAmount
-    <2>3 AmountPendingTotal' = AmountPendingTotal BY <1>4, credit_AmountPendingTotal_notCreditPrecond
-    <2> QED BY <1>2, <2>1, <2>2, <2>3 DEF credit, Imbalance
+    <2>1 AmountPendingTotal' = AmountPendingTotal BY <1>4, credit_AmountPendingTotal_notCreditPrecond
+    <2> QED BY <1>2, <2>1 DEF credit, Imbalance
 <1> QED BY <1>3, <1>4
 
 
@@ -463,13 +511,13 @@ PROVE (
 THEOREM credit_IndInv == ASSUME IndInv, NEW self \in Transfer, credit(self)
 PROVE IndInv'
 <1> DEFINE a == accounts[self].to
-<1> DEFINE nadd == <<[a |-> a, t |-> self], transAmount(self)>>
+<1> DEFINE nadd == <<[a |-> a, t |-> self], transAmountPending(self)>>
 <1> USE DEF IndInv, TypeOK, CommonIndInv
 <1>1 credits' = credits \cup {nadd} BY DEF credit
 <1>2 a \in EAccount BY DEF EAccounts
 <1>3 a # Empty BY DEF credit, NonEmptyAccounts
 <1>4 a \in Account BY <1>2, <1>3 DEF EAccount
-<1>5 nadd \in AT \X Nat BY <1>4, transAmountInNat DEF AT
+<1>5 nadd \in AT \X Nat BY <1>4, transAmountInNat DEF AT, transAmountPending
 <1>6 credits' \in SUBSET (AT \X Nat)
     BY <1>1, <1>5
 <1>7 IsFiniteSet(credits)' BY FS_AddElement DEF credit
