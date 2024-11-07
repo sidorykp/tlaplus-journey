@@ -1,13 +1,9 @@
 ----MODULE MoneyTransfer----
 EXTENDS Naturals, FiniteSets, FiniteSetsExt
 
-CONSTANTS Empty, NAccount, NTransfer, NAvail
+CONSTANTS Empty, Account, Transfer, NAvail
 
 NNat == Nat \ {0}
-
-Account == 1..NAccount
-
-Transfer == 1..NTransfer
 
 EAccount == Account \cup {Empty}
 
@@ -234,14 +230,5 @@ CommonIndInv ==
     /\ \A t \in Transfer: pc[t] = "init" => initPrecond(t)
     /\ \A t \in Transfer:
         pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
-
-BalanceSmall == 0..1
-
-AmountSmall == 0..2
-
-LimitedIndInv ==
-    /\ \A a \in Account: accountCredits(a) \in BalanceSmall
-    /\ \A a \in Account: accountDebits(a) \in BalanceSmall
-    /\ \A t \in Transfer: transAmount(t) \in AmountSmall
 
 ====
