@@ -576,6 +576,8 @@ THEOREM unchangedVarsProperty == IndInv /\ UNCHANGED vars => IndInv'
 <1>12 AmountPendingTotal' = AmountPendingTotal BY <1>9, <1>10, <1>11 DEF AmountPendingTotal
 
 <1>13 (Imbalance = 0)' = (Imbalance = 0) BY <1>5, <1>6, <1>12 DEF Imbalance
+
+<1>14 pendingTrans' = pendingTrans OBVIOUS
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>13 DEF IndInv
 
 

@@ -22,7 +22,8 @@ Transfer -> amount
        credits = {},
        debits = {},
        amount = [t \in Transfer |-> 0],
-       accounts = [t \in Transfer |-> EmptyAccounts]
+       accounts = [t \in Transfer |-> EmptyAccounts],
+       pendingTrans = {}
 
     define {
         opAmount(dc) == dc[2]
@@ -62,9 +63,10 @@ Transfer -> amount
             };
             
         debit:
-            with (a = accounts[self].from) {
+            with (a = accounts[self].from; at = [a |-> a, t |-> self]; ata = <<at, amount[self]>>) {
                 if (debitPrecond(self)) {
-                    debits := debits \cup {<<[a |-> a, t |-> self], amount[self]>>};
+                    debits := debits \cup {ata};
+                    pendingTrans := pendingTrans \cup {ata};
                 } else {
                     skip;
                 }
@@ -74,16 +76,17 @@ Transfer -> amount
             either skip or goto debit;
 
         credit:
-            with (a = accounts[self].to) {
+            with (a = accounts[self].to; at = [a |-> a, t |-> self]) {
                 if (creditPrecond(self)) {
-                    credits := credits \cup {<<[a |-> a, t |-> self], amount[self]>>};
+                    credits := credits \cup {<<at, amount[self]>>};
+                    pendingTrans := pendingTrans \ {<<[a |-> accounts[self].from, t |-> self], amount[self]>>};
                 }
             };
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "b5bb3fb7" /\ chksum(tla) = "caa68922")
-VARIABLES credits, debits, amount, accounts, pc
+\* BEGIN TRANSLATION (chksum(pcal) = "95046c5" /\ chksum(tla) = "2c7fd26f")
+VARIABLES credits, debits, amount, accounts, pendingTrans, pc
 
 (* define statement *)
 opAmount(dc) == dc[2]
@@ -112,7 +115,7 @@ creditPrecond(t) ==
 transAmount(t) == amount[t]
 
 
-vars == << credits, debits, amount, accounts, pc >>
+vars == << credits, debits, amount, accounts, pendingTrans, pc >>
 
 ProcSet == (Transfer)
 
@@ -121,6 +124,7 @@ Init == (* Global variables *)
         /\ debits = {}
         /\ amount = [t \in Transfer |-> 0]
         /\ accounts = [t \in Transfer |-> EmptyAccounts]
+        /\ pendingTrans = {}
         /\ pc = [self \in ProcSet |-> "init"]
 
 init(self) == /\ pc[self] = "init"
@@ -132,14 +136,17 @@ init(self) == /\ pc[self] = "init"
                        /\ accounts' = [accounts EXCEPT ![self] = [from |-> account1, to |-> account2]]
                        /\ amount' = [amount EXCEPT ![self] = am]
               /\ pc' = [pc EXCEPT ![self] = "debit"]
-              /\ UNCHANGED << credits, debits >>
+              /\ UNCHANGED << credits, debits, pendingTrans >>
 
 debit(self) == /\ pc[self] = "debit"
                /\ LET a == accounts[self].from IN
-                    IF debitPrecond(self)
-                       THEN /\ debits' = (debits \cup {<<[a |-> a, t |-> self], amount[self]>>})
-                       ELSE /\ TRUE
-                            /\ UNCHANGED debits
+                    LET at == [a |-> a, t |-> self] IN
+                      LET ata == <<at, amount[self]>> IN
+                        IF debitPrecond(self)
+                           THEN /\ debits' = (debits \cup {ata})
+                                /\ pendingTrans' = (pendingTrans \cup {ata})
+                           ELSE /\ TRUE
+                                /\ UNCHANGED << debits, pendingTrans >>
                /\ pc' = [pc EXCEPT ![self] = "crash"]
                /\ UNCHANGED << credits, amount, accounts >>
 
@@ -147,14 +154,16 @@ crash(self) == /\ pc[self] = "crash"
                /\ \/ /\ TRUE
                      /\ pc' = [pc EXCEPT ![self] = "credit"]
                   \/ /\ pc' = [pc EXCEPT ![self] = "debit"]
-               /\ UNCHANGED << credits, debits, amount, accounts >>
+               /\ UNCHANGED << credits, debits, amount, accounts, pendingTrans >>
 
 credit(self) == /\ pc[self] = "credit"
                 /\ LET a == accounts[self].to IN
-                     IF creditPrecond(self)
-                        THEN /\ credits' = (credits \cup {<<[a |-> a, t |-> self], amount[self]>>})
-                        ELSE /\ TRUE
-                             /\ UNCHANGED credits
+                     LET at == [a |-> a, t |-> self] IN
+                       IF creditPrecond(self)
+                          THEN /\ credits' = (credits \cup {<<at, amount[self]>>})
+                               /\ pendingTrans' = pendingTrans \ {<<[a |-> accounts[self].from, t |-> self], amount[self]>>}
+                          ELSE /\ TRUE
+                               /\ UNCHANGED << credits, pendingTrans >>
                 /\ pc' = [pc EXCEPT ![self] = "Done"]
                 /\ UNCHANGED << debits, amount, accounts >>
 
@@ -183,6 +192,8 @@ AmountIsPending(t) ==
 
 transPending == {t \in Transfer: AmountIsPending(t)}
 
+TransPendingEquivalence == \A t \in Transfer: AmountIsPending(t) <=> \E tp \in pendingTrans: tp[1].t = t
+
 AmountPendingTotal == MapThenSumSet(transAmount, transPending)
 
 Imbalance == CreditTotal - DebitTotal + AmountPendingTotal
@@ -204,9 +215,15 @@ TypeOK ==
     /\ IsFiniteSet(credits)
     /\ debits \in SUBSET (AT \X Nat)
     /\ IsFiniteSet(debits)
+    /\ pendingTrans \in SUBSET (AT \X Nat)
+    /\ IsFiniteSet(pendingTrans)
     /\ amount \in [Transfer -> Nat]
     /\ accounts \in [Transfer -> EAccounts]
     /\ pcLabels
+    /\ TransPendingEquivalence
+    /\ \A tp \in pendingTrans: \E d \in debits: d = tp
+    /\ ~\E d1, d2 \in debits: d1 # d2 /\ d1[1].t = d2[1].t
+
 
 Inv ==
     /\ TypeOK
