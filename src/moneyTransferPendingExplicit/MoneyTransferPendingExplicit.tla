@@ -50,6 +50,8 @@ Transfer -> amount
             /\ isTransKnown(t, accounts[t].from, debits)
             
         transAmount(t) == amount[t]
+        
+        pendingTransAmount(pt) == pt[2]
     }
 
     process (trans \in Transfer)    
@@ -85,7 +87,7 @@ Transfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "5ebc325" /\ chksum(tla) = "2c7fd26f")
+\* BEGIN TRANSLATION (chksum(pcal) = "b9f43160" /\ chksum(tla) = "5da6b7e7")
 VARIABLES credits, debits, amount, accounts, pendingTrans, pc
 
 (* define statement *)
@@ -113,6 +115,8 @@ creditPrecond(t) ==
     /\ isTransKnown(t, accounts[t].from, debits)
 
 transAmount(t) == amount[t]
+
+pendingTransAmount(pt) == pt[2]
 
 
 vars == << credits, debits, amount, accounts, pendingTrans, pc >>
@@ -192,9 +196,14 @@ AmountIsPending(t) ==
 
 transPending == {t \in Transfer: AmountIsPending(t)}
 
-TransPendingEquivalence == \A t \in Transfer: AmountIsPending(t) <=> \E tp \in pendingTrans: tp[1].t = t
-
 AmountPendingTotal == MapThenSumSet(transAmount, transPending)
+
+PendingTransAmountTotal == MapThenSumSet(pendingTransAmount, pendingTrans)
+
+TransPendingEquivalence == \A t \in Transfer: AmountIsPending(t)
+    <=> pendingTrans # {} /\ \E tp \in pendingTrans: tp[1].t = t /\ tp[1].a = accounts[t].from /\ tp[2] = amount[t]
+
+TransPendingTotalEquivalence == AmountPendingTotal = PendingTransAmountTotal
 
 Imbalance == CreditTotal - DebitTotal + AmountPendingTotal
 
@@ -222,8 +231,10 @@ TypeOK ==
     /\ pcLabels
     /\ TransPendingEquivalence
     /\ \A tp \in pendingTrans: \E d \in debits: d = tp
-    /\ ~\E d1, d2 \in debits: d1 # d2 /\ d1[1].t = d2[1].t
-
+    /\ debits # {} => ~\E d1, d2 \in debits: d1 # d2 /\ d1[1].t = d2[1].t
+    /\ credits # {} => ~\E d1, d2 \in credits: d1 # d2 /\ d1[1].t = d2[1].t
+    /\ pendingTrans # {} => ~\E d1, d2 \in pendingTrans: d1 # d2 /\ d1[1].t = d2[1].t
+    /\ credits # {} /\ debits # {} => ~\E c \in credits, d \in debits: c[1].t = d[1].t /\ c[1].a = d[1].a
 
 Inv ==
     /\ TypeOK
