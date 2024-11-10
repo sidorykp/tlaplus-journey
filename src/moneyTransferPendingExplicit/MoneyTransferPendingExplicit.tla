@@ -48,8 +48,6 @@ Transfer -> amount
             /\ ~\E a \in Account: isTransKnown(t, a, credits)
             /\ ~isTransKnown(t, accounts[t].to, debits)
             /\ isTransKnown(t, accounts[t].from, debits)
-            
-        transAmount(t) == amount[t]
         
         pendingTransAmount(pt) == pt[2]
     }
@@ -87,7 +85,7 @@ Transfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "b9f43160" /\ chksum(tla) = "5da6b7e7")
+\* BEGIN TRANSLATION (chksum(pcal) = "680efa2e" /\ chksum(tla) = "86cb35d1")
 VARIABLES credits, debits, amount, accounts, pendingTrans, pc
 
 (* define statement *)
@@ -113,8 +111,6 @@ creditPrecond(t) ==
     /\ ~\E a \in Account: isTransKnown(t, a, credits)
     /\ ~isTransKnown(t, accounts[t].to, debits)
     /\ isTransKnown(t, accounts[t].from, debits)
-
-transAmount(t) == amount[t]
 
 pendingTransAmount(pt) == pt[2]
 
@@ -194,16 +190,10 @@ AmountIsPending(t) ==
     /\ pc[t] \in {"credit", "debit", "crash"}
     /\ creditPrecond(t)
 
-transPending == {t \in Transfer: AmountIsPending(t)}
-
-AmountPendingTotal == MapThenSumSet(transAmount, transPending)
-
-PendingTransAmountTotal == MapThenSumSet(pendingTransAmount, pendingTrans)
+AmountPendingTotal == MapThenSumSet(pendingTransAmount, pendingTrans)
 
 TransPendingEquivalence == \A t \in Transfer: AmountIsPending(t)
     <=> pendingTrans # {} /\ \E tp \in pendingTrans: tp[1].t = t /\ tp[1].a = accounts[t].from /\ tp[2] = amount[t]
-
-TransPendingTotalEquivalence == AmountPendingTotal = PendingTransAmountTotal
 
 Imbalance == CreditTotal - DebitTotal + AmountPendingTotal
 
