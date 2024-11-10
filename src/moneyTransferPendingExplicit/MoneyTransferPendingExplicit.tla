@@ -63,10 +63,10 @@ Transfer -> amount
             };
             
         debit:
-            with (a = accounts[self].from; at = [a |-> a, t |-> self]; ata = <<at, amount[self]>>) {
+            with (a = accounts[self].from) {
                 if (debitPrecond(self)) {
-                    debits := debits \cup {ata};
-                    pendingTrans := pendingTrans \cup {ata};
+                    debits := debits \cup {<<[a |-> a, t |-> self], amount[self]>>};
+                    pendingTrans := pendingTrans \cup {<<self, amount[self]>>};
                 } else {
                     skip;
                 }
@@ -79,13 +79,13 @@ Transfer -> amount
             with (a = accounts[self].to; at = [a |-> a, t |-> self]) {
                 if (creditPrecond(self)) {
                     credits := credits \cup {<<at, amount[self]>>};
-                    pendingTrans := pendingTrans \ {<<[a |-> accounts[self].from, t |-> self], amount[self]>>};
+                    pendingTrans := pendingTrans \ {<<self, amount[self]>>};
                 }
             };
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "680efa2e" /\ chksum(tla) = "86cb35d1")
+\* BEGIN TRANSLATION (chksum(pcal) = "df3e8326" /\ chksum(tla) = "2c636c3c")
 VARIABLES credits, debits, amount, accounts, pendingTrans, pc
 
 (* define statement *)
@@ -140,13 +140,11 @@ init(self) == /\ pc[self] = "init"
 
 debit(self) == /\ pc[self] = "debit"
                /\ LET a == accounts[self].from IN
-                    LET at == [a |-> a, t |-> self] IN
-                      LET ata == <<at, amount[self]>> IN
-                        IF debitPrecond(self)
-                           THEN /\ debits' = (debits \cup {ata})
-                                /\ pendingTrans' = (pendingTrans \cup {ata})
-                           ELSE /\ TRUE
-                                /\ UNCHANGED << debits, pendingTrans >>
+                    IF debitPrecond(self)
+                       THEN /\ debits' = (debits \cup {<<[a |-> a, t |-> self], amount[self]>>})
+                            /\ pendingTrans' = (pendingTrans \cup {<<self, amount[self]>>})
+                       ELSE /\ TRUE
+                            /\ UNCHANGED << debits, pendingTrans >>
                /\ pc' = [pc EXCEPT ![self] = "crash"]
                /\ UNCHANGED << credits, amount, accounts >>
 
@@ -161,7 +159,7 @@ credit(self) == /\ pc[self] = "credit"
                      LET at == [a |-> a, t |-> self] IN
                        IF creditPrecond(self)
                           THEN /\ credits' = (credits \cup {<<at, amount[self]>>})
-                               /\ pendingTrans' = pendingTrans \ {<<[a |-> accounts[self].from, t |-> self], amount[self]>>}
+                               /\ pendingTrans' = pendingTrans \ {<<self, amount[self]>>}
                           ELSE /\ TRUE
                                /\ UNCHANGED << credits, pendingTrans >>
                 /\ pc' = [pc EXCEPT ![self] = "Done"]
@@ -193,7 +191,7 @@ AmountIsPending(t) ==
 AmountPendingTotal == MapThenSumSet(pendingTransAmount, pendingTrans)
 
 TransPendingEquivalence == \A t \in Transfer: AmountIsPending(t)
-    <=> pendingTrans # {} /\ \E tp \in pendingTrans: tp[1].t = t /\ tp[1].a = accounts[t].from /\ tp[2] = amount[t]
+    <=> pendingTrans # {} /\ \E tp \in pendingTrans: tp[1] = t /\ tp[2] = amount[t]
 
 Imbalance == CreditTotal - DebitTotal + AmountPendingTotal
 
@@ -214,17 +212,14 @@ TypeOK ==
     /\ IsFiniteSet(credits)
     /\ debits \in SUBSET (AT \X Nat)
     /\ IsFiniteSet(debits)
-    /\ pendingTrans \in SUBSET (AT \X Nat)
+    /\ pendingTrans \in SUBSET (Transfer \X Nat)
     /\ IsFiniteSet(pendingTrans)
     /\ amount \in [Transfer -> Nat]
     /\ accounts \in [Transfer -> EAccounts]
     /\ pcLabels
     /\ TransPendingEquivalence
-    /\ \A tp \in pendingTrans: \E d \in debits: d = tp
-    /\ debits # {} => ~\E d1, d2 \in debits: d1 # d2 /\ d1[1].t = d2[1].t
-    /\ credits # {} => ~\E d1, d2 \in credits: d1 # d2 /\ d1[1].t = d2[1].t
-    /\ pendingTrans # {} => ~\E d1, d2 \in pendingTrans: d1 # d2 /\ d1[1].t = d2[1].t
-    /\ credits # {} /\ debits # {} => ~\E c \in credits, d \in debits: c[1].t = d[1].t /\ c[1].a = d[1].a
+    /\ \A tp \in pendingTrans: \E d \in debits: d[1].t = tp[1] /\ d[2] = tp[2]
+    /\ pendingTrans # {} => ~\E d1, d2 \in pendingTrans: d1 # d2 /\ d1[1] = d2[1]
 
 Inv ==
     /\ TypeOK
