@@ -300,7 +300,7 @@ THEOREM debit_IndInv == ASSUME IndInv, NEW self \in Transfer, debit(self)
 PROVE IndInv'
 <1> DEFINE a == accounts[self].from
 <1> DEFINE nadd == <<[a |-> a, t |-> self], amount[self]>>
-<1> DEFINE tpAdd == <<self, amount[self]>>
+<1> DEFINE ptAdd == <<self, amount[self]>>
 <1> USE DEF IndInv, TypeOK, CommonIndInv
 <1>1 CASE debitPrecond(self)
     <2>1 debits' = debits \cup {nadd} BY <1>1 DEF debit
@@ -311,11 +311,27 @@ PROVE IndInv'
     <2>6 debits' \in SUBSET (AT \X Nat)
         BY <2>1, <2>5
     <2>7 IsFiniteSet(debits)' BY <1>1, FS_AddElement DEF debit
-    <2>8 pendingTrans' = pendingTrans \cup {tpAdd} BY <1>1 DEF debit
-    <2>9 tpAdd \in TN BY DEF TN
+    <2>8 pendingTrans' = pendingTrans \cup {ptAdd} BY <1>1 DEF debit
+    <2>9 ptAdd \in TN BY DEF TN
     <2>10 pendingTrans' \in SUBSET TN BY <2>8, <2>9
     <2>11 IsFiniteSet(pendingTrans)' BY <1>1, FS_AddElement DEF debit
-    <2> QED BY <2>6, <2>7, <2>10, <2>11, <1>1, debit_IndInv_common, debit_Imbalance
+    
+    <2>12 credits' = credits BY DEF debit
+    
+    <2>13 (AmountIsPending(self) <=> \E tp \in pendingTrans: tp[1] = self /\ tp[2] = amount[self])'
+        BY <1>1, <2>1, <2>8, <2>12
+        DEF debit, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+    <2>14 (\A t \in Transfer \ {self}: AmountIsPending(t) <=> \E tp \in pendingTrans: tp[1] = t /\ tp[2] = amount[t])'
+        BY <1>1, <2>1, <2>8, <2>12
+        DEF debit, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+    <2>15 TransPendingEquivalence' = TransPendingEquivalence BY <1>1, <2>13, <2>14
+        DEF debit, TransPendingEquivalence
+        
+    <2>16 \E d \in debits': d[1].t = ptAdd[1] /\ d[2] = ptAdd[2] BY <1>1, <2>1
+    <2>17 \A pt \in pendingTrans' \ {ptAdd}: \E d \in debits': d[1].t = pt[1] /\ d[2] = pt[2] BY <1>1, <2>1, <2>8 DEF debit
+    <2>18 PendingTransDerived' = PendingTransDerived BY <1>1, <2>16, <2>17 DEF debit, PendingTransDerived
+    
+    <2> QED BY <2>6, <2>7, <2>10, <2>11, <2>15, <2>18, debit_IndInv_common, debit_Imbalance
 <1>2 CASE ~debitPrecond(self)
     <2>3 debits' \in SUBSET (AT \X Nat) BY <1>2 DEF debit
     <2>4 IsFiniteSet(debits)' BY <1>2 DEF debit
