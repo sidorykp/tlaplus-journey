@@ -300,21 +300,32 @@ THEOREM debit_IndInv == ASSUME IndInv, NEW self \in Transfer, debit(self)
 PROVE IndInv'
 <1> DEFINE a == accounts[self].from
 <1> DEFINE nadd == <<[a |-> a, t |-> self], amount[self]>>
+<1> DEFINE tpAdd == <<self, amount[self]>>
 <1> USE DEF IndInv, TypeOK, CommonIndInv
 <1>1 CASE debitPrecond(self)
-    <2>3 debits' = debits \cup {nadd} BY <1>1 DEF debit
-    <2>4 a \in EAccount BY DEF EAccounts
-    <2>5 a # Empty BY DEF debit, NonEmptyAccounts
-    <2>6 a \in Account BY <2>4, <2>5 DEF EAccount
-    <2>7 nadd \in AT \X Nat BY <2>6, transAmountInNat DEF AT
-    <2>8 debits' \in SUBSET (AT \X Nat)
-        BY <2>3, <2>7
-    <2>9 IsFiniteSet(debits)' BY <1>1, FS_AddElement DEF debit
-    <2> QED BY <2>8, <2>9, <1>1, debit_IndInv_common, debit_Imbalance
+    <2>1 debits' = debits \cup {nadd} BY <1>1 DEF debit
+    <2>2 a \in EAccount BY DEF EAccounts
+    <2>3 a # Empty BY DEF debit, NonEmptyAccounts
+    <2>4 a \in Account BY <2>2, <2>3 DEF EAccount
+    <2>5 nadd \in AT \X Nat BY <2>4 DEF AT
+    <2>6 debits' \in SUBSET (AT \X Nat)
+        BY <2>1, <2>5
+    <2>7 IsFiniteSet(debits)' BY <1>1, FS_AddElement DEF debit
+    <2>8 pendingTrans' = pendingTrans \cup {tpAdd} BY <1>1 DEF debit
+    <2>9 tpAdd \in TN BY DEF TN
+    <2>10 pendingTrans' \in SUBSET TN BY <2>8, <2>9
+    <2>11 IsFiniteSet(pendingTrans)' BY <1>1, FS_AddElement DEF debit
+    <2> QED BY <2>6, <2>7, <2>10, <2>11, <1>1, debit_IndInv_common, debit_Imbalance
 <1>2 CASE ~debitPrecond(self)
     <2>3 debits' \in SUBSET (AT \X Nat) BY <1>2 DEF debit
     <2>4 IsFiniteSet(debits)' BY <1>2 DEF debit
-    <2> QED BY <2>3, <2>4, <1>1, debit_IndInv_common, debit_Imbalance
+    <2>5 pendingTrans' \in SUBSET TN BY <1>2 DEF debit
+    <2>6 IsFiniteSet(pendingTrans)' BY <1>2 DEF debit
+    <2>7 TransPendingEquivalence' = TransPendingEquivalence BY <1>2 DEF debit, TransPendingEquivalence, pcLabels,
+        AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+    <2>8 PendingTransDerived' = PendingTransDerived BY <1>2 DEF debit, PendingTransDerived
+    <2>9 PendingTransUniqueness' = PendingTransUniqueness BY <1>2 DEF debit, PendingTransUniqueness
+    <2> QED BY <2>3, <2>4, <2>5, <2>6, <2>7, <2>8, <2>9, <1>1, debit_IndInv_common, debit_Imbalance
 <1> QED BY <1>1, <1>2
 
 
