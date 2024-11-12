@@ -214,25 +214,20 @@ BY DEF debit, DebitTotal
 LEMMA debit_AmountPendingTotal_debitPrecond == ASSUME IndInv, NEW self \in Transfer, debit(self),
 debitPrecond(self)
 PROVE AmountPendingTotal' = AmountPendingTotal + amount[self]
-<1>1 transPending' = transPending \cup {self}
-    BY DEF transPending, debit, AmountIsPending, creditPrecond, isTransKnown
+<1> DEFINE nadd == <<self, amount[self]>>
+<1>1 pendingTrans' = pendingTrans \cup {nadd}
+    BY DEF debit
 <1> USE DEF IndInv, TypeOK
-<1>2 self \notin transPending
-    BY DEF transPending, AmountIsPending, isTransKnown, isTransKnownToItem, debitPrecond, creditPrecond, AT
-<1>3 transAmount(self) = amount[self] BY DEF transAmount
-<1>4 transAmount(self) \in Nat BY transAmountInNat
-<1>5 IsFiniteSet(transPending) BY transPendingIsFinite
-<1>6 \A t \in transPending: transAmount(t) \in Nat BY transPendingAmountNat
-<1> HIDE DEF IndInv, TypeOK
-<1>7 MapThenSumSet(transAmount, transPending') =
-    MapThenSumSet(transAmount, transPending) + transAmount(self)
-    BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, MapThenSumSetAddElem
-<1>8 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
-<1>9 AmountPendingTotal' = MapThenSumSet(transAmount, transPending')
-    BY DEF debit, transPending, AmountIsPending
-<1>10 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending)'
-    BY <1>8, <1>9
-<1> QED BY <1>7, <1>10, <1>3 DEF AmountPendingTotal
+<1>2 nadd \notin pendingTrans BY DEF TransPendingEquivalence,
+    AmountIsPending, isTransKnown, isTransKnownToItem, debitPrecond, creditPrecond, AT
+<1>3 \A pt \in pendingTrans: pendingTransAmount(pt) \in Nat BY pendingTransAmountInNat
+<1>4 pendingTransAmount(nadd) \in Nat BY DEF debit, pendingTransAmount
+<1>5 MapThenSumSet(pendingTransAmount, pendingTrans') =
+    MapThenSumSet(pendingTransAmount, pendingTrans) + pendingTransAmount(nadd)
+    BY <1>1, <1>2, <1>3, <1>4, MapThenSumSetAddElem
+<1>6 AmountPendingTotal' = AmountPendingTotal + pendingTransAmount(nadd)
+    BY <1>5 DEF AmountPendingTotal
+<1> QED BY <1>6 DEF pendingTransAmount
 
 
 LEMMA debit_AmountPendingTotal_notDebitPrecond == ASSUME IndInv, NEW self \in Transfer, debit(self),
