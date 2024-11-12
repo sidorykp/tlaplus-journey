@@ -233,17 +233,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal + amount[self]
 LEMMA debit_AmountPendingTotal_notDebitPrecond == ASSUME IndInv, NEW self \in Transfer, debit(self),
 ~debitPrecond(self)
 PROVE AmountPendingTotal' = AmountPendingTotal
-<1>2 self \notin transPending
-    BY DEF debit, transPending, AmountIsPending, debitPrecond, creditPrecond
-<1>3 self \notin transPending'
-    BY DEF debit, transPending, AmountIsPending, debitPrecond, creditPrecond
-<1>4 transPending' = transPending BY <1>2, <1>3 DEF debit
-<1>5 \A t \in Transfer: transAmount(t)' = transAmount(t) BY DEF debit, transAmount
-<1>6 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) 
-    BY <1>4, <1>5
-<1>7 AmountPendingTotal' = MapThenSumSet(transAmount, transPending')
-    BY DEF debit, transPending, AmountIsPending
-<1> QED BY <1>6, <1>7 DEF AmountPendingTotal
+BY DEF debit, AmountPendingTotal
 
 
 LEMMA debit_Imbalance == ASSUME IndInv, NEW self \in Transfer, debit(self)
