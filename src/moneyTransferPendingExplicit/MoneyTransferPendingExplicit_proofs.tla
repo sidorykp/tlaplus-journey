@@ -15,9 +15,9 @@ ASSUME NAvailAssumption == NAvail \in NNat
 
 ASSUME EmptyAssumption == Empty = 0
 
-LEMMA transAmountInNat == ASSUME TypeOK, NEW self \in Transfer
-PROVE transAmount(self) \in Nat
-BY DEF TypeOK, transAmount
+LEMMA pendingTransAmountInNat == ASSUME TypeOK, NEW self \in TN
+PROVE pendingTransAmount(self) \in Nat
+BY DEF TypeOK, pendingTransAmount, TN
 
 LEMMA transSetIsFinite == ASSUME NTransferAssumption
 PROVE IsFiniteSet(Transfer)
@@ -26,21 +26,13 @@ PROVE IsFiniteSet(Transfer)
 <1> QED BY <1>1, <1>2, FS_BoundedSetOfNaturals DEF NNat
 
 
-LEMMA transPendingIsFinite == IsFiniteSet(transPending)
-BY transSetIsFinite, FS_Subset, NTransferAssumption DEF transPending
-
-LEMMA transPendingAmountNat == ASSUME IndInv
-PROVE \A am \in transPending: transAmount(am) \in Nat
-BY DEF AmountIsPending, isTransKnown, transAmount, transPending, IndInv, TypeOK
-
-
 LEMMA init_Imbalance == ASSUME Init
 PROVE Imbalance = 0
 <1> USE DEF Init
 <1>1 CreditTotal = 0 BY MapThenSumSetEmpty DEF CreditTotal
 <1>2 DebitTotal = 0 BY MapThenSumSetEmpty DEF DebitTotal
 <1>3 AmountPendingTotal = 0
-    BY MapThenSumSetEmpty DEF AmountPendingTotal, AmountIsPending, transPending, creditPrecond, isTransKnown
+    BY MapThenSumSetEmpty DEF AmountPendingTotal, AmountIsPending, creditPrecond, isTransKnown
 <1> QED BY <1>1, <1>2, <1>3 DEF Imbalance
 
 
@@ -48,14 +40,17 @@ THEOREM initProperty == ASSUME Init PROVE IndInv
 <1> USE DEF Init, IndInv, TypeOK
 <1>1 IsFiniteSet(credits) BY FS_EmptySet
 <1>2 IsFiniteSet(debits) BY FS_EmptySet
-<1>3 accounts \in [Transfer -> EAccounts] BY DEF EAccount, EmptyAccounts, EAccounts
-<1>4 pcLabels BY DEF pcLabels, ProcSet
-<1>5 \A t \in Transfer: pc[t] = "init" => initPrecond(t)
+<1>3 IsFiniteSet(pendingTrans) BY FS_EmptySet
+<1>4 accounts \in [Transfer -> EAccounts] BY DEF EAccount, EmptyAccounts, EAccounts
+<1>5 pcLabels BY DEF pcLabels, ProcSet
+<1>6 \A t \in Transfer: pc[t] = "init" => initPrecond(t)
     BY DEF initPrecond, isTransKnown, isTransKnownToItem
-<1>6 \A t \in Transfer:
+<1>7 \A t \in Transfer:
         pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
     BY DEF ProcSet, NonEmptyAccounts, EmptyAccounts
-<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, init_Imbalance
+<1>8 TransPendingEquivalence BY DEF TransPendingEquivalence, AmountIsPending, creditPrecond,
+    isTransKnown, isTransKnownToItem
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>7, <1>8, init_Imbalance
 
 
 THEOREM crash_AmountPendingTotal_creditPrecond == ASSUME IndInv, NEW self \in Transfer, crash(self),
