@@ -205,6 +205,8 @@ EAccounts == [from: EAccount, to: EAccount]
 
 AT == [a: Account, t: Transfer]
 
+TN == Transfer \X Nat
+
 pcLabels == pc \in [Transfer -> {"Done", "init", "debit", "credit", "crash"}]
 
 TypeOK ==
@@ -212,7 +214,7 @@ TypeOK ==
     /\ IsFiniteSet(credits)
     /\ debits \in SUBSET (AT \X Nat)
     /\ IsFiniteSet(debits)
-    /\ pendingTrans \in SUBSET (Transfer \X Nat)
+    /\ pendingTrans \in SUBSET TN
     /\ IsFiniteSet(pendingTrans)
     /\ amount \in [Transfer -> Nat]
     /\ accounts \in [Transfer -> EAccounts]
