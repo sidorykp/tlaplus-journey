@@ -262,7 +262,7 @@ PROVE (
 <1>6 \A t \in Transfer:
     \/ accounts'[t] = EmptyAccounts
     \/ DifferentAccounts(t)' /\ NonEmptyAccounts(t)'
-    BY DEF debit, EmptyAccounts, DifferentAccounts, NonEmptyAccounts
+    BY DEF debit, EmptyAccounts, DifferentAccounts, NonEmptyAccounts, IndInv, TypeOK
 
 <1>7 pc' = [pc EXCEPT ![self] = "crash"] BY DEF debit
 <1>8 pc'[self] = "crash" BY <1>7 DEF pcLabels, IndInv, TypeOK
