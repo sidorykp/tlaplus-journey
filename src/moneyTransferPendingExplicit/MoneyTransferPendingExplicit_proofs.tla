@@ -1,5 +1,5 @@
 ---- MODULE MoneyTransferPendingExplicit_proofs ----
-EXTENDS MoneyTransfer, FiniteSetsExt_theorems, FiniteSetTheorems, TLAPS
+EXTENDS MoneyTransferPendingExplicit, FiniteSetsExt_theorems, FiniteSetTheorems, TLAPS
 
 CONSTANTS NAccount, NTransfer
 
@@ -53,44 +53,9 @@ THEOREM initProperty == ASSUME Init PROVE IndInv
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>7, <1>8, init_Imbalance
 
 
-THEOREM crash_AmountPendingTotal_creditPrecond == ASSUME IndInv, NEW self \in Transfer, crash(self),
-creditPrecond(self)
+THEOREM crash_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, crash(self)
 PROVE AmountPendingTotal' = AmountPendingTotal
-<1>1 pc[self] = "crash" BY DEF crash, IndInv, TypeOK
-<1>2 self \in transPending BY <1>1 DEF crash, IndInv, TypeOK,
-    transPending, AmountIsPending, creditPrecond
-<1>3 pc'[self] = "credit" \/ pc'[self] =  "debit" BY DEF crash, IndInv, TypeOK, pcLabels
-<1>4 self \in transPending' BY <1>3 DEF crash, IndInv, TypeOK,
-    transPending, AmountIsPending, creditPrecond
-<1>5 transPending' = transPending BY <1>2, <1>4 DEF crash, pcLabels, IndInv, TypeOK,
-    transPending, AmountIsPending, creditPrecond
-<1>6 \A t \in Transfer: transAmount(t)' = transAmount(t) BY DEF crash, transAmount,
-    creditPrecond, debitPrecond
-<1>7 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) BY <1>5, <1>6
-<1>8 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
-<1>9 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') BY <1>5, <1>6, AccountAssumption, TransferAssumption
-    DEF crash, transPending, transAmount, AmountIsPending, creditPrecond, pcLabels, IndInv, TypeOK
-<1> QED BY <1>7, <1>8, <1>9 DEF AmountPendingTotal
-
-
-THEOREM crash_AmountPendingTotal_notCreditPrecond == ASSUME IndInv, NEW self \in Transfer, crash(self),
-~creditPrecond(self)
-PROVE AmountPendingTotal' = AmountPendingTotal
-<1>1 pc[self] = "crash" BY DEF crash, IndInv, TypeOK
-<1>2 self \notin transPending BY <1>1 DEF crash, IndInv, TypeOK,
-    transPending, AmountIsPending, creditPrecond
-<1>3 pc'[self] = "credit" \/ pc'[self] =  "debit" BY DEF crash, IndInv, TypeOK, pcLabels
-<1>4 self \notin transPending' BY <1>3 DEF crash, IndInv, TypeOK,
-    transPending, AmountIsPending, creditPrecond
-<1>5 transPending' = transPending BY <1>2, <1>4 DEF crash, pcLabels, IndInv, TypeOK,
-    transPending, AmountIsPending, creditPrecond
-<1>6 \A t \in Transfer: transAmount(t)' = transAmount(t) BY DEF crash, transAmount,
-    creditPrecond, debitPrecond
-<1>7 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) BY <1>5, <1>6
-<1>8 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
-<1>9 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') BY <1>5, <1>6, AccountAssumption, TransferAssumption
-    DEF crash, transPending, transAmount, AmountIsPending, creditPrecond, pcLabels, IndInv, TypeOK
-<1> QED BY <1>7, <1>8, <1>9 DEF AmountPendingTotal
+BY DEF crash, AmountPendingTotal
 
 
 THEOREM crash_IndInv == ASSUME IndInv, NEW self \in Transfer, crash(self)
