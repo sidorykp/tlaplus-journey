@@ -196,7 +196,7 @@ PROVE DebitTotal' = DebitTotal + amount[self]
 <1>1 nadd \notin debits BY DEF isTransKnown, isTransKnownToItem, AT
 <1>2 debits' = debits \cup {nadd} BY DEF debit
 <1>3 \A nb \in debits: opAmount(nb) \in Nat BY DEF opAmount
-<1>4 opAmount(nadd) \in Nat BY transAmountInNat DEF opAmount
+<1>4 opAmount(nadd) \in Nat BY DEF opAmount
 <1>5 MapThenSumSet(opAmount, debits') =
     MapThenSumSet(opAmount, debits) + opAmount(nadd)
     BY <1>1, <1>2, <1>3, <1>4, MapThenSumSetAddElem
