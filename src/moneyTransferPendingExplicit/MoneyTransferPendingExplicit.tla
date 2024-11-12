@@ -209,6 +209,10 @@ TN == Transfer \X Nat
 
 pcLabels == pc \in [Transfer -> {"Done", "init", "debit", "credit", "crash"}]
 
+PendingTransDerived == \A pt \in pendingTrans: \E d \in debits: d[1].t = pt[1] /\ d[2] = pt[2]
+
+PendingTransUniqueness == pendingTrans # {} => ~\E d1, d2 \in pendingTrans: d1 # d2 /\ d1[1] = d2[1]
+
 TypeOK ==
     /\ credits \in SUBSET (AT \X Nat)
     /\ IsFiniteSet(credits)
@@ -220,8 +224,8 @@ TypeOK ==
     /\ accounts \in [Transfer -> EAccounts]
     /\ pcLabels
     /\ TransPendingEquivalence
-    /\ \A tp \in pendingTrans: \E d \in debits: d[1].t = tp[1] /\ d[2] = tp[2]
-    /\ pendingTrans # {} => ~\E d1, d2 \in pendingTrans: d1 # d2 /\ d1[1] = d2[1]
+    /\ PendingTransDerived
+    /\ PendingTransUniqueness
 
 Inv ==
     /\ TypeOK

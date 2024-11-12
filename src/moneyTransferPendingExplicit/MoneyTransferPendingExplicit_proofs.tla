@@ -51,6 +51,7 @@ THEOREM initProperty == ASSUME Init PROVE IndInv
 <1>8 TransPendingEquivalence BY DEF TransPendingEquivalence, AmountIsPending, creditPrecond,
     isTransKnown, isTransKnownToItem
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>7, <1>8, init_Imbalance
+    DEF PendingTransDerived, PendingTransUniqueness
 
 
 THEOREM crash_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, crash(self)
@@ -65,47 +66,56 @@ PROVE IndInv'
 <1>2 IsFiniteSet(credits)' BY DEF crash
 <1>3 debits' \in SUBSET (AT \X Nat) BY DEF crash
 <1>4 IsFiniteSet(debits)' BY DEF crash
-<1>5 amount' \in [Transfer -> Nat] BY DEF crash
-<1>6 accounts' \in [Transfer -> EAccounts] BY DEF crash
+<1>5 pendingTrans' \in SUBSET TN BY DEF crash
+<1>6 IsFiniteSet(pendingTrans)' BY DEF crash
+<1>7 amount' \in [Transfer -> Nat] BY DEF crash
+<1>8 accounts' \in [Transfer -> EAccounts] BY DEF crash
 
-<1>7 pc'[self] = "credit" \/ pc'[self] =  "debit" BY DEF crash 
-<1>8 pcLabels' BY <1>7 DEF crash, pcLabels
+<1>9 pc'[self] \in {"credit", "debit"} BY DEF crash, pcLabels
+<1>10 pcLabels' BY <1>9 DEF crash, pcLabels
 
-<1>9 Imbalance' = Imbalance BY crash_AmountPendingTotal_creditPrecond, crash_AmountPendingTotal_notCreditPrecond
+<1>11 Imbalance' = Imbalance BY crash_AmountPendingTotal
     DEF crash, Imbalance, creditPrecond, CreditTotal, DebitTotal
-<1>10 Imbalance' = 0 BY <1>9
+<1>12 Imbalance' = 0 BY <1>11
 
-<1>11 \A t \in Transfer:
+<1>13 \A t \in Transfer:
     (\/ accounts[t] = EmptyAccounts
      \/ DifferentAccounts(t) /\ NonEmptyAccounts(t))'
     BY DEF crash, EmptyAccounts, DifferentAccounts, NonEmptyAccounts
 
-<1>12 \A t \in Transfer: pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
+<1>14 \A t \in Transfer: pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
     BY DEF IndInv
-<1>13 \A t \in Transfer: NonEmptyAccounts(t)' = NonEmptyAccounts(t)
+<1>15 \A t \in Transfer: NonEmptyAccounts(t)' = NonEmptyAccounts(t)
     BY DEF crash, NonEmptyAccounts
-<1>14 NonEmptyAccounts(self)' = NonEmptyAccounts(self)
-    BY <1>13
-<1>15 pc[self] \notin {"init"} <=> NonEmptyAccounts(self)
-    BY <1>12
-<1>16 pc[self] \notin {"init"} BY DEF crash
-<1>17 pc'[self] \notin {"init"} BY <1>7
-<1>18 pc'[self] \notin {"init"} <=> NonEmptyAccounts(self)'
-    BY <1>14, <1>15, <1>16, <1>17
+<1>16 NonEmptyAccounts(self)' = NonEmptyAccounts(self)
+    BY <1>15
+<1>17 pc[self] \notin {"init"} <=> NonEmptyAccounts(self)
+    BY <1>14
+<1>18 pc[self] \notin {"init"} BY DEF crash
+<1>19 pc'[self] \notin {"init"} BY <1>9
+<1>20 pc'[self] \notin {"init"} <=> NonEmptyAccounts(self)'
+    BY <1>16, <1>17, <1>18, <1>19
 
-<1>19 pc'[self] = "init" => initPrecond(self)' BY <1>7
-<1>20 \A t \in Transfer: pc'[t] = "init" => initPrecond(t)'
-    BY <1>19 DEF crash, pcLabels
+<1>21 pc'[self] = "init" => initPrecond(self)' BY <1>9
+<1>22 \A t \in Transfer: pc'[t] = "init" => initPrecond(t)'
+    BY <1>21 DEF crash, pcLabels
 
-<1>21 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> pc[t] \notin {"init"}
+<1>23 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> pc[t] \notin {"init"}
     BY DEF crash, pcLabels
-<1>22 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
-    BY <1>12, <1>13, <1>21
+<1>24 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
+    BY <1>14, <1>15, <1>23
 
-<1>23 \A t \in Transfer: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
-    BY <1>18, <1>22
+<1>25 \A t \in Transfer: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
+    BY <1>20, <1>24
 
-<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>8, <1>10, <1>11, <1>20, <1>23
+<1>26 TransPendingEquivalence' = TransPendingEquivalence BY DEF crash, TransPendingEquivalence, pcLabels,
+    AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+
+<1>27 PendingTransDerived' = PendingTransDerived BY DEF crash, PendingTransDerived
+
+<1>28 PendingTransUniqueness' = PendingTransUniqueness BY DEF crash, PendingTransUniqueness
+
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>7, <1>8, <1>10, <1>12, <1>13, <1>22, <1>25, <1>26, <1>27, <1>28
 
 
 THEOREM init_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, init(self)
