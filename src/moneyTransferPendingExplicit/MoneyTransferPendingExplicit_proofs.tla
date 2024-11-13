@@ -318,20 +318,47 @@ PROVE IndInv'
     
     <2>12 credits' = credits BY DEF debit
     
-    <2>13 (AmountIsPending(self) <=> \E tp \in pendingTrans: tp[1] = self /\ tp[2] = amount[self])'
+    <2>13 AmountIsPending(self)' <=> \E tp \in pendingTrans': tp[1] = self /\ tp[2] = amount'[self]
         BY <1>1, <2>1, <2>8, <2>12
         DEF debit, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
-    <2>14 (\A t \in Transfer \ {self}: AmountIsPending(t) <=> \E tp \in pendingTrans: tp[1] = t /\ tp[2] = amount[t])'
-        BY <1>1, <2>1, <2>8, <2>12
-        DEF debit, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
-    <2>15 TransPendingEquivalence' = TransPendingEquivalence BY <1>1, <2>13, <2>14
-        DEF debit, TransPendingEquivalence
-        
-    <2>16 \E d \in debits': d[1].t = ptAdd[1] /\ d[2] = ptAdd[2] BY <1>1, <2>1
-    <2>17 \A pt \in pendingTrans' \ {ptAdd}: \E d \in debits': d[1].t = pt[1] /\ d[2] = pt[2] BY <1>1, <2>1, <2>8 DEF debit
-    <2>18 PendingTransDerived' = PendingTransDerived BY <1>1, <2>16, <2>17 DEF debit, PendingTransDerived
+    <2>14 pendingTrans' # {} BY <2>8
+    <2>15 AmountIsPending(self)' <=> pendingTrans' # {} /\ \E tp \in pendingTrans': tp[1] = self /\ tp[2] = amount'[self]
+        BY <2>13, <2>14
+    <2>16 (\A t \in Transfer \ {self}: AmountIsPending(t) <=> pendingTrans # {} /\ \E tp \in pendingTrans: tp[1] = t /\ tp[2] = amount[t])'
+        <3>1 CASE pendingTrans # {}
+            <4>1 (\A t \in Transfer \ {self}: AmountIsPending(t) <=> /\ \E tp \in pendingTrans: tp[1] = t /\ tp[2] = amount[t])'
+                BY <3>1, <1>1, <2>1, <2>8, <2>12
+                DEF debit, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+            <4>2 (\A t \in Transfer \ {self}: AmountIsPending(t) <=> pendingTrans # {} /\ \E tp \in pendingTrans: tp[1] = t /\ tp[2] = amount[t])'
+                BY <4>1, <3>1
+            <4> QED BY <4>2
+        <3>2 CASE pendingTrans = {}
+            <4>1 pendingTrans' = {ptAdd} BY <3>2, <2>8
+            <4>2 \A t \in Transfer: ~AmountIsPending(t) BY <3>2 DEF TransPendingEquivalence
+            <4>3 (\A t \in Transfer \ {self}: AmountIsPending(t) <=> pendingTrans # {} /\ \E tp \in pendingTrans: tp[1] = t /\ tp[2] = amount[t])'
+                BY <3>2, <1>1, <2>1, <2>8, <2>12, <4>1, <4>2
+                DEF debit, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+            <4> QED BY <4>3
+        <3> QED BY <3>1, <3>2
+    <2>17 TransPendingEquivalence' = TransPendingEquivalence
+        BY <2>15, <2>16 DEF TransPendingEquivalence
     
-    <2> QED BY <2>6, <2>7, <2>10, <2>11, <2>15, <2>18, debit_IndInv_common, debit_Imbalance
+    <2>18 \E d \in debits': d[1].t = ptAdd[1] /\ d[2] = ptAdd[2] BY <1>1, <2>1
+    <2>19 \A pt \in pendingTrans' \ {ptAdd}: \E d \in debits': d[1].t = pt[1] /\ d[2] = pt[2] BY <1>1, <2>1, <2>8 DEF debit
+    <2>20 PendingTransDerived' = PendingTransDerived BY <1>1, <2>18, <2>19 DEF debit, PendingTransDerived
+    
+    <2>21 PendingTransUniqueness' = PendingTransUniqueness
+        <3>1 CASE pendingTrans # {}
+            <4>1 ptAdd \notin pendingTrans BY <2>8 DEF debit
+            <4>2 ~\E pt \in pendingTrans: pt # ptAdd /\ pt[1] = self
+                BY <4>1 DEF debit, PendingTransUniqueness
+            <4> QED BY <3>1, <4>2 DEF debit, PendingTransUniqueness
+        <3>2 CASE pendingTrans = {}
+            <4>1 pendingTrans' = {ptAdd} BY <3>2, <2>8
+            <4> QED BY <3>2, <4>1 DEF PendingTransUniqueness
+        <3> QED BY <3>1, <3>2
+    
+    <2> QED BY <2>6, <2>7, <2>10, <2>11, <2>17, <2>20, <2>21, debit_IndInv_common, debit_Imbalance
 <1>2 CASE ~debitPrecond(self)
     <2>3 debits' \in SUBSET (AT \X Nat) BY <1>2 DEF debit
     <2>4 IsFiniteSet(debits)' BY <1>2 DEF debit
