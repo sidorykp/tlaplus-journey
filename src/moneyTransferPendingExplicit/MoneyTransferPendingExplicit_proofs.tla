@@ -421,7 +421,7 @@ PROVE Imbalance' = Imbalance
     <2>8 AmountPendingTotal \in Nat BY <2>6, <2>7, MapThenSumSetType DEF AmountPendingTotal
     <2>9 CreditTotal' + AmountPendingTotal' = CreditTotal + AmountPendingTotal BY <2>1, <2>2, <2>3, <2>5, <2>8
     <2>10 (CreditTotal' + AmountPendingTotal') - DebitTotal' = (CreditTotal + AmountPendingTotal) - DebitTotal BY <1>2, <2>9
-    <2> QED BY <2>10, <1>2 DEF Imbalance, credit
+    <2> QED BY <2>8, <2>10, <1>2 DEF Imbalance, credit
 <1>4 CASE ~creditPrecond(self)
     <2>1 AmountPendingTotal' = AmountPendingTotal BY <1>4, credit_AmountPendingTotal_notCreditPrecond
     <2> QED BY <1>2, <2>1 DEF credit, Imbalance
