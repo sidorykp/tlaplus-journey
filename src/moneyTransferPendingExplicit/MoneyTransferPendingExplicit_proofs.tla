@@ -415,18 +415,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal - amount[self]
 THEOREM credit_AmountPendingTotal_notCreditPrecond == ASSUME IndInv, NEW self \in Transfer, credit(self),
 ~creditPrecond(self)
 PROVE AmountPendingTotal' = AmountPendingTotal
-<1>1 self \notin transPending BY DEF credit, pcLabels, transPending, AmountIsPending
-<1>2 ~AmountIsPending(self)' BY DEF credit, pcLabels, AmountIsPending, creditPrecond, IndInv, TypeOK
-<1>3 self \notin transPending' BY <1>2 DEF transPending
-<1>4 transPending' = transPending BY <1>1, <1>3 DEF credit, pcLabels, IndInv, TypeOK,
-    transPending, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
-<1>5 \A t \in Transfer: transAmount(t)' = transAmount(t) BY DEF credit, transAmount, IndInv, TypeOK,
-    creditPrecond, isTransKnown, isTransKnownToItem
-<1>6 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) BY <1>1, <1>4, <1>5
-<1>7 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
-<1>8 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') BY <1>1, <1>4, <1>5
-    DEF credit, transPending, transAmount, AmountIsPending
-<1> QED BY <1>6, <1>7, <1>8 DEF AmountPendingTotal
+BY DEF credit, AmountPendingTotal
 
 
 \* practically a copy of debit_DebitTotal
@@ -596,7 +585,8 @@ THEOREM unchangedVarsProperty == IndInv /\ UNCHANGED vars => IndInv'
         \/ accounts[t] = EmptyAccounts
         \/ DifferentAccounts(t) /\ NonEmptyAccounts(t)
     BY DEF DifferentAccounts, NonEmptyAccounts
-<1>3 (/\ \A t \in Transfer: pc[t] = "init" => initPrecond(t))' = /\ \A t \in Transfer: pc[t] = "init" => initPrecond(t)
+<1>3 (/\ \A t \in Transfer: pc[t] = "init" => initPrecond(t))' =
+    /\ \A t \in Transfer: pc[t] = "init" => initPrecond(t)
     BY DEF initPrecond
 <1>4 (/\ \A t \in Transfer:
         pc[t] \notin {"init"} <=> NonEmptyAccounts(t))' =
