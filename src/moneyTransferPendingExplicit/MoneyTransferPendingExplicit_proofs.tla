@@ -376,39 +376,7 @@ PROVE IndInv'
 LEMMA credit_AmountPendingTotal_creditPrecond == ASSUME IndInv, NEW self \in Transfer, credit(self),
 creditPrecond(self)
 PROVE AmountPendingTotal' = AmountPendingTotal - amount[self]
-<1>1 self \in transPending
-    BY DEF credit, transPending, AmountIsPending
-<1>2 ~AmountIsPending(self) BY TransferAssumption, AccountAssumption DEF credit, creditPrecond, AmountIsPending,
-    isTransKnown, creditPrecond, isTransKnownToItem
-<1> USE DEF IndInv, TypeOK
-<1>3 transPending' = transPending \ {self}
-    BY <1>1, <1>2 DEF transPending
-<1>4 transAmount(self) \in Nat BY transAmountInNat
-<1>5 IsFiniteSet(transPending) BY transPendingIsFinite
-<1>6 \A t \in transPending: transAmount(t) \in Nat BY transPendingAmountNat
-<1> HIDE DEF IndInv, TypeOK
-<1>7 MapThenSumSet(transAmount, transPending) =
-    MapThenSumSet(transAmount, transPending') + transAmount(self)
-    BY <1>1, <1>3, <1>4, <1>5, <1>6,  MapThenSumSetRemElem
-    
-<1>8 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
-<1>9 AmountPendingTotal' = MapThenSumSet(transAmount, transPending')
-    BY DEF credit, transPending, AmountIsPending, isTransKnown, creditPrecond, isTransKnownToItem
-<1>10 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending)'
-    BY <1>8, <1>9
-    
-<1>11 MapThenSumSet(transAmount, transPending) \in Nat
-    BY <1>5, <1>6, MapThenSumSetType
-    
-<1>12 IsFiniteSet(transPending') BY <1>3, <1>5, FS_RemoveElement
-<1>13 \A t \in transPending': transAmount(t) \in Nat
-    BY <1>3, <1>6
-<1>14 MapThenSumSet(transAmount, transPending') \in Nat
-    BY <1>12, <1>13, MapThenSumSetType
-
-<1>15 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) - transAmount(self)
-    BY <1>7, <1>11, <1>4, <1>14
-<1> QED BY <1>15, <1>10 DEF AmountPendingTotal, transAmount
+BY DEF credit, AmountPendingTotal
 
 
 \* practically a copy of init_AmountPendingTotal
