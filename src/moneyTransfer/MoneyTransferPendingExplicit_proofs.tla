@@ -177,8 +177,20 @@ PROVE IndInv'
 <1>28 \A t \in Transfer: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
     BY <1>24, <1>27 DEF init, ProcSet, pcLabels
 
-<1>29 TransPendingEquivalence' = TransPendingEquivalence BY DEF init, TransPendingEquivalence, TransInPendingTrans,
-    pcLabels, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+<1>29 TransPendingEquivalence'
+    <2>1 pendingTrans' = pendingTrans BY DEF init
+    <2>2 AmountIsPending(self)' = AmountIsPending(self)
+        BY DEF init, initPrecond, AmountIsPending, creditPrecond
+    <2>3 ~TransInPendingTrans(self) BY TransPendingEquivalence DEF init
+    <2>4 TransInPendingTrans(self)' = TransInPendingTrans(self)
+        BY <2>1, <2>3 DEF init
+    <2>5 AmountIsPending(self)' <=> pendingTrans' # {} /\ TransInPendingTrans(self)'
+        BY <2>1, <2>2, <2>4 DEF TransPendingEquivalence
+    <2>6 \A t \in Transfer \ {self}: AmountIsPending(t) = AmountIsPending(t)'
+        BY DEF pcLabels, init, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+    <2>7 TransPendingEquivalence' = TransPendingEquivalence
+        BY <2>1, <2>5, <2>6 DEF init, TransPendingEquivalence
+    <2> QED BY <2>7
 
 <1>30 PendingTransDerived' BY DEF init, PendingTransDerived
 
@@ -346,7 +358,7 @@ PROVE IndInv'
     <2>18 \E d \in debits': d[1].t = ptAdd[1] /\ d[2] = ptAdd[2] BY <1>1, <2>1
     <2> HIDE DEF IndInv, TypeOK, CommonIndInv
     <2>19 \A pt \in pendingTrans' \ {ptAdd}: \E d \in debits': d[1].t = pt[1] /\ d[2] = pt[2]
-        BY <1>1, <2>1, <2>8 DEF debit
+        BY <1>1, <2>1, <2>8 DEF debit, IndInv, TypeOK, PendingTransDerived
     <2>20 \A pt \in pendingTrans': \E d \in debits': d[1].t = pt[1] /\ d[2] = pt[2]
         BY <1>1, <2>18, <2>19
     <2>21 PendingTransDerived' BY <2>20 DEF debit, PendingTransDerived
@@ -355,7 +367,7 @@ PROVE IndInv'
         <3>1 CASE pendingTrans # {}
             <4>1 ptAdd \notin pendingTrans BY <2>8, <3>1 DEF debit, TransInPendingTrans
             <4>2 ~\E pt \in pendingTrans: pt # ptAdd /\ pt[1] = self
-                BY <3>1, <4>1 DEF debit, PendingTransUniqueness
+                BY <3>1, <4>1, PendingTransUniqueness DEF debit
             <4>3 PendingTransUniqueness' = PendingTransUniqueness BY <3>1, <4>2 DEF debit, PendingTransUniqueness
             <4> QED BY <4>3 DEF IndInv, TypeOK
         <3>2 CASE pendingTrans = {}
@@ -488,7 +500,9 @@ PROVE (
 <1> HIDE DEF IndInv, TypeOK, CommonIndInv
 <1>25 AmountIsPending(self)' <=> TransInPendingTrans(self)'
     <2>1 CASE ~creditPrecond(self)
-        <3> QED  BY <2>1 DEF TransInPendingTrans, credit, AmountIsPending
+        <3>1 credits' = credits BY <2>1 DEF credit
+        <3>2 pendingTrans' = pendingTrans BY <2>1 DEF credit
+        <3> QED BY <3>1, <3>2 DEF TransInPendingTrans, credit, AmountIsPending
      <2>2 CASE creditPrecond(self)
         <3> DEFINE a == accounts[self].to
         <3> DEFINE nadd == <<[a |-> a, t |-> self], amount[self]>>
@@ -504,7 +518,7 @@ PROVE (
 
 <1>27 PendingTransDerived' BY <1>20, <1>25 DEF credit, PendingTransDerived
 
-<1>28 PendingTransUniqueness' BY <1>20, <1>25 DEF credit, PendingTransUniqueness
+<1>28 PendingTransUniqueness' BY <1>25 DEF credit, PendingTransUniqueness
 
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>6, <1>7, <1>11, <1>21, <1>23, <1>24, <1>27, <1>28, <1>26, credit_Imbalance
     DEF IndInv, TypeOK, CommonIndInv

@@ -11,6 +11,13 @@ ETransfer == Transfer \cup {Empty}
 
 EmptyAccounts == [from |-> Empty, to |-> Empty]
 
+MapThenSumSetE(op(_), S) ==
+    LET iter[s \in SUBSET S] ==
+        IF s = {} THEN 0
+        ELSE LET x == CHOOSE x \in s : TRUE
+            IN op(x) + iter[s \ {x}]
+    IN iter[S]
+
 (***************************************
 Transfer -> Account -> credit or debit
 Transfer -> amount
@@ -27,11 +34,13 @@ Transfer -> amount
     define {
         opAmount(dc) == dc[2]
     
-        accountCredits(a) == MapThenSumSet(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, credits)
-        
-        accountDebits(a) == MapThenSumSet(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 0, debits)
-        
-        amountAvail(a) == NAvail + accountCredits(a) - accountDebits(a)
+        accountDebitsCerdits(a, dcs) == {dc \in dcs: dc[1].a = a}
+
+        accountCreditsSum(a) == MapThenSumSetE(opAmount, accountDebitsCerdits(a, credits))
+
+        accountDebitsSum(a) == MapThenSumSetE(opAmount, accountDebitsCerdits(a, debits))
+
+        amountAvail(a) == NAvail + accountCreditsSum(a) - accountDebitsSum(a)
         
         isTransKnownToItem(t, a, dc) == dc[1].a = a /\ dc[1].t = t
         
@@ -82,17 +91,19 @@ Transfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "b5bb3fb7" /\ chksum(tla) = "caa68922")
+\* BEGIN TRANSLATION (chksum(pcal) = "4fe7fa7e" /\ chksum(tla) = "1b045f8f")
 VARIABLES credits, debits, amount, accounts, pc
 
 (* define statement *)
 opAmount(dc) == dc[2]
 
-accountCredits(a) == MapThenSumSet(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, credits)
+accountDebitsCerdits(a, dcs) == {dc \in dcs: dc[1].a = a}
 
-accountDebits(a) == MapThenSumSet(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 0, debits)
+accountCreditsSum(a) == MapThenSumSetE(opAmount, accountDebitsCerdits(a, credits))
 
-amountAvail(a) == NAvail + accountCredits(a) - accountDebits(a)
+accountDebitsSum(a) == MapThenSumSetE(opAmount, accountDebitsCerdits(a, debits))
+
+amountAvail(a) == NAvail + accountCreditsSum(a) - accountDebitsSum(a)
 
 isTransKnownToItem(t, a, dc) == dc[1].a = a /\ dc[1].t = t
 

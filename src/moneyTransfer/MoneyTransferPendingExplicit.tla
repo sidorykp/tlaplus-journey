@@ -11,6 +11,13 @@ ETransfer == Transfer \cup {Empty}
 
 EmptyAccounts == [from |-> Empty, to |-> Empty]
 
+MapThenSumSetE(op(_), S) ==
+    LET iter[s \in SUBSET S] ==
+        IF s = {} THEN 0
+        ELSE LET x == CHOOSE x \in s : TRUE
+            IN op(x) + iter[s \ {x}]
+    IN iter[S]
+
 (***************************************
 Transfer -> Account -> credit or debit
 Transfer -> amount
@@ -29,11 +36,11 @@ Transfer -> amount
         opAmount(dc) == dc[2]
         
         accountDebitsCerdits(a, dcs) == {dc \in dcs: dc[1].a = a}
-    
-        accountCreditsSum(a) == MapThenSumSet(opAmount, accountDebitsCerdits(a, credits))
-        
-        accountDebitsSum(a) == MapThenSumSet(opAmount, accountDebitsCerdits(a, debits))
-        
+
+        accountCreditsSum(a) == MapThenSumSetE(opAmount, accountDebitsCerdits(a, credits))
+
+        accountDebitsSum(a) == MapThenSumSetE(opAmount, accountDebitsCerdits(a, debits))
+
         amountAvail(a) == NAvail + accountCreditsSum(a) - accountDebitsSum(a)
         
         isTransKnownToItem(t, a, dc) == dc[1].a = a /\ dc[1].t = t
@@ -87,7 +94,7 @@ Transfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "4ed31eeb" /\ chksum(tla) = "cb671972")
+\* BEGIN TRANSLATION (chksum(pcal) = "46057261" /\ chksum(tla) = "f7f52476")
 VARIABLES credits, debits, amount, accounts, pendingTrans, pc
 
 (* define statement *)
@@ -95,9 +102,9 @@ opAmount(dc) == dc[2]
 
 accountDebitsCerdits(a, dcs) == {dc \in dcs: dc[1].a = a}
 
-accountCreditsSum(a) == MapThenSumSet(opAmount, accountDebitsCerdits(a, credits))
+accountCreditsSum(a) == MapThenSumSetE(opAmount, accountDebitsCerdits(a, credits))
 
-accountDebitsSum(a) == MapThenSumSet(opAmount, accountDebitsCerdits(a, debits))
+accountDebitsSum(a) == MapThenSumSetE(opAmount, accountDebitsCerdits(a, debits))
 
 amountAvail(a) == NAvail + accountCreditsSum(a) - accountDebitsSum(a)
 
@@ -268,5 +275,6 @@ IndInvInteractiveStateConstraints ==
         /\ opAmount(d) = opAmount(c)
     /\ \A t \in Transfer:
         amount[t] = 0 <=> pc[t] = "init"
+
 
 ====
