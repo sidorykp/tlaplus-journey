@@ -105,13 +105,13 @@ THEOREM unchangedVarsEquivalenceAdj == ASSUME UNCHANGED E!vars, IndInv
 PROVE UNCHANGED vars
 BY EquivalentSymbolsAssumption DEF vars, E!vars, pendingTransE,
     AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
-    
+
 THEOREM terminatingEquivalence == ASSUME Terminating, IndInv
 PROVE E!Terminating
 BY unchangedVarsEquivalence
 DEF Terminating, E!Terminating,
     ProcSet, E!ProcSet
-    
+
 THEOREM terminatingEquivalenceAdj == ASSUME E!Terminating, IndInv
 PROVE Terminating
 BY unchangedVarsEquivalenceAdj
