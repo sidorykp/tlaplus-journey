@@ -132,9 +132,16 @@ PROVE Next
 <1>2 CASE ~E!Terminating BY <1>1, nextEquivalenceNonTerminatingAdj
 <1> QED BY <1>1, <1>2
 
-THEOREM specEquivalence == ASSUME Spec, IndInv PROVE E!Spec
-<1>1 E!Init BY InitEquivalence DEF Spec
-<1>2 [][E!Next]_E!vars BY nextEquivalence, unchangedVarsEquivalence DEF Spec
-<1> QED BY <1>1, <1>2 DEF E!Spec
+THEOREM InitEquivalenceTotal == Init <=> E!Init
+BY InitEquivalence, InitEquivalenceAdj
+
+THEOREM nextEquivalenceTotal == ASSUME IndInv PROVE
+Next <=> E!Next
+BY nextEquivalence, nextEquivalenceAdj
+
+THEOREM unchangedVarsEquivalenceTotal == ASSUME IndInv
+PROVE UNCHANGED vars <=> UNCHANGED E!vars
+BY unchangedVarsEquivalence, unchangedVarsEquivalenceAdj
+
 
 ====
