@@ -11,13 +11,6 @@ ETransfer == Transfer \cup {Empty}
 
 EmptyAccounts == [from |-> Empty, to |-> Empty]
 
-MapThenSumSetE(op(_), S) ==
-    LET iter[s \in SUBSET S] ==
-        IF s = {} THEN 0
-        ELSE LET x == CHOOSE x \in s : TRUE
-            IN op(x) + iter[s \ {x}]
-    IN iter[S]
-
 (***************************************
 Transfer -> Account -> credit or debit
 Transfer -> amount
@@ -36,9 +29,9 @@ Transfer -> amount
     
         accountDebitsCerdits(a, dcs) == {dc \in dcs: dc[1].a = a}
 
-        accountCreditsSum(a) == MapThenSumSetE(opAmount, accountDebitsCerdits(a, credits))
+        accountCreditsSum(a) == MapThenSumSet(opAmount, accountDebitsCerdits(a, credits))
 
-        accountDebitsSum(a) == MapThenSumSetE(opAmount, accountDebitsCerdits(a, debits))
+        accountDebitsSum(a) == MapThenSumSet(opAmount, accountDebitsCerdits(a, debits))
 
         amountAvail(a) == NAvail + accountCreditsSum(a) - accountDebitsSum(a)
         
@@ -91,7 +84,7 @@ Transfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "4fe7fa7e" /\ chksum(tla) = "1b045f8f")
+\* BEGIN TRANSLATION (chksum(pcal) = "5159d891" /\ chksum(tla) = "d464e31b")
 VARIABLES credits, debits, amount, accounts, pc
 
 (* define statement *)
@@ -99,9 +92,9 @@ opAmount(dc) == dc[2]
 
 accountDebitsCerdits(a, dcs) == {dc \in dcs: dc[1].a = a}
 
-accountCreditsSum(a) == MapThenSumSetE(opAmount, accountDebitsCerdits(a, credits))
+accountCreditsSum(a) == MapThenSumSet(opAmount, accountDebitsCerdits(a, credits))
 
-accountDebitsSum(a) == MapThenSumSetE(opAmount, accountDebitsCerdits(a, debits))
+accountDebitsSum(a) == MapThenSumSet(opAmount, accountDebitsCerdits(a, debits))
 
 amountAvail(a) == NAvail + accountCreditsSum(a) - accountDebitsSum(a)
 
