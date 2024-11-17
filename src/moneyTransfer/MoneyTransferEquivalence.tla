@@ -105,6 +105,18 @@ THEOREM unchangedVarsEquivalenceAdj == ASSUME UNCHANGED E!vars, IndInv
 PROVE UNCHANGED vars
 BY EquivalentSymbolsAssumption DEF vars, E!vars, pendingTransE,
     AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+    
+THEOREM terminatingEquivalence == ASSUME Terminating, IndInv
+PROVE E!Terminating
+BY unchangedVarsEquivalence
+DEF Terminating, E!Terminating,
+    ProcSet, E!ProcSet
+    
+THEOREM terminatingEquivalenceAdj == ASSUME E!Terminating, IndInv
+PROVE Terminating
+BY unchangedVarsEquivalenceAdj
+DEF Terminating, E!Terminating,
+    ProcSet, E!ProcSet
 
 THEOREM nextEquivalenceTerminating == ASSUME Next, Terminating, IndInv
 PROVE E!Next
@@ -132,9 +144,33 @@ PROVE Next
 <1>2 CASE ~E!Terminating BY <1>1, nextEquivalenceNonTerminatingAdj
 <1> QED BY <1>1, <1>2
 
-THEOREM specEquivalence == ASSUME Spec, IndInv PROVE E!Spec
-<1>1 E!Init BY InitEquivalence DEF Spec
-<1>2 [][E!Next]_E!vars BY nextEquivalence, unchangedVarsEquivalence DEF Spec
-<1> QED BY <1>1, <1>2 DEF E!Spec
+THEOREM InitEquivalenceTotal == Init <=> E!Init
+BY InitEquivalence, InitEquivalenceAdj
+
+THEOREM nextEquivalenceTotal == ASSUME IndInv PROVE
+Next <=> E!Next
+BY nextEquivalence, nextEquivalenceAdj
+
+THEOREM unchangedVarsEquivalenceTotal == ASSUME IndInv
+PROVE UNCHANGED vars <=> UNCHANGED E!vars
+BY unchangedVarsEquivalence, unchangedVarsEquivalenceAdj
+
+THEOREM terminatingEquivalenceTotal == ASSUME IndInv
+PROVE Terminating <=> E!Terminating
+BY terminatingEquivalence, terminatingEquivalenceAdj
+
+THEOREM ASSUME IndInv, vars = E!vars, Next /\ E!Next
+PROVE vars' = E!vars'
+BY nextEquivalenceTotal DEF Next, E!Next, vars, E!vars
+
+SpecE == Init /\ [][Next]_E!vars
+
+InitCombined == Init /\ E!Init
+
+NextCombined == Next /\ E!Next
+
+SpecCombined == InitCombined /\ [][NextCombined]_vars
+
+IndSpecCombined == /\ IndInv /\ [][NextCombined]_vars
 
 ====
