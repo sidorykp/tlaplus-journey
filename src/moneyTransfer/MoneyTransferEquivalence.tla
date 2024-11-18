@@ -123,6 +123,10 @@ BY DEF E!vars, vars, varsE
 THEOREM terminatingEquivalence == E!Terminating <=> TerminatingE
 BY unchangedEquivalence DEF E!Terminating, TerminatingE,
     E!ProcSet, ProcSet
+    
+THEOREM E!Next <=> NextE
+BY transEquivalence, transEquivalenceRev, terminatingEquivalence
+    DEF E!Next, NextE
 
 
 THEOREM unchangedVarsProperty == E!IndInv /\ UNCHANGED E!vars => E!IndInv'
