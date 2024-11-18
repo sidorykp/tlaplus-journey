@@ -55,6 +55,17 @@ BY DEF E!init, initE, pendingTransDerived,
     pcLabels, E!ProcSet, ProcSet,
     AmountIsPending, creditPrecond
 
+THEOREM ASSUME NEW self \in Transfer, E!debit(self)
+PROVE debitE(self)
+BY DEF E!debit, debitE, pendingTransDerived,
+    pcLabels, E!ProcSet, ProcSet, E!debitPrecond,
+    AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+
+THEOREM ASSUME NEW self \in Transfer, debitE(self)
+PROVE E!debit(self)
+BY DEF E!debit, debitE, pendingTransDerived,
+    pcLabels, E!ProcSet, ProcSet, E!debitPrecond,
+    AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
 
 THEOREM unchangedVarsProperty == E!IndInv /\ UNCHANGED E!vars => E!IndInv'
 <1> SUFFICES ASSUME E!IndInv, UNCHANGED E!vars
