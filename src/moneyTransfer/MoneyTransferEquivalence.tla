@@ -17,7 +17,7 @@ PROVE E!Init
 <1> QED BY EquivalentSymbolsAssumption, <1>1 DEF Init, E!Init,
     ProcSet, E!ProcSet
     
-THEOREM InitEquivalenceAdj == ASSUME E!Init
+THEOREM InitEquivalenceRev == ASSUME E!Init
 PROVE Init
 <1>1 pendingTransE = {} BY DEF E!Init, pendingTransE,
     AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
@@ -38,7 +38,7 @@ PROVE E!init(self)
 <1> QED BY EquivalentSymbolsAssumption, <1>1, <1>2 DEF init, E!init,
     amountAvail, E!amountAvail
     
-THEOREM initEquivalenceAdj == ASSUME NEW self \in Transfer, E!init(self), IndInv
+THEOREM initEquivalenceRev == ASSUME NEW self \in Transfer, E!init(self), E!IndInv
 PROVE init(self)
 <1>1 UNCHANGED pendingTransE BY EquivalentSymbolsAssumption DEF E!init, pendingTransE,
     AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
@@ -56,7 +56,7 @@ THEOREM debitEquivalence == ASSUME NEW self \in Transfer, debit(self), IndInv
 PROVE E!debit(self)
 BY DEF debit, E!debit
 
-THEOREM debitEquivalenceAdj == ASSUME NEW self \in Transfer, E!debit(self), IndInv
+THEOREM debitEquivalenceRev == ASSUME NEW self \in Transfer, E!debit(self), E!IndInv
 PROVE debit(self)
 BY DEF debit, E!debit
 
@@ -66,7 +66,7 @@ BY DEF crash, E!crash, pendingTransE,
     AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem,
     ProcSet, E!ProcSet
 
-THEOREM crashEquivalenceAdj == ASSUME NEW self \in Transfer, E!crash(self), IndInv
+THEOREM crashEquivalenceRev == ASSUME NEW self \in Transfer, E!crash(self), E!IndInv
 PROVE crash(self)
 <1> QED BY DEF crash, E!crash, AmountIsPending
 
@@ -74,7 +74,7 @@ THEOREM creditEquivalence == ASSUME NEW self \in Transfer, credit(self), IndInv
 PROVE E!credit(self)
 BY DEF credit, E!credit, pendingTransE
 
-THEOREM creditEquivalenceAdj == ASSUME NEW self \in Transfer, E!credit(self), IndInv
+THEOREM creditEquivalenceRev == ASSUME NEW self \in Transfer, E!credit(self), E!IndInv
 PROVE credit(self)
 BY DEF credit, E!credit, AmountIsPending
 
@@ -83,25 +83,25 @@ PROVE E!trans(self)
 BY initEquivalence, debitEquivalence, creditEquivalence, crashEquivalence
 DEF trans, E!trans
 
-THEOREM transEquivalenceAdj == ASSUME NEW self \in Transfer, E!trans(self), IndInv
+THEOREM transEquivalenceRev == ASSUME NEW self \in Transfer, E!trans(self), E!IndInv
 PROVE trans(self)
-BY initEquivalenceAdj, debitEquivalenceAdj, creditEquivalenceAdj, crashEquivalenceAdj
+BY initEquivalenceRev, debitEquivalenceRev, creditEquivalenceRev, crashEquivalenceRev
 DEF trans, E!trans
 
 THEOREM nextEquivalenceNonTerminating == ASSUME Next, ~Terminating, IndInv
 PROVE E!Next
 BY transEquivalence DEF Next, E!Next
 
-THEOREM nextEquivalenceNonTerminatingAdj == ASSUME E!Next, ~E!Terminating, IndInv
+THEOREM nextEquivalenceNonTerminatingRev == ASSUME E!Next, ~E!Terminating, E!IndInv
 PROVE Next
-BY transEquivalenceAdj DEF Next, E!Next
+BY transEquivalenceRev DEF Next, E!Next
 
 THEOREM unchangedVarsEquivalence == ASSUME UNCHANGED vars, IndInv
 PROVE UNCHANGED E!vars
 BY EquivalentSymbolsAssumption DEF vars, E!vars, pendingTransE,
     AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
 
-THEOREM unchangedVarsEquivalenceAdj == ASSUME UNCHANGED E!vars, IndInv
+THEOREM unchangedVarsEquivalenceRev == ASSUME UNCHANGED E!vars, E!IndInv
 PROVE UNCHANGED vars
 BY EquivalentSymbolsAssumption DEF vars, E!vars, pendingTransE,
     AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
@@ -112,9 +112,9 @@ BY unchangedVarsEquivalence
 DEF Terminating, E!Terminating,
     ProcSet, E!ProcSet
 
-THEOREM terminatingEquivalenceAdj == ASSUME E!Terminating, IndInv
+THEOREM terminatingEquivalenceRev == ASSUME E!Terminating, E!IndInv
 PROVE Terminating
-BY unchangedVarsEquivalenceAdj
+BY unchangedVarsEquivalenceRev
 DEF Terminating, E!Terminating,
     ProcSet, E!ProcSet
 
@@ -125,10 +125,10 @@ PROVE E!Next
 <1>3 E!Terminating BY <1>2 DEF Terminating, E!Terminating, ProcSet, E!ProcSet
 <1> QED BY <1>3 DEF Next, E!Next
     
-THEOREM nextEquivalenceTerminatingAdj == ASSUME E!Next, E!Terminating, IndInv
+THEOREM nextEquivalenceTerminatingRev == ASSUME E!Next, E!Terminating, E!IndInv
 PROVE Next
 <1>1 UNCHANGED E!vars BY DEF E!Terminating
-<1>2 UNCHANGED vars BY <1>1, unchangedVarsEquivalenceAdj
+<1>2 UNCHANGED vars BY <1>1, unchangedVarsEquivalenceRev
 <1>3 Terminating BY <1>2 DEF Terminating, E!Terminating, ProcSet, E!ProcSet
 <1> QED BY <1>3 DEF Next, E!Next
 
@@ -138,26 +138,26 @@ PROVE E!Next
 <1>2 CASE ~Terminating BY <1>1, nextEquivalenceNonTerminating
 <1> QED BY <1>1, <1>2
 
-THEOREM nextEquivalenceAdj == ASSUME E!Next, IndInv
+THEOREM nextEquivalenceRev == ASSUME E!Next, E!IndInv
 PROVE Next
-<1>1 CASE E!Terminating BY <1>1, nextEquivalenceTerminatingAdj
-<1>2 CASE ~E!Terminating BY <1>1, nextEquivalenceNonTerminatingAdj
+<1>1 CASE E!Terminating BY <1>1, nextEquivalenceTerminatingRev
+<1>2 CASE ~E!Terminating BY <1>1, nextEquivalenceNonTerminatingRev
 <1> QED BY <1>1, <1>2
 
 THEOREM InitEquivalenceTotal == Init <=> E!Init
-BY InitEquivalence, InitEquivalenceAdj
+BY InitEquivalence, InitEquivalenceRev
 
-THEOREM nextEquivalenceTotal == ASSUME IndInv PROVE
+THEOREM nextEquivalenceTotal == ASSUME IndInv, E!IndInv PROVE
 Next <=> E!Next
-BY nextEquivalence, nextEquivalenceAdj
+BY nextEquivalence, nextEquivalenceRev
 
-THEOREM unchangedVarsEquivalenceTotal == ASSUME IndInv
+THEOREM unchangedVarsEquivalenceTotal == ASSUME IndInv, E!IndInv
 PROVE UNCHANGED vars <=> UNCHANGED E!vars
-BY unchangedVarsEquivalence, unchangedVarsEquivalenceAdj
+BY unchangedVarsEquivalence, unchangedVarsEquivalenceRev
 
-THEOREM terminatingEquivalenceTotal == ASSUME IndInv
+THEOREM terminatingEquivalenceTotal == ASSUME IndInv, E!IndInv
 PROVE Terminating <=> E!Terminating
-BY terminatingEquivalence, terminatingEquivalenceAdj
+BY terminatingEquivalence, terminatingEquivalenceRev
 
 
 
@@ -194,7 +194,7 @@ THEOREM unchangedVarsProperty == E!IndInv /\ UNCHANGED E!vars => E!IndInv'
 
 
 
-THEOREM ASSUME IndInv, vars = E!vars, Next /\ E!Next
+THEOREM ASSUME vars = E!vars, Next /\ E!Next
 PROVE vars' = E!vars'
 BY nextEquivalenceTotal DEF Next, E!Next, vars, E!vars
 
