@@ -38,48 +38,48 @@ ASSUME EquivalentSymbolsAssumption ==
 
 THEOREM E!Spec <=> SpecE
 
-THEOREM E!Init <=> InitE
+THEOREM InitEquivalence == E!Init <=> InitE
 BY EquivalentSymbolsAssumption DEF E!Init, InitE, Init, pendingTransDerived,
     pcLabels, E!ProcSet, ProcSet,
     AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
 
-THEOREM ASSUME NEW self \in Transfer, E!init(self)
+THEOREM initEquivalence == ASSUME NEW self \in Transfer, E!init(self)
 PROVE initE(self)
 BY DEF E!init, initE, pendingTransDerived,
     pcLabels, E!ProcSet, ProcSet,
     AmountIsPending, creditPrecond
 
-THEOREM ASSUME NEW self \in Transfer, initE(self)
+THEOREM initEquivalenceRev == ASSUME NEW self \in Transfer, initE(self)
 PROVE E!init(self)
 BY DEF E!init, initE, pendingTransDerived,
     pcLabels, E!ProcSet, ProcSet,
     AmountIsPending, creditPrecond
 
-THEOREM ASSUME NEW self \in Transfer, E!debit(self)
+THEOREM debitEquivalence == ASSUME NEW self \in Transfer, E!debit(self)
 PROVE debitE(self)
 BY DEF E!debit, debitE, pendingTransDerived,
     pcLabels, E!ProcSet, ProcSet, E!debitPrecond,
     AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
 
-THEOREM ASSUME NEW self \in Transfer, debitE(self)
+THEOREM debitEquivalenceRev == ASSUME NEW self \in Transfer, debitE(self)
 PROVE E!debit(self)
 BY DEF E!debit, debitE, pendingTransDerived,
     pcLabels, E!ProcSet, ProcSet, E!debitPrecond,
     AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
     
-THEOREM ASSUME NEW self \in Transfer, crashE(self)
-PROVE E!crash(self)
-BY DEF E!crash, crashE, pendingTransDerived,
-    pcLabels, E!ProcSet, ProcSet,
-    AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
-    
-THEOREM ASSUME NEW self \in Transfer, E!crash(self)
+THEOREM crashEquivalence == ASSUME NEW self \in Transfer, E!crash(self)
 PROVE crashE(self)
 BY DEF E!crash, crashE, pendingTransDerived,
     pcLabels, E!ProcSet, ProcSet,
     AmountIsPending, creditPrecond
+    
+THEOREM crashEquivalenceRev == ASSUME NEW self \in Transfer, crashE(self)
+PROVE E!crash(self)
+BY DEF E!crash, crashE, pendingTransDerived,
+    pcLabels, E!ProcSet, ProcSet,
+    AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
 
-THEOREM ASSUME NEW self \in Transfer, E!credit(self)
+THEOREM creditEquivalence == ASSUME NEW self \in Transfer, E!credit(self)
 PROVE creditE(self)
 <1>1 credit(self) BY DEF E!credit, creditE
 <1>2 pendingTransE' = pendingTransDerived'
@@ -94,10 +94,19 @@ PROVE creditE(self)
     <2> QED BY <2>1, <2>2
 <1> QED BY <1>1, <1>2 DEF creditE
 
-THEOREM ASSUME NEW self \in Transfer, creditE(self)
+THEOREM creditEquivalenceRev == ASSUME NEW self \in Transfer, creditE(self)
 PROVE E!credit(self)
 BY DEF E!credit, creditE, credit, pendingTransDerived,
     pcLabels, E!ProcSet, ProcSet
+    
+THEOREM ASSUME NEW self \in Transfer, E!trans(self)
+PROVE transE(self)
+<1>1 CASE E!init(self) BY <1>1, initEquivalence DEF E!trans, transE
+<1>2 CASE E!debit(self) BY <1>2, debitEquivalence DEF E!trans, transE
+<1>3 CASE E!crash(self) BY <1>3, crashEquivalence DEF E!trans, transE
+<1>4 CASE E!credit(self) BY <1>4, creditEquivalence DEF E!trans, transE
+<1> QED BY <1>1, <1>2, <1>3, <1>4
+    DEF E!trans
 
 
 THEOREM unchangedVarsProperty == E!IndInv /\ UNCHANGED E!vars => E!IndInv'
