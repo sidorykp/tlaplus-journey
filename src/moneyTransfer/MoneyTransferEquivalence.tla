@@ -33,7 +33,15 @@ IndSpecE == IndInvE /\ [][NextE]_varsE
 
 E == INSTANCE MoneyTransferPendingExplicit WITH pendingTrans <- pendingTransE
 
-THEOREM E!Spec => SpecE
+ASSUME EquivalentSymbolsAssumption ==
+    /\ EmptyAccounts = E!EmptyAccounts
+
+THEOREM E!Spec <=> SpecE
+
+THEOREM E!Init <=> InitE
+BY EquivalentSymbolsAssumption DEF E!Init, InitE, Init, pendingTransDerived,
+    pcLabels, E!ProcSet, ProcSet,
+    AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
 
 
 THEOREM unchangedVarsProperty == E!IndInv /\ UNCHANGED E!vars => E!IndInv'
