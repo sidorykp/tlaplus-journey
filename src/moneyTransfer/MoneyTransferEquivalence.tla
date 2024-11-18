@@ -120,6 +120,10 @@ PROVE E!trans(self)
 THEOREM unchangedEquivalence == UNCHANGED E!vars <=> UNCHANGED varsE
 BY DEF E!vars, vars, varsE
 
+THEOREM terminatingEquivalence == E!Terminating <=> TerminatingE
+BY unchangedEquivalence DEF E!Terminating, TerminatingE,
+    E!ProcSet, ProcSet
+
 
 THEOREM unchangedVarsProperty == E!IndInv /\ UNCHANGED E!vars => E!IndInv'
 <1> SUFFICES ASSUME E!IndInv, UNCHANGED E!vars
