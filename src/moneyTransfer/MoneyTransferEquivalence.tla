@@ -117,6 +117,9 @@ PROVE E!trans(self)
 <1> QED BY <1>1, <1>2, <1>3, <1>4
     DEF transE
 
+THEOREM unchangedEquivalence == UNCHANGED E!vars <=> UNCHANGED varsE
+BY DEF E!vars, vars, varsE
+
 
 THEOREM unchangedVarsProperty == E!IndInv /\ UNCHANGED E!vars => E!IndInv'
 <1> SUFFICES ASSUME E!IndInv, UNCHANGED E!vars
