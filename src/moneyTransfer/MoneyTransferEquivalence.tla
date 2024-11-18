@@ -29,11 +29,10 @@ PROVE E!init(self)
 <1>1 UNCHANGED pendingTransE BY EquivalentSymbolsAssumption DEF init, pendingTransE,
     AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
 <1>2 \A a \in Account:
-    /\ accountCreditsSum(a) = E!accountCreditsSum(a)
-    /\ accountDebitsSum(a) = E!accountDebitsSum(a)
-    BY DEF accountDebitsCerdits, E!accountDebitsCerdits,
-    accountCreditsSum, E!accountCreditsSum,
-    accountDebitsSum, E!accountDebitsSum,
+    /\ accountCredits(a) = E!accountCreditsSum(a)
+    /\ accountDebits(a) = E!accountDebitsSum(a)
+    BY DEF accountCredits, E!accountCreditsSum,
+    accountDebits, E!accountDebitsSum,
     MapThenSumSet, MapThenFoldSet, E!MapThenSumSetE, E!MapThenFoldSetE,
     opAmount, E!opAmount
 <1> QED BY EquivalentSymbolsAssumption, <1>1, <1>2 DEF init, E!init,
@@ -44,11 +43,10 @@ PROVE init(self)
 <1>1 UNCHANGED pendingTransE BY EquivalentSymbolsAssumption DEF E!init, pendingTransE,
     AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
 <1>2 \A a \in Account:
-    /\ accountCreditsSum(a) = E!accountCreditsSum(a)
-    /\ accountDebitsSum(a) = E!accountDebitsSum(a)
-    BY DEF accountDebitsCerdits, E!accountDebitsCerdits,
-    accountCreditsSum, E!accountCreditsSum,
-    accountDebitsSum, E!accountDebitsSum,
+    /\ accountCredits(a) = E!accountCreditsSum(a)
+    /\ accountDebits(a) = E!accountDebitsSum(a)
+    BY DEF accountCredits, E!accountCreditsSum,
+    accountDebits, E!accountDebitsSum,
     MapThenSumSet, MapThenFoldSet, E!MapThenSumSetE, E!MapThenFoldSetE,
     opAmount, E!opAmount
 <1> QED BY EquivalentSymbolsAssumption, <1>1, <1>2 DEF init, E!init,
@@ -64,7 +62,9 @@ BY DEF debit, E!debit
 
 THEOREM crashEquivalence == ASSUME NEW self \in Transfer, crash(self), IndInv
 PROVE E!crash(self)
-BY DEF crash, E!crash, pendingTransE
+BY DEF crash, E!crash, pendingTransE,
+    AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem,
+    ProcSet, E!ProcSet
 
 THEOREM crashEquivalenceAdj == ASSUME NEW self \in Transfer, E!crash(self), IndInv
 PROVE crash(self)

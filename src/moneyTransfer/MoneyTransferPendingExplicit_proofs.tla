@@ -177,20 +177,8 @@ PROVE IndInv'
 <1>28 \A t \in Transfer: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
     BY <1>24, <1>27 DEF init, ProcSet, pcLabels
 
-<1>29 TransPendingEquivalence'
-    <2>1 pendingTrans' = pendingTrans BY DEF init
-    <2>2 AmountIsPending(self)' = AmountIsPending(self)
-        BY DEF init, initPrecond, AmountIsPending, creditPrecond
-    <2>3 ~TransInPendingTrans(self) BY TransPendingEquivalence DEF init
-    <2>4 TransInPendingTrans(self)' = TransInPendingTrans(self)
-        BY <2>1, <2>3 DEF init
-    <2>5 AmountIsPending(self)' <=> pendingTrans' # {} /\ TransInPendingTrans(self)'
-        BY <2>1, <2>2, <2>4 DEF TransPendingEquivalence
-    <2>6 \A t \in Transfer \ {self}: AmountIsPending(t) = AmountIsPending(t)'
-        BY DEF pcLabels, init, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
-    <2>7 TransPendingEquivalence' = TransPendingEquivalence
-        BY <2>1, <2>5, <2>6 DEF init, TransPendingEquivalence
-    <2> QED BY <2>7
+<1>29 TransPendingEquivalence' = TransPendingEquivalence BY DEF init, TransPendingEquivalence, TransInPendingTrans,
+    pcLabels, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
 
 <1>30 PendingTransDerived' BY DEF init, PendingTransDerived
 
@@ -336,23 +324,23 @@ PROVE IndInv'
     <2>14 pendingTrans' # {} BY <2>8
     <2>15 AmountIsPending(self)' <=> pendingTrans' # {} /\ TransInPendingTrans(self)'
         BY <2>13, <2>14
-    <2> HIDE DEF IndInv, TypeOK, CommonIndInv
     <2>16 (\A t \in Transfer \ {self}: AmountIsPending(t) <=> pendingTrans # {} /\ TransInPendingTrans(t))'
         <3>1 CASE pendingTrans # {}
             <4>1 (\A t \in Transfer \ {self}: AmountIsPending(t) <=> TransInPendingTrans(t))'
-                BY <3>1, <1>1
+                BY <3>1, <1>1, <2>1, <2>8, <2>12
                 DEF TransInPendingTrans, debit, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
             <4>2 (\A t \in Transfer \ {self}: AmountIsPending(t) <=> pendingTrans # {} /\ TransInPendingTrans(t))'
                 BY <4>1, <3>1 DEF TransInPendingTrans
             <4> QED BY <4>2
         <3>2 CASE pendingTrans = {}
             <4>1 pendingTrans' = {ptAdd} BY <3>2, <2>8
-            <4>2 (\A t \in Transfer \ {self}: AmountIsPending(t) <=> pendingTrans # {} /\ TransInPendingTrans(t))'
-                BY <3>2, <1>1
+            <4>2 \A t \in Transfer: ~AmountIsPending(t) BY <3>2 DEF TransPendingEquivalence
+            <4>3 (\A t \in Transfer \ {self}: AmountIsPending(t) <=> pendingTrans # {} /\ TransInPendingTrans(t))'
+                BY <3>2, <1>1, <2>1, <2>8, <2>12, <4>1, <4>2
                 DEF TransInPendingTrans, debit, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
-            <4> QED BY <4>2
+            <4> QED BY <4>3
         <3> QED BY <3>1, <3>2
-    <2>17 TransPendingEquivalence'
+    <2>17 TransPendingEquivalence' = TransPendingEquivalence
         BY <2>15, <2>16 DEF TransPendingEquivalence
 
     <2>18 \E d \in debits': d[1].t = ptAdd[1] /\ d[2] = ptAdd[2] BY <1>1, <2>1

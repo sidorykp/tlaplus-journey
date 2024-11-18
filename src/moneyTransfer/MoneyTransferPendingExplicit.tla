@@ -37,12 +37,10 @@ Transfer -> amount
 
     define {
         opAmount(dc) == dc[2]
-        
-        accountDebitsCerdits(a, dcs) == {dc \in dcs: dc[1].a = a}
 
-        accountCreditsSum(a) == MapThenSumSetE(opAmount, accountDebitsCerdits(a, credits))
+        accountCreditsSum(a) == MapThenSumSetE(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, credits)
 
-        accountDebitsSum(a) == MapThenSumSetE(opAmount, accountDebitsCerdits(a, debits))
+        accountDebitsSum(a) == MapThenSumSetE(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 0, debits)
 
         amountAvail(a) == NAvail + accountCreditsSum(a) - accountDebitsSum(a)
         
@@ -97,17 +95,15 @@ Transfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "46057261" /\ chksum(tla) = "f7f52476")
+\* BEGIN TRANSLATION (chksum(pcal) = "fb70e6a8" /\ chksum(tla) = "58f42086")
 VARIABLES credits, debits, amount, accounts, pendingTrans, pc
 
 (* define statement *)
 opAmount(dc) == dc[2]
 
-accountDebitsCerdits(a, dcs) == {dc \in dcs: dc[1].a = a}
+accountCreditsSum(a) == MapThenSumSetE(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, credits)
 
-accountCreditsSum(a) == MapThenSumSetE(opAmount, accountDebitsCerdits(a, credits))
-
-accountDebitsSum(a) == MapThenSumSetE(opAmount, accountDebitsCerdits(a, debits))
+accountDebitsSum(a) == MapThenSumSetE(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 0, debits)
 
 amountAvail(a) == NAvail + accountCreditsSum(a) - accountDebitsSum(a)
 
