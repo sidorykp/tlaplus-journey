@@ -1,5 +1,5 @@
 ----MODULE MoneyTransferEquivalence----
-EXTENDS MoneyTransfer, TLAPS
+EXTENDS MoneyTransfer
 
 pendingTransE == {<<t, amount[t]>>: t \in {t \in Transfer: AmountIsPending(t)}}
 
@@ -158,6 +158,41 @@ BY unchangedVarsEquivalence, unchangedVarsEquivalenceAdj
 THEOREM terminatingEquivalenceTotal == ASSUME IndInv
 PROVE Terminating <=> E!Terminating
 BY terminatingEquivalence, terminatingEquivalenceAdj
+
+
+
+THEOREM unchangedVarsProperty == E!IndInv /\ UNCHANGED E!vars => E!IndInv'
+<1> SUFFICES ASSUME E!IndInv, UNCHANGED E!vars
+    PROVE E!IndInv'
+    OBVIOUS
+<1> USE DEF E!vars
+<1>1 E!TypeOK' = E!TypeOK BY DEF E!TypeOK, E!pcLabels,
+    E!TransPendingEquivalence, E!TransInPendingTrans, E!AmountIsPending, E!creditPrecond,
+    E!PendingTransDerived, E!PendingTransUniqueness
+<1>2 (/\ \A t \in Transfer:
+        \/ accounts[t] = E!EmptyAccounts
+        \/ E!DifferentAccounts(t) /\ E!NonEmptyAccounts(t))' =
+      /\ \A t \in Transfer:
+        \/ accounts[t] = E!EmptyAccounts
+        \/ E!DifferentAccounts(t) /\ E!NonEmptyAccounts(t)
+    BY DEF E!DifferentAccounts, E!NonEmptyAccounts
+<1>3 (/\ \A t \in Transfer: pc[t] = "init" => E!initPrecond(t))' =
+    /\ \A t \in Transfer: pc[t] = "init" => E!initPrecond(t)
+    BY DEF E!initPrecond
+<1>4 (/\ \A t \in Transfer:
+        pc[t] \notin {"init"} <=> E!NonEmptyAccounts(t))' =
+      /\ \A t \in Transfer:
+        pc[t] \notin {"init"} <=> E!NonEmptyAccounts(t)
+    BY DEF E!NonEmptyAccounts
+<1>5 E!CreditTotal' = E!CreditTotal BY DEF E!CreditTotal
+<1>6 E!DebitTotal' = E!DebitTotal BY DEF E!DebitTotal
+<1>7 E!AmountPendingTotal' = E!AmountPendingTotal BY DEF E!AmountPendingTotal
+
+<1>8 (E!Imbalance = 0)' = (E!Imbalance = 0) BY <1>5, <1>6, <1>7 DEF E!Imbalance
+
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>8 DEF E!IndInv
+
+
 
 THEOREM ASSUME IndInv, vars = E!vars, Next /\ E!Next
 PROVE vars' = E!vars'
