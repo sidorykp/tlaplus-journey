@@ -66,6 +66,20 @@ PROVE E!debit(self)
 BY DEF E!debit, debitE, pendingTransDerived,
     pcLabels, E!ProcSet, ProcSet, E!debitPrecond,
     AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+    
+THEOREM ASSUME NEW self \in Transfer, crashE(self)
+PROVE E!crash(self)
+BY DEF E!crash, crashE, pendingTransDerived,
+    pcLabels, E!ProcSet, ProcSet,
+    AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+    
+THEOREM ASSUME NEW self \in Transfer, E!crash(self)
+PROVE crashE(self)
+BY DEF E!crash, crashE, pendingTransDerived,
+    pcLabels, E!ProcSet, ProcSet,
+    AmountIsPending, creditPrecond
+
+
 
 THEOREM unchangedVarsProperty == E!IndInv /\ UNCHANGED E!vars => E!IndInv'
 <1> SUFFICES ASSUME E!IndInv, UNCHANGED E!vars
