@@ -79,6 +79,22 @@ BY DEF E!crash, crashE, pendingTransDerived,
     pcLabels, E!ProcSet, ProcSet,
     AmountIsPending, creditPrecond
 
+THEOREM ASSUME NEW self \in Transfer, E!credit(self)
+PROVE creditE(self)
+<1>1 credit(self) BY DEF E!credit, creditE
+<1>2 pendingTransE' = pendingTransDerived'
+    <2>1 CASE E!creditPrecond(self)
+        <3> QED BY <2>1 DEF E!credit, pendingTransDerived,
+            pcLabels, E!ProcSet, ProcSet
+    <2>2 CASE ~E!creditPrecond(self)
+        <3>1 UNCHANGED <<credits, pendingTransE>> BY <2>2 DEF E!credit
+        <3> QED BY <2>2, <3>1 DEF E!credit, pendingTransDerived,
+            pcLabels, E!ProcSet, ProcSet,
+            AmountIsPending, creditPrecond
+    <2> QED BY <2>1, <2>2
+<1> QED BY <1>1, <1>2 DEF creditE
+
+
 
 
 THEOREM unchangedVarsProperty == E!IndInv /\ UNCHANGED E!vars => E!IndInv'
