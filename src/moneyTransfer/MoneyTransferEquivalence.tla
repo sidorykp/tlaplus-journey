@@ -43,6 +43,18 @@ BY EquivalentSymbolsAssumption DEF E!Init, InitE, Init, pendingTransDerived,
     pcLabels, E!ProcSet, ProcSet,
     AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
 
+THEOREM ASSUME NEW self \in Transfer, E!init(self)
+PROVE initE(self)
+BY DEF E!init, initE, pendingTransDerived,
+    pcLabels, E!ProcSet, ProcSet,
+    AmountIsPending, creditPrecond
+
+THEOREM ASSUME NEW self \in Transfer, initE(self)
+PROVE E!init(self)
+BY DEF E!init, initE, pendingTransDerived,
+    pcLabels, E!ProcSet, ProcSet,
+    AmountIsPending, creditPrecond
+
 
 THEOREM unchangedVarsProperty == E!IndInv /\ UNCHANGED E!vars => E!IndInv'
 <1> SUFFICES ASSUME E!IndInv, UNCHANGED E!vars
