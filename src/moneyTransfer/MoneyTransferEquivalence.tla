@@ -99,7 +99,7 @@ PROVE E!credit(self)
 BY DEF E!credit, creditE, credit, pendingTransDerived,
     pcLabels, E!ProcSet, ProcSet
     
-THEOREM ASSUME NEW self \in Transfer, E!trans(self)
+THEOREM transEquivalence == ASSUME NEW self \in Transfer, E!trans(self)
 PROVE transE(self)
 <1>1 CASE E!init(self) BY <1>1, initEquivalence DEF E!trans, transE
 <1>2 CASE E!debit(self) BY <1>2, debitEquivalence DEF E!trans, transE
@@ -107,6 +107,15 @@ PROVE transE(self)
 <1>4 CASE E!credit(self) BY <1>4, creditEquivalence DEF E!trans, transE
 <1> QED BY <1>1, <1>2, <1>3, <1>4
     DEF E!trans
+
+THEOREM transEquivalenceRev == ASSUME NEW self \in Transfer, transE(self)
+PROVE E!trans(self)
+<1>1 CASE initE(self) BY <1>1, initEquivalenceRev DEF E!trans, transE
+<1>2 CASE debitE(self) BY <1>2, debitEquivalenceRev DEF E!trans, transE
+<1>3 CASE crashE(self) BY <1>3, crashEquivalenceRev DEF E!trans, transE
+<1>4 CASE creditE(self) BY <1>4, creditEquivalenceRev DEF E!trans, transE
+<1> QED BY <1>1, <1>2, <1>3, <1>4
+    DEF transE
 
 
 THEOREM unchangedVarsProperty == E!IndInv /\ UNCHANGED E!vars => E!IndInv'
