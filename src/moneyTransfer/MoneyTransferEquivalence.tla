@@ -94,7 +94,10 @@ PROVE creditE(self)
     <2> QED BY <2>1, <2>2
 <1> QED BY <1>1, <1>2 DEF creditE
 
-
+THEOREM ASSUME NEW self \in Transfer, creditE(self)
+PROVE E!credit(self)
+BY DEF E!credit, creditE, credit, pendingTransDerived,
+    pcLabels, E!ProcSet, ProcSet
 
 
 THEOREM unchangedVarsProperty == E!IndInv /\ UNCHANGED E!vars => E!IndInv'
