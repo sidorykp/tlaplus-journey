@@ -1,5 +1,5 @@
 ----MODULE MoneyTransferEquivalence----
-EXTENDS MoneyTransfer
+EXTENDS MoneyTransfer, TLAPS
 
 VARIABLE pendingTransE
 
@@ -124,9 +124,14 @@ THEOREM terminatingEquivalence == E!Terminating <=> TerminatingE
 BY unchangedEquivalence DEF E!Terminating, TerminatingE,
     E!ProcSet, ProcSet
     
-THEOREM E!Next <=> NextE
+THEOREM nextEquivalence == E!Next <=> NextE
 BY transEquivalence, transEquivalenceRev, terminatingEquivalence
     DEF E!Next, NextE
+
+THEOREM specEquivalence == E!Spec <=> SpecE
+BY PTL, nextEquivalence, InitEquivalence, unchangedEquivalence
+    DEF E!Spec, SpecE,
+    E!vars, vars, varsE
 
 
 THEOREM unchangedVarsProperty == E!IndInv /\ UNCHANGED E!vars => E!IndInv'
