@@ -222,7 +222,7 @@ IndInv ==
     /\ \A t \in Transfer:
         pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
 
-IndSpec == /\ IndInv /\ [][Next]_vars
+IndSpec == IndInv /\ [][Next]_vars
 
 CommonIndInv ==
     /\ amount \in [Transfer -> Nat]
