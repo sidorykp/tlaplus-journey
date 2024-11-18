@@ -559,7 +559,6 @@ PROVE IndInv'
 <1> QED BY <1>1, <1>2, <1>3, <1>4 DEF trans
 
 
-
 THEOREM unchangedVarsProperty == IndInv /\ UNCHANGED vars => IndInv'
 <1> SUFFICES ASSUME IndInv, UNCHANGED vars
     PROVE IndInv'

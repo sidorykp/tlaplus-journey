@@ -10,13 +10,16 @@ EAccount == Account \cup {Empty}
 ETransfer == Transfer \cup {Empty}
 
 EmptyAccounts == [from |-> Empty, to |-> Empty]
+    
+MapThenFoldSetE(op(_,_), base, f(_), choose(_), S) ==
+  LET iter[s \in SUBSET S] ==
+        IF s = {} THEN base
+        ELSE LET x == choose(s)
+             IN  op(f(x), iter[s \ {x}])
+  IN  iter[S]
 
-MapThenSumSetE(op(_), S) ==
-    LET iter[s \in SUBSET S] ==
-        IF s = {} THEN 0
-        ELSE LET x == CHOOSE x \in s : TRUE
-            IN op(x) + iter[s \ {x}]
-    IN iter[S]
+MapThenSumSetE(op(_), set) ==
+   MapThenFoldSetE(+, 0, op, LAMBDA s : CHOOSE x \in s : TRUE, set)
 
 (***************************************
 Transfer -> Account -> credit or debit

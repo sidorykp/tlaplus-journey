@@ -34,7 +34,7 @@ PROVE E!init(self)
     BY DEF accountDebitsCerdits, E!accountDebitsCerdits,
     accountCreditsSum, E!accountCreditsSum,
     accountDebitsSum, E!accountDebitsSum,
-    MapThenSumSet, MapThenFoldSet, E!MapThenSumSetE,
+    MapThenSumSet, MapThenFoldSet, E!MapThenSumSetE, E!MapThenFoldSetE,
     opAmount, E!opAmount
 <1> QED BY EquivalentSymbolsAssumption, <1>1, <1>2 DEF init, E!init,
     amountAvail, E!amountAvail
@@ -49,7 +49,7 @@ PROVE init(self)
     BY DEF accountDebitsCerdits, E!accountDebitsCerdits,
     accountCreditsSum, E!accountCreditsSum,
     accountDebitsSum, E!accountDebitsSum,
-    MapThenSumSet, MapThenFoldSet, E!MapThenSumSetE,
+    MapThenSumSet, MapThenFoldSet, E!MapThenSumSetE, E!MapThenFoldSetE,
     opAmount, E!opAmount
 <1> QED BY EquivalentSymbolsAssumption, <1>1, <1>2 DEF init, E!init,
     amountAvail, E!amountAvail
