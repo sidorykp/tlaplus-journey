@@ -10,6 +10,16 @@ EAccount == Account \cup {Empty}
 ETransfer == Transfer \cup {Empty}
 
 EmptyAccounts == [from |-> Empty, to |-> Empty]
+    
+MapThenFoldSetE(op(_,_), base, f(_), choose(_), S) ==
+  LET iter[s \in SUBSET S] ==
+        IF s = {} THEN base
+        ELSE LET x == choose(s)
+             IN  op(f(x), iter[s \ {x}])
+  IN  iter[S]
+
+MapThenSumSetE(op(_), set) ==
+   MapThenFoldSetE(+, 0, op, LAMBDA s : CHOOSE x \in s : TRUE, set)
 
 (***************************************
 Transfer -> Account -> credit or debit
@@ -27,12 +37,12 @@ Transfer -> amount
 
     define {
         opAmount(dc) == dc[2]
-    
-        accountCredits(a) == MapThenSumSet(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, credits)
-        
-        accountDebits(a) == MapThenSumSet(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 0, debits)
-        
-        amountAvail(a) == NAvail + accountCredits(a) - accountDebits(a)
+
+        accountCreditsSum(a) == MapThenSumSetE(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, credits)
+
+        accountDebitsSum(a) == MapThenSumSetE(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 0, debits)
+
+        amountAvail(a) == NAvail + accountCreditsSum(a) - accountDebitsSum(a)
         
         isTransKnownToItem(t, a, dc) == dc[1].a = a /\ dc[1].t = t
         
@@ -85,17 +95,17 @@ Transfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "df3e8326" /\ chksum(tla) = "2c636c3c")
+\* BEGIN TRANSLATION (chksum(pcal) = "fb70e6a8" /\ chksum(tla) = "58f42086")
 VARIABLES credits, debits, amount, accounts, pendingTrans, pc
 
 (* define statement *)
 opAmount(dc) == dc[2]
 
-accountCredits(a) == MapThenSumSet(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, credits)
+accountCreditsSum(a) == MapThenSumSetE(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, credits)
 
-accountDebits(a) == MapThenSumSet(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 0, debits)
+accountDebitsSum(a) == MapThenSumSetE(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 0, debits)
 
-amountAvail(a) == NAvail + accountCredits(a) - accountDebits(a)
+amountAvail(a) == NAvail + accountCreditsSum(a) - accountDebitsSum(a)
 
 isTransKnownToItem(t, a, dc) == dc[1].a = a /\ dc[1].t = t
 
@@ -243,7 +253,7 @@ IndInv ==
     /\ \A t \in Transfer:
         pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
 
-IndSpec == /\ IndInv /\ [][Next]_vars
+IndSpec == IndInv /\ [][Next]_vars
 
 CommonIndInv ==
     /\ amount \in [Transfer -> Nat]
@@ -264,5 +274,6 @@ IndInvInteractiveStateConstraints ==
         /\ opAmount(d) = opAmount(c)
     /\ \A t \in Transfer:
         amount[t] = 0 <=> pc[t] = "init"
+
 
 ====
