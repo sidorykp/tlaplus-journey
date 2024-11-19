@@ -605,4 +605,5 @@ THEOREM IndInvPreserved == Spec => []IndInv
     BY unchangedVarsProperty
 <1> QED BY PTL, initProperty, nextProperty, <1>1 DEF Spec
 
+
 ====
