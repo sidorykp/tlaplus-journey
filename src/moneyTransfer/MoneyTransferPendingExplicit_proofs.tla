@@ -605,4 +605,34 @@ THEOREM IndInvPreserved == Spec => []IndInv
     BY unchangedVarsProperty
 <1> QED BY PTL, initProperty, nextProperty, <1>1 DEF Spec
 
+
+transPending == {t \in Transfer: AmountIsPending(t)}
+
+transAmount(t) == amount[t]
+
+AmountPendingTotalE == MapThenSumSet(transAmount, transPending)
+
+THEOREM ASSUME IndInv
+PROVE AmountPendingTotal = AmountPendingTotalE
+<1>1 CASE pendingTrans = {}
+    <2>1 \A t \in Transfer: ~AmountIsPending(t)
+        BY <1>1 DEF IndInv, TypeOK, TransPendingEquivalence
+    <2>2 AmountPendingTotalE = 0 BY <2>1, MapThenSumSetEmpty DEF AmountPendingTotalE, transPending
+    <2>3 AmountPendingTotal = 0 BY <1>1, MapThenSumSetEmpty DEF AmountPendingTotal
+    <2> QED BY <2>2, <2>3
+<1>2 CASE pendingTrans # {}
+    <2>1 \A t \in Transfer: AmountIsPending(t) <=> TransInPendingTrans(t)
+        BY <1>2 DEF IndInv, TypeOK, TransPendingEquivalence
+    <2>2 {t \in Transfer: AmountIsPending(t)} = {t \in Transfer: TransInPendingTrans(t)}
+        BY <2>1
+    <2>3 AmountPendingTotalE = MapThenSumSet(transAmount, {t \in Transfer: \E tp \in pendingTrans: tp[1] = t /\ tp[2] = amount[t]})
+        BY <2>2 DEF AmountPendingTotalE, transPending, TransInPendingTrans
+    <2>4 AmountPendingTotal = MapThenSumSet(pendingTransAmount, pendingTrans)
+        BY DEF AmountPendingTotal
+    <2>5 ~\E pt1, pt2 \in pendingTrans: pt1 # pt2 /\ pt1[1] = pt2[1]
+        BY <1>2 DEF IndInv, TypeOK, PendingTransUniqueness
+    <2> QED BY <2>3, <2>4 DEF pendingTransAmount, transAmount
+<1> QED BY <1>1, <1>2
+
+
 ====

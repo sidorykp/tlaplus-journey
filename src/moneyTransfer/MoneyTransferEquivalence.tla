@@ -36,8 +36,6 @@ E == INSTANCE MoneyTransferPendingExplicit WITH pendingTrans <- pendingTransE
 ASSUME EquivalentSymbolsAssumption ==
     /\ EmptyAccounts = E!EmptyAccounts
 
-THEOREM E!Spec <=> SpecE
-
 THEOREM InitEquivalence == E!Init <=> InitE
 BY EquivalentSymbolsAssumption DEF E!Init, InitE, Init, pendingTransDerived,
     pcLabels, E!ProcSet, ProcSet,
@@ -133,6 +131,12 @@ BY PTL, nextEquivalence, InitEquivalence, unchangedEquivalence
     DEF E!Spec, SpecE,
     E!vars, vars, varsE
 
+\* Fully proved in MoneyTransferPendingExplicit_proofs
+THEOREM IndInvPreserved == E!Spec => []E!IndInv OMITTED
+
+THEOREM SpecE => []E!IndInv
+BY IndInvPreserved, PTL, specEquivalence
+
 
 THEOREM unchangedVarsProperty == E!IndInv /\ UNCHANGED E!vars => E!IndInv'
 <1> SUFFICES ASSUME E!IndInv, UNCHANGED E!vars
@@ -164,6 +168,5 @@ THEOREM unchangedVarsProperty == E!IndInv /\ UNCHANGED E!vars => E!IndInv'
 <1>8 (E!Imbalance = 0)' = (E!Imbalance = 0) BY <1>5, <1>6, <1>7 DEF E!Imbalance
 
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>8 DEF E!IndInv
-
 
 ====
