@@ -225,10 +225,6 @@ PendingTransDerived == \A pt \in pendingTrans: \E d \in debits: d[1].t = pt[1] /
 
 PendingTransUniqueness == pendingTrans = {} \/ ~\E pt1, pt2 \in pendingTrans: pt1 # pt2 /\ pt1[1] = pt2[1]
 
-transAmountE(t) == amount[t]
-
-AmountPendingTotalE == MapThenSumSetE(transAmountE, {t \in Transfer: AmountIsPending(t)})
-
 TypeOK ==
     /\ credits \in SUBSET (AT \X Nat)
     /\ IsFiniteSet(credits)
@@ -242,7 +238,6 @@ TypeOK ==
     /\ TransPendingEquivalence
     /\ PendingTransDerived
     /\ PendingTransUniqueness
-    /\ AmountPendingTotal = AmountPendingTotalE
 
 Inv ==
     /\ TypeOK

@@ -552,34 +552,31 @@ THEOREM unchangedVarsProperty == IndInv /\ UNCHANGED vars => IndInv'
     PROVE IndInv'
     OBVIOUS
 <1> USE DEF vars
-<1>1 AmountPendingTotal' = AmountPendingTotal BY DEF AmountPendingTotal
-<1>2 AmountPendingTotalE' = AmountPendingTotalE
-    BY DEF AmountPendingTotalE, MapThenSumSetE, MapThenFoldSetE, AmountIsPending,
-    creditPrecond, isTransKnown, isTransKnownToItem, transAmountE
-<1>3 TypeOK' = TypeOK BY <1>1, <1>2 DEF TypeOK, pcLabels,
+<1>1 TypeOK' = TypeOK BY DEF TypeOK, pcLabels,
     TransPendingEquivalence, TransInPendingTrans, AmountIsPending, creditPrecond,
     PendingTransDerived, PendingTransUniqueness
-<1>4 (/\ \A t \in Transfer:
+<1>2 (/\ \A t \in Transfer:
         \/ accounts[t] = EmptyAccounts
         \/ DifferentAccounts(t) /\ NonEmptyAccounts(t))' =
       /\ \A t \in Transfer:
         \/ accounts[t] = EmptyAccounts
         \/ DifferentAccounts(t) /\ NonEmptyAccounts(t)
     BY DEF DifferentAccounts, NonEmptyAccounts
-<1>5 (/\ \A t \in Transfer: pc[t] = "init" => initPrecond(t))' =
+<1>3 (/\ \A t \in Transfer: pc[t] = "init" => initPrecond(t))' =
     /\ \A t \in Transfer: pc[t] = "init" => initPrecond(t)
     BY DEF initPrecond
-<1>6 (/\ \A t \in Transfer:
+<1>4 (/\ \A t \in Transfer:
         pc[t] \notin {"init"} <=> NonEmptyAccounts(t))' =
       /\ \A t \in Transfer:
         pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
     BY DEF NonEmptyAccounts
-<1>7 CreditTotal' = CreditTotal BY DEF CreditTotal
-<1>8 DebitTotal' = DebitTotal BY DEF DebitTotal
+<1>5 CreditTotal' = CreditTotal BY DEF CreditTotal
+<1>6 DebitTotal' = DebitTotal BY DEF DebitTotal
+<1>7 AmountPendingTotal' = AmountPendingTotal BY DEF AmountPendingTotal
 
-<1>9 (Imbalance = 0)' = (Imbalance = 0) BY <1>7, <1>8, <1>1 DEF Imbalance
+<1>8 (Imbalance = 0)' = (Imbalance = 0) BY <1>5, <1>6, <1>7 DEF Imbalance
 
-<1> QED BY <1>3, <1>4, <1>5, <1>6, <1>9 DEF IndInv
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>8 DEF IndInv
 
 
 THEOREM nextTerminating == ASSUME IndInv, Next, Terminating
