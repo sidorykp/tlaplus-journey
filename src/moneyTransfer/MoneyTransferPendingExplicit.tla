@@ -224,12 +224,10 @@ pcLabels == pc \in [Transfer -> {"Done", "init", "debit", "credit", "crash"}]
 PendingTransDerived == \A pt \in pendingTrans: \E d \in debits: d[1].t = pt[1] /\ d[2] = pt[2]
 
 PendingTransUniqueness == pendingTrans = {} \/ ~\E pt1, pt2 \in pendingTrans: pt1 # pt2 /\ pt1[1] = pt2[1]
-  
-transPending == {t \in Transfer: AmountIsPending(t)}
 
-transAmount(t) == amount[t]
+transAmountE(t) == amount[t]
 
-AmountPendingTotalE == MapThenSumSetE(transAmount, transPending)
+AmountPendingTotalE == MapThenSumSetE(transAmountE, {t \in Transfer: AmountIsPending(t)})
 
 TypeOK ==
     /\ credits \in SUBSET (AT \X Nat)
