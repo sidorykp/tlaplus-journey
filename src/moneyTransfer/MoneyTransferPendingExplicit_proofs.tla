@@ -606,4 +606,40 @@ THEOREM IndInvPreserved == Spec => []IndInv
 <1> QED BY PTL, initProperty, nextProperty, <1>1 DEF Spec
 
 
+pendingTransTrans(pt) == {t \in Transfer: pt[1] = t}
+
+transPendingTrans(t) == {pt \in pendingTrans: pt[1] = t /\ pt[2] = amount[t]}
+
+THEOREM ASSUME IndInv
+PROVE AmountPendingTotal = AmountPendingTotalE
+<1>1 CASE pendingTrans = {}
+    <2>1 \A t \in Transfer: ~AmountIsPending(t)
+        BY <1>1 DEF IndInv, TypeOK, TransPendingEquivalence
+    <2>2 AmountPendingTotalE = 0 BY <2>1, MapThenSumSetEmpty
+        DEF AmountPendingTotalE, MapThenSumSetE, MapThenSumSet, MapThenFoldSetE, MapThenFoldSet
+    <2>3 AmountPendingTotal = 0 BY <1>1, MapThenSumSetEmpty DEF AmountPendingTotal
+    <2> QED BY <2>2, <2>3
+<1>2 CASE pendingTrans # {}
+    <2>1 \A t \in Transfer: AmountIsPending(t) <=> TransInPendingTrans(t)
+        BY <1>2 DEF IndInv, TypeOK, TransPendingEquivalence
+    <2>2 {t \in Transfer: AmountIsPending(t)} = {t \in Transfer: TransInPendingTrans(t)}
+        BY <2>1
+    <2>3 AmountPendingTotalE = MapThenSumSetE(transAmountE, {t \in Transfer: \E pt \in pendingTrans: pt[1] = t /\ pt[2] = amount[t]})
+        BY <2>2 DEF AmountPendingTotalE, TransInPendingTrans
+    <2>20 AmountPendingTotalE = MapThenSumSet(transAmountE, {t \in Transfer: \E pt \in pendingTrans: pt[1] = t /\ pt[2] = amount[t]})
+        BY <2>3 DEF MapThenSumSetE, MapThenSumSet, MapThenFoldSetE, MapThenFoldSet
+    <2>4 AmountPendingTotal = MapThenSumSet(pendingTransAmount, pendingTrans)
+        BY DEF AmountPendingTotal
+    <2>5 ~\E pt1, pt2 \in pendingTrans: pt1 # pt2 /\ pt1[1] = pt2[1]
+        BY <1>2 DEF IndInv, TypeOK, PendingTransUniqueness
+    <2>8 \A pt \in pendingTrans: \E t \in Transfer: pt[1] = t BY DEF IndInv, TypeOK, TN
+    <2>9 \A pt \in pendingTrans: \E t \in Transfer: pendingTransTrans(pt) = {t}
+        BY <2>5, <2>8 DEF IndInv, TypeOK, pendingTransTrans
+    <2>10 \A t \in Transfer: transPendingTrans(t) # {} => \E pt \in pendingTrans: transPendingTrans(t) = {pt}
+        BY <2>5 DEF IndInv, TypeOK, transPendingTrans
+    <2> QED BY <2>20, <2>4 DEF AmountPendingTotalE,
+        IndInv, TypeOK, TN, pendingTransAmount
+<1> QED BY <1>1, <1>2
+
+
 ====
