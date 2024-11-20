@@ -51,35 +51,34 @@ THEOREM initEquivalenceRev == ASSUME NEW self \in Transfer, initE(self)
 PROVE E!init(self)
 BY DEF E!init, initE, pendingTransDerived,
     pcLabels, E!ProcSet, ProcSet,
-    AmountIsPending, creditPrecond
+    AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
 
 THEOREM debitEquivalence == ASSUME NEW self \in Transfer, E!debit(self)
 PROVE debitE(self)
-BY DEF E!debit, debitE, pendingTransDerived,
+BY DEF E!debit, debitE, debit, pendingTransDerived,
     pcLabels, E!ProcSet, ProcSet, E!debitPrecond,
     AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
 
 THEOREM debitEquivalenceRev == ASSUME NEW self \in Transfer, debitE(self)
 PROVE E!debit(self)
-BY DEF E!debit, debitE, pendingTransDerived,
-    pcLabels, E!ProcSet, ProcSet, E!debitPrecond,
-    AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+BY DEF E!debit, debitE, debit, pendingTransDerived,
+    pcLabels, E!ProcSet, ProcSet, debitPrecond, E!debitPrecond,
+    AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem,
+    E!isTransKnown, E!isTransKnownToItem
     
 THEOREM crashEquivalence == ASSUME NEW self \in Transfer, E!crash(self)
 PROVE crashE(self)
-BY DEF E!crash, crashE, pendingTransDerived,
+BY DEF E!crash, crashE, crash, pendingTransDerived,
     pcLabels, E!ProcSet, ProcSet,
     AmountIsPending, creditPrecond
     
 THEOREM crashEquivalenceRev == ASSUME NEW self \in Transfer, crashE(self)
 PROVE E!crash(self)
-BY DEF E!crash, crashE, pendingTransDerived,
-    pcLabels, E!ProcSet, ProcSet,
-    AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+BY DEF E!crash, crashE, pendingTransDerived
 
 THEOREM creditEquivalence == ASSUME NEW self \in Transfer, E!credit(self)
 PROVE creditE(self)
-<1>1 credit(self) BY DEF E!credit, creditE
+<1>1 credit(self) BY DEF E!credit, creditE, credit
 <1>2 pendingTransE' = pendingTransDerived'
     <2>1 CASE E!creditPrecond(self)
         <3> QED BY <2>1 DEF E!credit, pendingTransDerived,
@@ -144,7 +143,7 @@ THEOREM ASSUME E!IndInv PROVE E!AmountPendingTotalE = AmountPendingTotal
 BY DEF E!IndInv, E!TypeOK, E!AmountPendingTotalE, AmountPendingTotal,
     E!MapThenSumSetE, E!MapThenFoldSetE,
     MapThenSumSet, MapThenFoldSet,
-    E!transAmount, E!transPending, E!AmountIsPending,
+    E!transAmountE, E!AmountIsPending,
     transAmount, transPending, AmountIsPending,
     E!creditPrecond, creditPrecond,
     E!isTransKnown, isTransKnown,
