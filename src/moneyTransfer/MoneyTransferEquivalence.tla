@@ -36,8 +36,6 @@ E == INSTANCE MoneyTransferPendingExplicit WITH pendingTrans <- pendingTransE
 ASSUME EquivalentSymbolsAssumption ==
     /\ EmptyAccounts = E!EmptyAccounts
 
-THEOREM E!Spec <=> SpecE
-
 THEOREM InitEquivalence == E!Init <=> InitE
 BY EquivalentSymbolsAssumption DEF E!Init, InitE, Init, pendingTransDerived,
     pcLabels, E!ProcSet, ProcSet,
