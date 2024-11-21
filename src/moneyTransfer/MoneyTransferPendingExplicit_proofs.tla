@@ -15,9 +15,9 @@ ASSUME NAvailAssumption == NAvail \in NNat
 
 ASSUME EmptyAssumption == Empty = 0
 
-LEMMA pendingTransAmountInNat == ASSUME TypeOK, NEW self \in TN
+LEMMA pendingTransAmountInNat == ASSUME TypeOK, NEW self \in Transfer
 PROVE pendingTransAmount(self) \in Nat
-BY DEF TypeOK, pendingTransAmount, TN
+BY DEF TypeOK, pendingTransAmount
 
 LEMMA transSetIsFinite == ASSUME NTransferAssumption
 PROVE IsFiniteSet(Transfer)
@@ -66,7 +66,7 @@ PROVE IndInv'
 <1>2 IsFiniteSet(credits)' BY DEF crash
 <1>3 debits' \in SUBSET (AT \X Nat) BY DEF crash
 <1>4 IsFiniteSet(debits)' BY DEF crash
-<1>5 pendingTrans' \in SUBSET TN BY DEF crash
+<1>5 pendingTrans' \in SUBSET Transfer BY DEF crash
 <1>6 IsFiniteSet(pendingTrans)' BY DEF crash
 <1>7 amount' \in [Transfer -> Nat] BY DEF crash
 <1>8 accounts' \in [Transfer -> EAccounts] BY DEF crash
@@ -134,7 +134,7 @@ PROVE IndInv'
 <1>2 IsFiniteSet(credits)' BY DEF init
 <1>3 debits' \in SUBSET (AT \X Nat) BY DEF init
 <1>4 IsFiniteSet(debits)' BY DEF init
-<1>5 pendingTrans' \in SUBSET TN BY DEF init
+<1>5 pendingTrans' \in SUBSET Transfer BY DEF init
 <1>6 IsFiniteSet(pendingTrans)' BY DEF init
 
 <1>7 am \in Nat BY DEF init, NNat
@@ -312,8 +312,8 @@ PROVE IndInv'
         BY <2>1, <2>5
     <2>7 IsFiniteSet(debits)' BY <1>1, FS_AddElement DEF debit
     <2>8 pendingTrans' = pendingTrans \cup {ptAdd} BY <1>1 DEF debit
-    <2>9 ptAdd \in TN BY DEF TN
-    <2>10 pendingTrans' \in SUBSET TN BY <2>8, <2>9
+    <2>9 ptAdd \in Transfer OBVIOUS
+    <2>10 pendingTrans' \in SUBSET Transfer BY <2>8, <2>9
     <2>11 IsFiniteSet(pendingTrans)' BY <1>1, FS_AddElement DEF debit
     
     <2>12 credits' = credits BY DEF debit
@@ -367,7 +367,7 @@ PROVE IndInv'
 <1>2 CASE ~debitPrecond(self)
     <2>3 debits' \in SUBSET (AT \X Nat) BY <1>2 DEF debit
     <2>4 IsFiniteSet(debits)' BY <1>2 DEF debit
-    <2>5 pendingTrans' \in SUBSET TN BY <1>2 DEF debit
+    <2>5 pendingTrans' \in SUBSET Transfer BY <1>2 DEF debit
     <2>6 IsFiniteSet(pendingTrans)' BY <1>2 DEF debit
     <2>7 TransPendingEquivalence' BY <1>2 DEF debit, TransPendingEquivalence, TransInPendingTrans,
         pcLabels, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
@@ -436,7 +436,7 @@ THEOREM credit_IndInv_common == ASSUME IndInv, NEW self \in Transfer, credit(sel
 PROVE (
     /\ debits \in SUBSET (AT \X Nat)
     /\ IsFiniteSet(debits)
-    /\ pendingTrans \in SUBSET TN
+    /\ pendingTrans \in SUBSET Transfer
     /\ IsFiniteSet(pendingTrans)
     /\ CommonIndInv
     /\ TransPendingEquivalence
@@ -483,7 +483,7 @@ PROVE (
     BY <1>18, <1>20
 
 <1>22 debits' = debits BY DEF credit
-<1>23 pendingTrans' \in SUBSET TN  BY DEF credit, IndInv, TypeOK
+<1>23 pendingTrans' \in SUBSET Transfer  BY DEF credit, IndInv, TypeOK
 <1>24 IsFiniteSet(pendingTrans)' BY DEF credit
 <1> HIDE DEF IndInv, TypeOK, CommonIndInv
 <1>25 AmountIsPending(self)' <=> TransInPendingTrans(self)'
@@ -572,7 +572,8 @@ THEOREM unchangedVarsProperty == IndInv /\ UNCHANGED vars => IndInv'
     BY DEF NonEmptyAccounts
 <1>5 CreditTotal' = CreditTotal BY DEF CreditTotal
 <1>6 DebitTotal' = DebitTotal BY DEF DebitTotal
-<1>7 AmountPendingTotal' = AmountPendingTotal BY DEF AmountPendingTotal
+<1>7 AmountPendingTotal' = AmountPendingTotal BY DEF AmountPendingTotal,
+    pendingTransAmount, MapThenSumSet, MapThenFoldSet
 
 <1>8 (Imbalance = 0)' = (Imbalance = 0) BY <1>5, <1>6, <1>7 DEF Imbalance
 

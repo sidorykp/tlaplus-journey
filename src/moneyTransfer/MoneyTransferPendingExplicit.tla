@@ -59,7 +59,7 @@ Transfer -> amount
             /\ ~isTransKnown(t, accounts[t].to, debits)
             /\ isTransKnown(t, accounts[t].from, debits)
         
-        pendingTransAmount(pt) == pt[2]
+        pendingTransAmount(t) == amount[t]
     }
 
     process (trans \in Transfer)    
@@ -76,7 +76,7 @@ Transfer -> amount
             with (a = accounts[self].from) {
                 if (debitPrecond(self)) {
                     debits := debits \cup {<<[a |-> a, t |-> self], amount[self]>>};
-                    pendingTrans := pendingTrans \cup {<<self, amount[self]>>};
+                    pendingTrans := pendingTrans \cup {self};
                 } else {
                     skip;
                 }
@@ -89,13 +89,13 @@ Transfer -> amount
             with (a = accounts[self].to; at = [a |-> a, t |-> self]) {
                 if (creditPrecond(self)) {
                     credits := credits \cup {<<at, amount[self]>>};
-                    pendingTrans := pendingTrans \ {<<self, amount[self]>>};
+                    pendingTrans := pendingTrans \ {self};
                 }
             };
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "fb70e6a8" /\ chksum(tla) = "58f42086")
+\* BEGIN TRANSLATION (chksum(pcal) = "44646d6a" /\ chksum(tla) = "eca6d621")
 VARIABLES credits, debits, amount, accounts, pendingTrans, pc
 
 (* define statement *)
@@ -122,7 +122,7 @@ creditPrecond(t) ==
     /\ ~isTransKnown(t, accounts[t].to, debits)
     /\ isTransKnown(t, accounts[t].from, debits)
 
-pendingTransAmount(pt) == pt[2]
+pendingTransAmount(t) == amount[t]
 
 
 vars == << credits, debits, amount, accounts, pendingTrans, pc >>
@@ -152,7 +152,7 @@ debit(self) == /\ pc[self] = "debit"
                /\ LET a == accounts[self].from IN
                     IF debitPrecond(self)
                        THEN /\ debits' = (debits \cup {<<[a |-> a, t |-> self], amount[self]>>})
-                            /\ pendingTrans' = (pendingTrans \cup {<<self, amount[self]>>})
+                            /\ pendingTrans' = (pendingTrans \cup {self})
                        ELSE /\ TRUE
                             /\ UNCHANGED << debits, pendingTrans >>
                /\ pc' = [pc EXCEPT ![self] = "crash"]
@@ -169,7 +169,7 @@ credit(self) == /\ pc[self] = "credit"
                      LET at == [a |-> a, t |-> self] IN
                        IF creditPrecond(self)
                           THEN /\ credits' = (credits \cup {<<at, amount[self]>>})
-                               /\ pendingTrans' = pendingTrans \ {<<self, amount[self]>>}
+                               /\ pendingTrans' = pendingTrans \ {self}
                           ELSE /\ TRUE
                                /\ UNCHANGED << credits, pendingTrans >>
                 /\ pc' = [pc EXCEPT ![self] = "Done"]
@@ -200,7 +200,7 @@ AmountIsPending(t) ==
 
 AmountPendingTotal == MapThenSumSet(pendingTransAmount, pendingTrans)
 
-TransInPendingTrans(t) == \E tp \in pendingTrans: tp[1] = t /\ tp[2] = amount[t]
+TransInPendingTrans(t) == \E tp \in pendingTrans: tp = t
 
 TransPendingEquivalence == \A t \in Transfer: AmountIsPending(t)
     <=> pendingTrans # {} /\ TransInPendingTrans(t)
@@ -217,20 +217,18 @@ EAccounts == [from: EAccount, to: EAccount]
 
 AT == [a: Account, t: Transfer]
 
-TN == Transfer \X Nat
-
 pcLabels == pc \in [Transfer -> {"Done", "init", "debit", "credit", "crash"}]
 
-PendingTransDerived == \A pt \in pendingTrans: \E d \in debits: d[1].t = pt[1] /\ d[2] = pt[2]
+PendingTransDerived == \A pt \in pendingTrans: \E d \in debits: d[1].t = pt
 
-PendingTransUniqueness == pendingTrans = {} \/ ~\E pt1, pt2 \in pendingTrans: pt1 # pt2 /\ pt1[1] = pt2[1]
+PendingTransUniqueness == pendingTrans = {} \/ ~\E pt1, pt2 \in pendingTrans: pt1 # pt2 /\ pt1 = pt2
 
 TypeOK ==
     /\ credits \in SUBSET (AT \X Nat)
     /\ IsFiniteSet(credits)
     /\ debits \in SUBSET (AT \X Nat)
     /\ IsFiniteSet(debits)
-    /\ pendingTrans \in SUBSET TN
+    /\ pendingTrans \in SUBSET Transfer
     /\ IsFiniteSet(pendingTrans)
     /\ amount \in [Transfer -> Nat]
     /\ accounts \in [Transfer -> EAccounts]
