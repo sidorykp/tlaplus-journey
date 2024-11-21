@@ -200,10 +200,8 @@ AmountIsPending(t) ==
 
 AmountPendingTotal == MapThenSumSet(pendingTransAmount, pendingTrans)
 
-TransInPendingTrans(t) == \E tp \in pendingTrans: tp = t
-
 TransPendingEquivalence == \A t \in Transfer: AmountIsPending(t)
-    <=> pendingTrans # {} /\ TransInPendingTrans(t)
+    <=> \E tp \in pendingTrans: tp = t
 
 Imbalance == CreditTotal - DebitTotal + AmountPendingTotal
 
@@ -221,8 +219,6 @@ pcLabels == pc \in [Transfer -> {"Done", "init", "debit", "credit", "crash"}]
 
 PendingTransDerived == \A pt \in pendingTrans: \E d \in debits: d[1].t = pt
 
-PendingTransUniqueness == pendingTrans = {} \/ ~\E pt1, pt2 \in pendingTrans: pt1 # pt2 /\ pt1 = pt2
-
 TypeOK ==
     /\ credits \in SUBSET (AT \X Nat)
     /\ IsFiniteSet(credits)
@@ -235,7 +231,6 @@ TypeOK ==
     /\ pcLabels
     /\ TransPendingEquivalence
     /\ PendingTransDerived
-    /\ PendingTransUniqueness
 
 Inv ==
     /\ TypeOK
