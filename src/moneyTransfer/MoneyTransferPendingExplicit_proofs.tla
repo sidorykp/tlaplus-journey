@@ -606,39 +606,70 @@ THEOREM IndInvPreserved == Spec => []IndInv
 <1> QED BY PTL, initProperty, nextProperty, <1>1 DEF Spec
 
 
+PendingTransAssumption == pendingTrans = {<<t, amount[t]>>: t \in {t \in Transfer: AmountIsPending(t)}}
+
+transAmountE(t) == amount[t]
+
+transPending == {t \in Transfer: AmountIsPending(t)}
+
+AmountPendingTotalE == MapThenSumSetE(transAmountE, transPending)
+
 pendingTransTrans(pt) == {t \in Transfer: pt[1] = t}
 
 transPendingTrans(t) == {pt \in pendingTrans: pt[1] = t /\ pt[2] = amount[t]}
 
-THEOREM ASSUME IndInv
+AmountPendingTotalLim ==
+    LET AmountPendingTotalLimRec[m \in Nat] ==
+        IF m = 0 THEN 0 ELSE (IF m <= NTransfer /\ AmountIsPending(m) THEN amount[m] ELSE 0) + AmountPendingTotalLimRec[m - 1] IN
+            AmountPendingTotalLimRec
+
+THEOREM AmountPendingTotalLimDefConclusion == ASSUME NTransferAssumption, TransferAssumption
+PROVE NatInductiveDefConclusion(AmountPendingTotalLim, 0, LAMBDA v,n : (IF n <= NTransfer /\ AmountIsPending(n) THEN amount[n] ELSE 0) + v)
+<1>1 NatInductiveDefHypothesis(AmountPendingTotalLim, 0, LAMBDA v,n : (IF n <= NTransfer /\ AmountIsPending(n) THEN amount[n] ELSE 0) + v)
+    BY DEF NatInductiveDefHypothesis, AmountPendingTotalLim, NNat
+<1>2 QED
+    BY <1>1, NatInductiveDef
+
+THEOREM AmountPendingTotalLimDef ==
+ASSUME NTransferAssumption, TransferAssumption, NEW n \in Nat
+PROVE AmountPendingTotalLim[n] = IF n = 0 THEN 0 ELSE (IF n <= NTransfer /\ AmountIsPending(n) THEN amount[n] ELSE 0) + AmountPendingTotalLim[n - 1]
+BY AmountPendingTotalLimDefConclusion DEF NatInductiveDefConclusion
+
+THEOREM ASSUME IndInv, PendingTransAssumption
 PROVE AmountPendingTotal = AmountPendingTotalE
 <1>1 CASE pendingTrans = {}
     <2>1 \A t \in Transfer: ~AmountIsPending(t)
         BY <1>1 DEF IndInv, TypeOK, TransPendingEquivalence
-    <2>2 AmountPendingTotalE = 0 BY <2>1, MapThenSumSetEmpty
-        DEF AmountPendingTotalE, MapThenSumSetE, MapThenSumSet, MapThenFoldSetE, MapThenFoldSet
-    <2>3 AmountPendingTotal = 0 BY <1>1, MapThenSumSetEmpty DEF AmountPendingTotal
-    <2> QED BY <2>2, <2>3
+    <2>2 transPending = {} BY <2>1 DEF transPending
+    <2>3 AmountPendingTotalE = 0 BY <2>2, MapThenSumSetEmpty
+        DEF AmountPendingTotalE, MapThenSumSetE, MapThenFoldSetE
+    <2>4 AmountPendingTotal = 0 BY <1>1, MapThenSumSetEmpty DEF AmountPendingTotal
+    <2> QED BY <2>3, <2>4
 <1>2 CASE pendingTrans # {}
     <2>1 \A t \in Transfer: AmountIsPending(t) <=> TransInPendingTrans(t)
         BY <1>2 DEF IndInv, TypeOK, TransPendingEquivalence
-    <2>2 {t \in Transfer: AmountIsPending(t)} = {t \in Transfer: TransInPendingTrans(t)}
-        BY <2>1
-    <2>3 AmountPendingTotalE = MapThenSumSetE(transAmountE, {t \in Transfer: \E pt \in pendingTrans: pt[1] = t /\ pt[2] = amount[t]})
-        BY <2>2 DEF AmountPendingTotalE, TransInPendingTrans
-    <2>20 AmountPendingTotalE = MapThenSumSet(transAmountE, {t \in Transfer: \E pt \in pendingTrans: pt[1] = t /\ pt[2] = amount[t]})
-        BY <2>3 DEF MapThenSumSetE, MapThenSumSet, MapThenFoldSetE, MapThenFoldSet
-    <2>4 AmountPendingTotal = MapThenSumSet(pendingTransAmount, pendingTrans)
-        BY DEF AmountPendingTotal
-    <2>5 ~\E pt1, pt2 \in pendingTrans: pt1 # pt2 /\ pt1[1] = pt2[1]
+    <2>2 AmountPendingTotalE = MapThenSumSetE(transAmountE, transPending)
+        BY DEF AmountPendingTotalE
+    
+    <2>3 AmountPendingTotal = MapThenSumSet(pendingTransAmount, {<<t, amount[t]>>: t \in transPending})
+        BY DEF AmountPendingTotal, PendingTransAssumption, transPending
+    <2>4 \A t \in Transfer: <<t, amount[t]>>[2] = amount[t] OBVIOUS
+    <2>5 AmountPendingTotal = MapThenSumSet(transAmountE, transPending)
+        BY <2>3, <2>4 DEF pendingTransAmount, transAmountE, transPending
+        
+    <2>6 ~\E pt1, pt2 \in pendingTrans: pt1 # pt2 /\ pt1[1] = pt2[1]
         BY <1>2 DEF IndInv, TypeOK, PendingTransUniqueness
     <2>8 \A pt \in pendingTrans: \E t \in Transfer: pt[1] = t BY DEF IndInv, TypeOK, TN
     <2>9 \A pt \in pendingTrans: \E t \in Transfer: pendingTransTrans(pt) = {t}
-        BY <2>5, <2>8 DEF IndInv, TypeOK, pendingTransTrans
+        BY <2>6, <2>8 DEF IndInv, TypeOK, pendingTransTrans
     <2>10 \A t \in Transfer: transPendingTrans(t) # {} => \E pt \in pendingTrans: transPendingTrans(t) = {pt}
-        BY <2>5 DEF IndInv, TypeOK, transPendingTrans
-    <2> QED BY <2>20, <2>4 DEF AmountPendingTotalE,
-        IndInv, TypeOK, TN, pendingTransAmount
+        BY <2>6 DEF IndInv, TypeOK, transPendingTrans
+    <2>11 \A t \in Transfer: AmountIsPending(t) => transPendingTrans(t) # {}
+        BY <2>1 DEF TransInPendingTrans, transPendingTrans
+    <2>12 \A t \in Transfer: AmountIsPending(t) => \E pt \in pendingTrans: transPendingTrans(t) = {pt}
+        BY <2>10, <2>11
+    
+    <2> QED BY <2>2, <2>5 DEF MapThenSumSetE, MapThenSumSet, MapThenFoldSetE, MapThenFoldSet
 <1> QED BY <1>1, <1>2
 
 

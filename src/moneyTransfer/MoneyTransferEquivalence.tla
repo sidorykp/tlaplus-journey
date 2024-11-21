@@ -137,18 +137,19 @@ THEOREM IndInvPreserved == E!Spec => []E!IndInv OMITTED
 THEOREM SpecE => []E!IndInv
 BY IndInvPreserved, PTL, specEquivalence
 
-THEOREM ASSUME E!IndInv PROVE E!AmountPendingTotal = E!AmountPendingTotalE
-BY DEF E!IndInv, E!TypeOK
-
-THEOREM ASSUME E!IndInv PROVE E!AmountPendingTotalE = AmountPendingTotal
-BY DEF E!IndInv, E!TypeOK, E!AmountPendingTotalE, AmountPendingTotal,
-    E!MapThenSumSetE, E!MapThenFoldSetE,
-    MapThenSumSet, MapThenFoldSet,
-    E!transAmountE, E!AmountIsPending,
-    transAmount, transPending, AmountIsPending,
-    E!creditPrecond, creditPrecond,
-    E!isTransKnown, isTransKnown,
-    E!isTransKnownToItem, isTransKnownToItem
+\* worked when AmountPendingTotal = AmountPendingTotalE was a part of IndInv
+\*THEOREM ASSUME E!IndInv PROVE E!AmountPendingTotal = E!AmountPendingTotalE
+\*BY DEF E!IndInv, E!TypeOK
+\*
+\*THEOREM ASSUME E!IndInv PROVE E!AmountPendingTotalE = AmountPendingTotal
+\*BY DEF E!IndInv, E!TypeOK, E!AmountPendingTotalE, AmountPendingTotal,
+\*    E!MapThenSumSetE, E!MapThenFoldSetE,
+\*    MapThenSumSet, MapThenFoldSet,
+\*    E!transAmountE, E!AmountIsPending,
+\*    transAmount, transPending, AmountIsPending,
+\*    E!creditPrecond, creditPrecond,
+\*    E!isTransKnown, isTransKnown,
+\*    E!isTransKnownToItem, isTransKnownToItem
 
 
 THEOREM unchangedVarsProperty == E!IndInv /\ UNCHANGED E!vars => E!IndInv'
