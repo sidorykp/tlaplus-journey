@@ -118,7 +118,18 @@ PROVE IndInv'
 
 THEOREM init_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, init(self)
 PROVE AmountPendingTotal' = AmountPendingTotal
-BY DEF init, AmountPendingTotal
+<1>1 pendingTrans' =  pendingTrans BY DEF init
+<1>2 self \notin pendingTrans BY DEF init, IndInv, TypeOK
+<1>3 self \notin pendingTrans' BY <1>1, <1>2
+
+<1>4 \A t \in pendingTrans \ {self}: amount[t]' = amount[t] BY DEF init, IndInv, TypeOK
+<1>5 MapThenSumSet(pendingTransAmount, pendingTrans) = MapThenSumSet(pendingTransAmount, pendingTrans')
+    BY <1>1
+
+<1>6 MapThenSumSet(pendingTransAmount, pendingTrans)' = MapThenSumSet(pendingTransAmount, pendingTrans')
+    BY <1>1, <1>2, <1>3, <1>4 DEF pendingTransAmount, MapThenSumSet, MapThenFoldSet
+ 
+<1> QED BY <1>5, <1>6 DEF AmountPendingTotal
 
 
 THEOREM init_IndInv == ASSUME IndInv, NEW self \in Transfer, init(self)
