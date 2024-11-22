@@ -572,7 +572,9 @@ THEOREM unchangedVarsProperty == IndInv /\ UNCHANGED vars => IndInv'
     creditPrecond, isTransKnown, isTransKnownToItem
 <1>9 MapThenSumSet(transAmount, transPending) = MapThenSumSet(transAmount, transPending') BY <1>7, <1>8
 <1>10 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
-<1>11 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') OMITTED
+<1>11 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') BY DEF AmountPendingTotal,
+    transAmount, transPending, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem,
+    MapThenSumSet, MapThenFoldSet
 <1>12 AmountPendingTotal' = AmountPendingTotal BY <1>9, <1>10, <1>11 DEF AmountPendingTotal
 
 <1>13 (Imbalance = 0)' = (Imbalance = 0) BY <1>5, <1>6, <1>12 DEF Imbalance
