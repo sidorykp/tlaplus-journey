@@ -554,7 +554,10 @@ THEOREM unchangedVarsProperty == IndInv /\ UNCHANGED vars => IndInv'
 <1> USE DEF vars
 <1>1 TypeOK' = TypeOK BY DEF TypeOK, pcLabels,
     TransPendingEquivalence, TransInPendingTrans, AmountIsPending, creditPrecond,
-    PendingTransDerived, PendingTransUniqueness
+    PendingTransDerived, PendingTransUniqueness,
+    AmountPendingTotalEquivalence, AmountPendingTotalE, transAmount,
+    AmountPendingTotal, pendingTransAmount, isTransKnown, isTransKnownToItem,
+    MapThenSumSet, MapThenFoldSet
 <1>2 (/\ \A t \in Transfer:
         \/ accounts[t] = EmptyAccounts
         \/ DifferentAccounts(t) /\ NonEmptyAccounts(t))' =
