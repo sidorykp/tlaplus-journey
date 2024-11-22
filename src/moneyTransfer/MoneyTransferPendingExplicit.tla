@@ -200,6 +200,12 @@ AmountIsPending(t) ==
 
 AmountPendingTotal == MapThenSumSet(pendingTransAmount, pendingTrans)
 
+transAmount(t) == amount[t]
+
+AmountPendingTotalE == MapThenSumSet(transAmount, {t \in Transfer: AmountIsPending(t)})
+
+AmountPendingTotalEquivalence == AmountPendingTotalE = AmountPendingTotal
+
 TransInPendingTrans(t) == \E tp \in pendingTrans: tp[1] = t /\ tp[2] = amount[t]
 
 TransPendingEquivalence == \A t \in Transfer: AmountIsPending(t)
@@ -238,6 +244,7 @@ TypeOK ==
     /\ TransPendingEquivalence
     /\ PendingTransDerived
     /\ PendingTransUniqueness
+    /\ AmountPendingTotalEquivalence
 
 Inv ==
     /\ TypeOK
