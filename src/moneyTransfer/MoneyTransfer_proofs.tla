@@ -158,10 +158,14 @@ PROVE AmountPendingTotal' = AmountPendingTotal
     transPending, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
 <1>5 \A t \in Transfer \ {self}: transAmount(t)' = transAmount(t) BY DEF init, transAmount,
     IndInv, TypeOK
-<1>6 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) BY <1>1, <1>4
-<1>7 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') BY <1>1, <1>4, <1>5 DEF init, transPending, transAmount,
-    creditPrecond, AmountIsPending, pcLabels, IndInv, TypeOK
-<1> QED BY <1>6, <1>7 DEF AmountPendingTotal
+<1>6 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending)
+    BY <1>1, <1>4
+<1>7 \A t \in transPending: t \in Transfer BY DEF IndInv, TypeOK, transPending
+<1>8 \A t \in transPending \ {self}: transAmount(t)' = transAmount(t) BY <1>5, <1>7 DEF init, transAmount
+<1>9 \A t \in transPending: transAmount(t)' = transAmount(t) BY <1>8, <1>1
+<1>10 MapThenSumSet(transAmount, transPending)' = MapThenSumSet(transAmount, transPending)
+    BY <1>6, <1>1, <1>3, <1>4, <1>9 DEF init, MapThenSumSet, MapThenFoldSet, transAmount
+<1> QED BY <1>10 DEF AmountPendingTotal
 
 THEOREM init_IndInv == ASSUME IndInv, NEW self \in Transfer, init(self)
 PROVE IndInv'
