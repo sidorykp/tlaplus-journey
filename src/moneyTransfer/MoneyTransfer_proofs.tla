@@ -226,14 +226,12 @@ PROVE DebitTotal' = DebitTotal + amount[self]
 <1> USE DEF IndInv, TypeOK, debitPrecond
 <1>1 nadd \notin debits BY DEF isTransKnown, isTransKnownToItem, AT
 <1>2 debits' = debits \cup {nadd} BY DEF debit
-<1>3 \A nb \in debits: opAmount(nb) \in Nat BY DEF opAmount
+<1>3 \A nb \in debits: opAmount(nb) \in Nat BY DEF opAmount, AT
 <1>4 opAmount(nadd) \in Nat BY transAmountInNat DEF opAmount
 <1>5 MapThenSumSet(opAmount, debits') =
     MapThenSumSet(opAmount, debits) + opAmount(nadd)
     BY <1>1, <1>2, <1>3, <1>4, MapThenSumSetAddElem
-<1>6 DebitTotal' = DebitTotal + opAmount(nadd)
-    BY <1>5 DEF DebitTotal
-<1> QED BY <1>6 DEF opAmount
+<1> QED BY <1>5 DEF debit, DebitTotal, MapThenSumSet, MapThenFoldSet, opAmount
 
 
 LEMMA debit_DebitTotal_notDebitPrecond == ASSUME IndInv, NEW self \in Transfer, debit(self),
@@ -420,7 +418,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal
 <1> QED BY <1>6, <1>7, <1>8 DEF AmountPendingTotal
 
 
-\* practically a copy of debit_DebitTotal
+\* practically a copy of debit_DebitTotal_debitPrecond
 LEMMA credit_CreditTotal == ASSUME IndInv, NEW self \in Transfer, credit(self),
 creditPrecond(self)
 PROVE CreditTotal' = CreditTotal + amount[self]
@@ -429,14 +427,12 @@ PROVE CreditTotal' = CreditTotal + amount[self]
 <1> USE DEF IndInv, TypeOK, creditPrecond
 <1>1 nadd \notin credits BY DEF isTransKnown, isTransKnownToItem, AT
 <1>2 credits' = credits \cup {nadd} BY DEF credit
-<1>3 \A nb \in credits: opAmount(nb) \in Nat BY DEF opAmount
+<1>3 \A nb \in credits: opAmount(nb) \in Nat BY DEF opAmount, AT
 <1>4 opAmount(nadd) \in Nat BY transAmountInNat DEF opAmount
 <1>5 MapThenSumSet(opAmount, credits') =
     MapThenSumSet(opAmount, credits) + opAmount(nadd)
     BY <1>1, <1>2, <1>3, <1>4, MapThenSumSetAddElem
-<1>6 CreditTotal' = CreditTotal + opAmount(nadd)
-    BY <1>5 DEF CreditTotal
-<1> QED BY <1>6 DEF opAmount
+<1>6 QED BY <1>5 DEF credit, CreditTotal, MapThenSumSet, MapThenFoldSet, opAmount
 
 
 LEMMA credit_Imbalance == ASSUME IndInv, NEW self \in Transfer, credit(self)
