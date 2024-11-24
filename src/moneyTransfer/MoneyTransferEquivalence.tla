@@ -5,6 +5,10 @@ VARIABLE pendingTransE
 
 pendingTransDerived == {<<t, amount[t]>>: t \in {t \in Transfer: AmountIsPending(t)}}
 
+creditsDerived == {<<c, amount[c.t]>>: c \in credits}
+
+debitsDerived == {<<d, amount[d.t]>>: d \in debits}
+
 varsE == <<credits, debits, amount, accounts, pc, pendingTransE>>
 
 InitE == Init /\ pendingTransE = pendingTransDerived
@@ -31,7 +35,8 @@ IndInvE == IndInv /\ pendingTransE = pendingTransDerived
 
 IndSpecE == IndInvE /\ [][NextE]_varsE
 
-E == INSTANCE MoneyTransferPendingExplicit WITH pendingTrans <- pendingTransE
+E == INSTANCE MoneyTransferPendingExplicit
+    WITH pendingTrans <- pendingTransE, credits <- creditsDerived, debits <- debitsDerived
 
 ASSUME EquivalentSymbolsAssumption ==
     /\ EmptyAccounts = E!EmptyAccounts
@@ -39,7 +44,8 @@ ASSUME EquivalentSymbolsAssumption ==
 THEOREM InitEquivalence == E!Init <=> InitE
 BY EquivalentSymbolsAssumption DEF E!Init, InitE, Init, pendingTransDerived,
     pcLabels, E!ProcSet, ProcSet,
-    AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+    AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem,
+    creditsDerived, debitsDerived
 
 THEOREM initEquivalence == ASSUME NEW self \in Transfer, E!init(self)
 PROVE initE(self)
@@ -49,15 +55,34 @@ BY DEF E!init, initE, pendingTransDerived,
 
 THEOREM initEquivalenceRev == ASSUME NEW self \in Transfer, initE(self)
 PROVE E!init(self)
-BY DEF E!init, initE, pendingTransDerived,
+BY DEF E!init, initE, init, pendingTransDerived,
     pcLabels, E!ProcSet, ProcSet,
-    AmountIsPending, creditPrecond
+    AmountIsPending, creditPrecond,
+    creditsDerived, debitsDerived,
+    E!amountAvail, amountAvail,
+    E!NNat, NNat
 
 THEOREM debitEquivalence == ASSUME NEW self \in Transfer, E!debit(self)
 PROVE debitE(self)
-BY DEF E!debit, debitE, pendingTransDerived,
-    pcLabels, E!ProcSet, ProcSet, E!debitPrecond,
-    AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+<1>1 debit(self) BY DEF E!debit, debitE, debit
+<1>2 UNCHANGED credits BY DEF E!debit, creditsDerived
+<1>3 pendingTransE' = pendingTransDerived'
+    <2>1 CASE E!debitPrecond(self)
+        <3> DEFINE nadd == <<self, amount[self]>>
+        <3>1 pendingTransE' = pendingTransE \cup {nadd}
+            BY <2>1 DEF E!debit
+        <3> QED BY <2>1, <1>2, <3>1 DEF E!debit, pendingTransDerived,
+            pcLabels, E!ProcSet, ProcSet,
+            AmountIsPending, creditPrecond,
+            isTransKnown, isTransKnownToItem
+    <2>2 CASE ~E!debitPrecond(self)
+        <3>1 UNCHANGED <<debits, pendingTransE>> BY <2>2
+            DEF E!debit, debitsDerived
+        <3> QED BY <2>2, <3>1, <1>2 DEF E!debit, pendingTransDerived,
+            pcLabels, E!ProcSet, ProcSet,
+            AmountIsPending, creditPrecond
+    <2> QED BY <2>1, <2>2
+<1> QED BY <1>1, <1>3 DEF debitE
 
 THEOREM debitEquivalenceRev == ASSUME NEW self \in Transfer, debitE(self)
 PROVE E!debit(self)
@@ -73,29 +98,36 @@ BY DEF E!crash, crashE, pendingTransDerived,
     
 THEOREM crashEquivalenceRev == ASSUME NEW self \in Transfer, crashE(self)
 PROVE E!crash(self)
-BY DEF E!crash, crashE, pendingTransDerived,
+BY DEF E!crash, crashE, crash, pendingTransDerived,
     pcLabels, E!ProcSet, ProcSet,
-    AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+    AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem,
+    creditsDerived, debitsDerived
 
 THEOREM creditEquivalence == ASSUME NEW self \in Transfer, E!credit(self)
 PROVE creditE(self)
 <1>1 credit(self) BY DEF E!credit, creditE
-<1>2 pendingTransE' = pendingTransDerived'
+<1>2 UNCHANGED debits BY DEF E!credit, debitsDerived
+<1>3 pendingTransE' = pendingTransDerived'
     <2>1 CASE E!creditPrecond(self)
-        <3> QED BY <2>1 DEF E!credit, pendingTransDerived,
-            pcLabels, E!ProcSet, ProcSet
-    <2>2 CASE ~E!creditPrecond(self)
-        <3>1 UNCHANGED <<credits, pendingTransE>> BY <2>2 DEF E!credit
-        <3> QED BY <2>2, <3>1 DEF E!credit, pendingTransDerived,
+        <3> QED BY <2>1, <1>2 DEF E!credit, pendingTransDerived,
             pcLabels, E!ProcSet, ProcSet,
-            AmountIsPending, creditPrecond
+            AmountIsPending, creditPrecond,
+            isTransKnown, isTransKnownToItem
+    <2>2 CASE ~E!creditPrecond(self)
+        <3>1 UNCHANGED <<credits, pendingTransE>> BY <2>2
+            DEF E!credit, creditsDerived
+        <3> QED BY <2>2, <3>1, <1>2 DEF E!credit, pendingTransDerived,
+            pcLabels, E!ProcSet, ProcSet,
+            AmountIsPending, creditPrecond,
+            isTransKnown, isTransKnownToItem
     <2> QED BY <2>1, <2>2
-<1> QED BY <1>1, <1>2 DEF creditE
+<1> QED BY <1>1, <1>3 DEF creditE
 
 THEOREM creditEquivalenceRev == ASSUME NEW self \in Transfer, creditE(self)
 PROVE E!credit(self)
-BY DEF E!credit, creditE, credit, pendingTransDerived,
-    pcLabels, E!ProcSet, ProcSet
+BY DEF E!credit, creditE, pendingTransDerived,
+    pcLabels, E!ProcSet, ProcSet, E!creditPrecond,
+    AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
     
 THEOREM transEquivalence == ASSUME NEW self \in Transfer, E!trans(self)
 PROVE transE(self)
@@ -115,11 +147,21 @@ PROVE E!trans(self)
 <1> QED BY <1>1, <1>2, <1>3, <1>4
     DEF transE
 
-THEOREM unchangedEquivalence == UNCHANGED E!vars <=> UNCHANGED varsE
-BY DEF E!vars, vars, varsE
+THEOREM unchangedEquivalence == UNCHANGED E!vars => UNCHANGED varsE
+<1> SUFFICES ASSUME UNCHANGED E!vars PROVE UNCHANGED varsE OBVIOUS
+<1>1 UNCHANGED amount BY DEF E!vars, vars, varsE
+<1>2 UNCHANGED accounts BY DEF E!vars, vars, varsE
+<1>3 UNCHANGED pc BY DEF E!vars, vars, varsE
+<1>4 UNCHANGED pendingTransE BY DEF E!vars, vars, varsE
+<1>5 UNCHANGED credits BY DEF E!vars, vars, varsE, creditsDerived
+<1>6 UNCHANGED debits BY DEF E!vars, vars, varsE, debitsDerived
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6 DEF vars, varsE
+
+THEOREM unchangedEquivalenceRev == UNCHANGED varsE => UNCHANGED E!vars
+BY DEF E!vars, vars, varsE, creditsDerived, debitsDerived
 
 THEOREM terminatingEquivalence == E!Terminating <=> TerminatingE
-BY unchangedEquivalence DEF E!Terminating, TerminatingE,
+BY unchangedEquivalence, unchangedEquivalenceRev DEF E!Terminating, TerminatingE,
     E!ProcSet, ProcSet
     
 THEOREM nextEquivalence == E!Next <=> NextE
@@ -127,7 +169,7 @@ BY transEquivalence, transEquivalenceRev, terminatingEquivalence
     DEF E!Next, NextE
 
 THEOREM specEquivalence == E!Spec <=> SpecE
-BY PTL, nextEquivalence, InitEquivalence, unchangedEquivalence
+BY PTL, nextEquivalence, InitEquivalence, unchangedEquivalence, unchangedEquivalenceRev
     DEF E!Spec, SpecE,
     E!vars, vars, varsE
 
