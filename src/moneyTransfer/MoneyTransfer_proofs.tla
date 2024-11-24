@@ -94,10 +94,14 @@ PROVE IndInv'
 <1>5 amount' \in [Transfer -> Nat] BY DEF crash
 <1>6 accounts' \in [Transfer -> EAccounts] BY DEF crash
 
-<1>7 pc'[self] = "credit" \/ pc'[self] =  "debit" BY DEF crash 
+<1>7 pc'[self] = "credit" \/ pc'[self] =  "debit" BY DEF crash, IndInv, TypeOK, pcLabels
 <1>8 pcLabels' BY <1>7 DEF crash, pcLabels
 
-<1>9 Imbalance' = Imbalance BY crash_AmountPendingTotal_creditPrecond, crash_AmountPendingTotal_notCreditPrecond
+<1>30 CreditTotal' = CreditTotal BY DEF crash, CreditTotal, opAmount, AT,
+    MapThenSumSet, MapThenFoldSet
+<1>31 DebitTotal' = DebitTotal BY DEF crash, DebitTotal, opAmount, AT,
+    MapThenSumSet, MapThenFoldSet
+<1>9 Imbalance' = Imbalance BY <1>30, <1>31, crash_AmountPendingTotal
     DEF crash, Imbalance, creditPrecond, CreditTotal, DebitTotal
 <1>10 Imbalance' = 0 BY <1>9
 
