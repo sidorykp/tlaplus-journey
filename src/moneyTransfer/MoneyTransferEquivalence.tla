@@ -5,7 +5,7 @@ VARIABLE pendingTransE
 
 pendingTransDerived == {<<t, amount[t]>>: t \in {t \in Transfer: AmountIsPending(t)}}
 
-varsE == <<vars, pendingTransE>>
+varsE == <<credits, debits, amount, accounts, pc, pendingTransE>>
 
 InitE == Init /\ pendingTransE = pendingTransDerived
 
