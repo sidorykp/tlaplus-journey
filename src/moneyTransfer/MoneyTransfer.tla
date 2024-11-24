@@ -57,7 +57,7 @@ Transfer -> amount
             with (account1 \in Account; account2 \in Account \ {account1}) {
                 accounts[self] := [from |-> account1, to |-> account2];
             };
-            
+
         pick_amount:
             with (a = accounts[self].from; am \in NNat) {
                 await amountAvail(a) > 0;
