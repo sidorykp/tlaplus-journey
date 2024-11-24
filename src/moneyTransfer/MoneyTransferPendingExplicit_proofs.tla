@@ -143,7 +143,7 @@ PROVE IndInv'
 <1>9 selfAccounts \in EAccounts BY DEF init, EAccounts, EAccount
 <1>10 accounts' \in [Transfer -> EAccounts] BY <1>9 DEF init
 
-<1>11 pcLabels' BY AccountAssumption, TransferAssumption DEF init, ProcSet, pcLabels
+<1>11 pcLabels' BY DEF init, ProcSet, pcLabels
 
 <1>12 Imbalance' = Imbalance BY init_AmountPendingTotal DEF init, Imbalance, creditPrecond, CreditTotal, DebitTotal
 <1>13 Imbalance' = 0 BY <1>12
