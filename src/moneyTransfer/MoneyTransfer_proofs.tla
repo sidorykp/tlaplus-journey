@@ -134,72 +134,76 @@ PROVE IndInv'
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>8, <1>10, <1>11, <1>20, <1>23
 
 
-THEOREM init_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, init(self)
+THEOREM pick_accounts_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, pick_accounts(self)
 PROVE AmountPendingTotal' = AmountPendingTotal
-<1>1 self \notin transPending BY DEF init, transPending, AmountIsPending
-<1>2 ~AmountIsPending(self)' BY DEF init, AmountIsPending, creditPrecond, IndInv, TypeOK
+<1>1 self \notin transPending BY DEF pick_accounts, transPending, AmountIsPending
+<1>2 ~AmountIsPending(self)' BY DEF pick_accounts, AmountIsPending, creditPrecond, IndInv, TypeOK,
+    initPrecond
 <1>3 self \notin transPending' BY <1>2 DEF transPending
-<1>4 transPending' = transPending BY <1>1, <1>3 DEF init, pcLabels, IndInv, TypeOK,
+<1>4 transPending' = transPending BY <1>1, <1>3 DEF pick_accounts, pcLabels, IndInv, TypeOK,
     transPending, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
-<1>5 \A t \in Transfer: transAmount(t)' = transAmount(t) BY AccountAssumption, TransferAssumption
-    DEF init, transAmount, IndInv, TypeOK, creditPrecond
+<1>5 \A t \in Transfer: transAmount(t)' = transAmount(t) BY
+    DEF pick_accounts, transAmount, IndInv, TypeOK, creditPrecond
 <1>6 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) BY <1>1, <1>4, <1>5
 <1>7 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
-<1>8 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') BY <1>1, <1>4, <1>5 DEF init, transPending, transAmount,
-    creditPrecond, AmountIsPending, pcLabels, IndInv, TypeOK
+<1>8 MapThenSumSet(transAmount, transPending)' = MapThenSumSet(transAmount, transPending')
+    BY <1>1, <1>4, <1>5 DEF pick_accounts, transPending, transAmount,
+    creditPrecond, AmountIsPending, pcLabels, IndInv, TypeOK,
+    MapThenSumSet, MapThenFoldSet
 <1> QED BY <1>6, <1>7, <1>8 DEF AmountPendingTotal
 
-THEOREM init_IndInv == ASSUME IndInv, NEW self \in Transfer, init(self)
+
+THEOREM pick_accounts_IndInv == ASSUME IndInv, NEW self \in Transfer, pick_accounts(self)
 PROVE IndInv'
 <1> DEFINE am == amount'[self]
 <1> DEFINE selfAccounts == accounts'[self]
 <1> DEFINE account1 == selfAccounts.from
 <1> DEFINE account2 == selfAccounts.to
 <1> USE DEF IndInv, TypeOK
-<1>1 credits' \in SUBSET (AT \X Nat) BY DEF init
-<1>2 IsFiniteSet(credits)' BY DEF init
-<1>3 debits' \in SUBSET (AT \X Nat) BY DEF init
-<1>4 IsFiniteSet(debits)' BY DEF init
+<1>1 credits' \in SUBSET (AT \X Nat) BY DEF pick_accounts
+<1>2 IsFiniteSet(credits)' BY DEF pick_accounts
+<1>3 debits' \in SUBSET (AT \X Nat) BY DEF pick_accounts
+<1>4 IsFiniteSet(debits)' BY DEF pick_accounts
 
-<1>5 am \in Nat BY DEF init, NNat
-<1>6 amount' \in [Transfer -> Nat] BY <1>5 DEF init
+<1>5 am \in Nat BY DEF pick_accounts, NNat
+<1>6 amount' \in [Transfer -> Nat] BY <1>5 DEF pick_accounts
 
-<1>7 selfAccounts \in EAccounts BY DEF init, EAccounts, EAccount
-<1>8 accounts' \in [Transfer -> EAccounts] BY <1>7 DEF init
+<1>7 selfAccounts \in EAccounts BY DEF pick_accounts, EAccounts, EAccount
+<1>8 accounts' \in [Transfer -> EAccounts] BY <1>7 DEF pick_accounts
 
-<1>9 pcLabels' BY AccountAssumption, TransferAssumption DEF init, ProcSet, pcLabels
+<1>9 pcLabels' BY AccountAssumption, TransferAssumption DEF pick_accounts, ProcSet, pcLabels
 
-<1>10 Imbalance' = Imbalance BY init_AmountPendingTotal DEF init, Imbalance, creditPrecond, CreditTotal, DebitTotal
+<1>10 Imbalance' = Imbalance BY pick_accounts_AmountPendingTotal DEF pick_accounts, Imbalance, creditPrecond, CreditTotal, DebitTotal
 <1>11 Imbalance' = 0 BY <1>10
 
 <1>12 Empty \notin Account BY EmptyAssumption, AccountAssumption
-<1>13 account1 # Empty BY <1>12 DEF init
-<1>14 account2 # Empty BY <1>12 DEF init
-<1>15 account1 # account2 BY DEF init
+<1>13 account1 # Empty BY <1>12 DEF pick_accounts
+<1>14 account2 # Empty BY <1>12 DEF pick_accounts
+<1>15 account1 # account2 BY DEF pick_accounts
 <1>16 (\/ accounts[self] = EmptyAccounts
        \/ DifferentAccounts(self) /\ NonEmptyAccounts(self))'
     BY <1>13, <1>14, <1>15 DEF DifferentAccounts, NonEmptyAccounts
 <1>17 \A t \in Transfer:
     (\/ accounts[t] = EmptyAccounts
      \/ DifferentAccounts(t) /\ NonEmptyAccounts(t))'
-    BY <1>16 DEF init, EmptyAccounts, DifferentAccounts, NonEmptyAccounts
+    BY <1>16 DEF pick_accounts, EmptyAccounts, DifferentAccounts, NonEmptyAccounts
 
-<1>18 initPrecond(self)' BY DEF init, initPrecond, isTransKnown, isTransKnownToItem
-<1>19 pc'[self] = "init" => initPrecond(self)' BY <1>18 DEF ProcSet
-<1>20 \A t \in Transfer: pc'[t] = "init" => initPrecond(t)' BY <1>19 DEF init, pcLabels
+<1>18 initPrecond(self)' BY DEF pick_accounts, initPrecond, isTransKnown, isTransKnownToItem
+<1>19 pc'[self] \in {"pick_accounts", "pick_amount"} => initPrecond(self)' BY <1>18 DEF ProcSet
+<1>20 \A t \in Transfer: pc'[t]\in {"pick_accounts", "pick_amount"} => initPrecond(t)' BY <1>19 DEF pick_accounts, pcLabels
 
 <1>21 NonEmptyAccounts(self)' BY <1>13, <1>14 DEF NonEmptyAccounts
-<1>22 pc'[self] \notin {"init"} <=> NonEmptyAccounts(self)' BY <1>21 DEF init, ProcSet, pcLabels
+<1>22 pc'[self] # "pick_accounts" <=> NonEmptyAccounts(self)' BY <1>21 DEF pick_accounts, ProcSet, pcLabels
 
-<1>23 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> pc[t] \notin {"init"}
-    BY DEF init, pcLabels
+<1>23 \A t \in Transfer \ {self}: pc'[t] # "pick_accounts" <=> pc[t]# "pick_accounts"
+    BY DEF pick_accounts, pcLabels
 <1>24 \A t \in Transfer \ {self}: NonEmptyAccounts(t)' = NonEmptyAccounts(t)
-    BY DEF init, NonEmptyAccounts
-<1>25 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
+    BY DEF pick_accounts, NonEmptyAccounts
+<1>25 \A t \in Transfer \ {self}: pc'[t] # "pick_accounts" <=> NonEmptyAccounts(t)'
     BY <1>23, <1>24 DEF IndInv
 
-<1>26 \A t \in Transfer: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
-    BY <1>22, <1>25 DEF init, ProcSet, pcLabels
+<1>26 \A t \in Transfer: pc'[t] # "pick_accounts" <=> NonEmptyAccounts(t)'
+    BY <1>22, <1>25 DEF pick_accounts, ProcSet, pcLabels
 
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>6, <1>8, <1>9, <1>11, <1>17, <1>20, <1>26
 
@@ -523,7 +527,7 @@ PROVE IndInv'
 <1> SUFFICES ASSUME IndInv, NEW self \in Transfer, trans(self)
     PROVE IndInv'
     BY DEF Next, trans
-<1>1 CASE init(self) BY <1>1, init_IndInv
+<1>1 CASE pick_accounts(self) BY <1>1, pick_accounts_IndInv
 <1>2 CASE debit(self) BY <1>2, debit_IndInv
 <1>3 CASE crash(self) BY <1>3, crash_IndInv
 <1>4 CASE credit(self) BY <1>4, credit_IndInv
