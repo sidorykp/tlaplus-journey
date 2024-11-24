@@ -137,11 +137,12 @@ PROVE IndInv'
 THEOREM init_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, init(self)
 PROVE AmountPendingTotal' = AmountPendingTotal
 <1>1 self \notin transPending BY DEF init, transPending, AmountIsPending
-<1>2 ~AmountIsPending(self)' BY DEF init, AmountIsPending, creditPrecond, IndInv, TypeOK
+<1>2 ~AmountIsPending(self)' BY DEF init, AmountIsPending, creditPrecond, IndInv, TypeOK,
+    initPrecond
 <1>3 self \notin transPending' BY <1>2 DEF transPending
 <1>4 transPending' = transPending BY <1>1, <1>3 DEF init, pcLabels, IndInv, TypeOK,
     transPending, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
-<1>5 \A t \in Transfer: transAmount(t)' = transAmount(t) BY AccountAssumption, TransferAssumption
+<1>5 \A t \in Transfer: transAmount(t)' = transAmount(t) BY
     DEF init, transAmount, IndInv, TypeOK, creditPrecond
 <1>6 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) BY <1>1, <1>4, <1>5
 <1>7 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
@@ -167,7 +168,7 @@ PROVE IndInv'
 <1>7 selfAccounts \in EAccounts BY DEF init, EAccounts, EAccount
 <1>8 accounts' \in [Transfer -> EAccounts] BY <1>7 DEF init
 
-<1>9 pcLabels' BY AccountAssumption, TransferAssumption DEF init, ProcSet, pcLabels
+<1>9 pcLabels' BY DEF init, ProcSet, pcLabels
 
 <1>10 Imbalance' = Imbalance BY init_AmountPendingTotal DEF init, Imbalance, creditPrecond, CreditTotal, DebitTotal
 <1>11 Imbalance' = 0 BY <1>10
@@ -355,7 +356,7 @@ creditPrecond(self)
 PROVE AmountPendingTotal' = AmountPendingTotal - amount[self]
 <1>1 self \in transPending
     BY DEF credit, transPending, AmountIsPending
-<1>2 ~AmountIsPending(self) BY TransferAssumption, AccountAssumption DEF credit, creditPrecond, AmountIsPending,
+<1>2 ~AmountIsPending(self) BY DEF credit, creditPrecond, AmountIsPending,
     isTransKnown, creditPrecond, isTransKnownToItem
 <1> USE DEF IndInv, TypeOK
 <1>3 transPending' = transPending \ {self}
