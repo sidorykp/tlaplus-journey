@@ -6,9 +6,38 @@ A simple (but not trivial) algorithm modeling money transfer between accounts.
 
 What makes the algorithm non-trivial:
 1. It is **fault-tolerant**.
-2. It models any number of accounts and money transfers.
-3. It is [fully proved](src/moneyTransfer/MoneyTransfer_proofs.tla) using the TLA+ Proof System (TLAPS).
-4. The main invariant that is proved is a **global invariant**: the global amount of money present in the model.
+1. It models any number of accounts and money transfers.
+1. It is **fully proved** using the TLA+ Proof System (TLAPS).
+1. The main invariant that is proved is a **global invariant**: the global amount of money present in the model.
+1. It requires atomic operations on individual entities only (neither distributed transactions nor multi-row transaction are required)
+
+# MoneyTransfer Proof
+
+The inductive invariant IndInv is defined in the MoneyTransfer module. The main goal of the proof is to prove that IndInv is:
+1. true in the initial state Init
+1. maintained in all state transitions: init, debit, crash, credit
+
+IndInv contains condition **"Imbalance = 0"**, which means that total amount of money modeled by the algorithm does not change when the algorithm is being executed.
+
+Proving that "Imbalance = 0" is always true is the **ultimate goal** of the proof.
+
+## Proof by proving a derived algorithm first
+
+IndInv cannot be proved directly at this moment with TLAPS. And it was proved anyway by:
+1. Creating an [equivalent algorithm](src/moneyTransfer/MoneyTransferPendingExplicit.tla) that has some state duplication:
+   1. has one more variable: "pendingTrans"
+   2. its "credits" and "debits" records (variables) have one more attribute: "amount"
+   3. "pendingTrans" and "amount" can be derived from the original algorithm
+   4. its IndInv has all IndInv constraints including "Imbalance = 0", and has additional constraints
+1. [Proving](src/moneyTransfer/MoneyTransferPendingExplicit_proofs.tla) IndInv of the equivalent algorithm:
+>THEOREM IndInvPreserved == Spec => []IndInv
+3. [Proving](src/moneyTransfer/MoneyTransferEquivalence.tla) that the equivalent algorithm is identical to the original algorithm when additional state is derived from the original algorithm:
+>E == INSTANCE MoneyTransferPendingExplicit 
+> 
+>WITH pendingTrans <- pendingTransE, credits <- creditsDerived, debits <- debitsDerived
+
+The proof contains evidence that the equivalent algorithm implements identical specification when additional state is derived:
+>THEOREM specEquivalence == E!Spec <=> SpecE
 
 # Pre-Requisites
 The project is being developed using:
