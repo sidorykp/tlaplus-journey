@@ -53,11 +53,15 @@ Transfer -> amount
 
     process (trans \in Transfer)    
     {
-        init:
-            with (account1 \in Account; account2 \in Account \ {account1}; am \in NNat) {
-                await amountAvail(account1) > 0;
-                await am <= amountAvail(account1);
+        pick_accounts:
+            with (account1 \in Account; account2 \in Account \ {account1}) {
                 accounts[self] := [from |-> account1, to |-> account2];
+            };
+            
+        pick_amount:
+            with (a = accounts[self].from; am \in NNat) {
+                await amountAvail(a) > 0;
+                await am <= amountAvail(a);
                 amount[self] := am;
             };
             
@@ -82,7 +86,7 @@ Transfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "b5bb3fb7" /\ chksum(tla) = "caa68922")
+\* BEGIN TRANSLATION (chksum(pcal) = "5bd2f2c8" /\ chksum(tla) = "e76fa81")
 VARIABLES credits, debits, amount, accounts, pc
 
 (* define statement *)
@@ -121,18 +125,23 @@ Init == (* Global variables *)
         /\ debits = {}
         /\ amount = [t \in Transfer |-> 0]
         /\ accounts = [t \in Transfer |-> EmptyAccounts]
-        /\ pc = [self \in ProcSet |-> "init"]
+        /\ pc = [self \in ProcSet |-> "pick_accounts"]
 
-init(self) == /\ pc[self] = "init"
-              /\ \E account1 \in Account:
-                   \E account2 \in Account \ {account1}:
-                     \E am \in NNat:
-                       /\ amountAvail(account1) > 0
-                       /\ am <= amountAvail(account1)
-                       /\ accounts' = [accounts EXCEPT ![self] = [from |-> account1, to |-> account2]]
-                       /\ amount' = [amount EXCEPT ![self] = am]
-              /\ pc' = [pc EXCEPT ![self] = "debit"]
-              /\ UNCHANGED << credits, debits >>
+pick_accounts(self) == /\ pc[self] = "pick_accounts"
+                       /\ \E account1 \in Account:
+                            \E account2 \in Account \ {account1}:
+                              accounts' = [accounts EXCEPT ![self] = [from |-> account1, to |-> account2]]
+                       /\ pc' = [pc EXCEPT ![self] = "pick_amount"]
+                       /\ UNCHANGED << credits, debits, amount >>
+
+pick_amount(self) == /\ pc[self] = "pick_amount"
+                     /\ LET a == accounts[self].from IN
+                          \E am \in NNat:
+                            /\ amountAvail(a) > 0
+                            /\ am <= amountAvail(a)
+                            /\ amount' = [amount EXCEPT ![self] = am]
+                     /\ pc' = [pc EXCEPT ![self] = "debit"]
+                     /\ UNCHANGED << credits, debits, accounts >>
 
 debit(self) == /\ pc[self] = "debit"
                /\ LET a == accounts[self].from IN
@@ -158,7 +167,8 @@ credit(self) == /\ pc[self] = "credit"
                 /\ pc' = [pc EXCEPT ![self] = "Done"]
                 /\ UNCHANGED << debits, amount, accounts >>
 
-trans(self) == init(self) \/ debit(self) \/ crash(self) \/ credit(self)
+trans(self) == pick_accounts(self) \/ pick_amount(self) \/ debit(self)
+                  \/ crash(self) \/ credit(self)
 
 (* Allow infinite stuttering to prevent deadlock on termination. *)
 Terminating == /\ \A self \in ProcSet: pc[self] = "Done"
@@ -197,7 +207,7 @@ EAccounts == [from: EAccount, to: EAccount]
 
 AT == [a: Account, t: Transfer]
 
-pcLabels == pc \in [Transfer -> {"Done", "init", "debit", "credit", "crash"}]
+pcLabels == pc \in [Transfer -> {"Done", "pick_accounts", "pick_amount", "debit", "credit", "crash"}]
 
 TypeOK ==
     /\ credits \in SUBSET (AT \X Nat)
@@ -218,9 +228,9 @@ IndInv ==
     /\ \A t \in Transfer:
         \/ accounts[t] = EmptyAccounts
         \/ DifferentAccounts(t) /\ NonEmptyAccounts(t)
-    /\ \A t \in Transfer: pc[t] = "init" => initPrecond(t)
+    /\ \A t \in Transfer: pc[t] \in {"pick_accounts", "pick_amount"} => initPrecond(t)
     /\ \A t \in Transfer:
-        pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
+        pc[t] # "pick_accounts" <=> NonEmptyAccounts(t)
 
 IndSpec == IndInv /\ [][Next]_vars
 
@@ -232,9 +242,9 @@ CommonIndInv ==
     /\ \A t \in Transfer:
         \/ accounts[t] = EmptyAccounts
         \/ DifferentAccounts(t) /\ NonEmptyAccounts(t)
-    /\ \A t \in Transfer: pc[t] = "init" => initPrecond(t)
+    /\ \A t \in Transfer: pc[t] \in {"pick_accounts", "pick_amount"} => initPrecond(t)
     /\ \A t \in Transfer:
-        pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
+        pc[t] # "pick_accounts" <=> NonEmptyAccounts(t)
 
 IndInvInteractiveStateConstraints ==
     /\ \A c \in credits: \E d \in debits: 
@@ -242,6 +252,6 @@ IndInvInteractiveStateConstraints ==
         /\ d[1].a # c[1].a
         /\ opAmount(d) = opAmount(c)
     /\ \A t \in Transfer:
-        amount[t] = 0 <=> pc[t] = "init"
+        amount[t] = 0 <=> pc[t] \in {"pick_accounts", "pick_amount"}
 
 ====
