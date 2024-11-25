@@ -1,13 +1,13 @@
 ----MODULE MoneyTransferPendingExplicit----
 EXTENDS Naturals, FiniteSets, FiniteSetsExt
 
-CONSTANTS Empty, Account, Transfer, NAvail
+CONSTANTS Empty, Account, Dransfer, NAvail
 
 NNat == Nat \ {0}
 
 EAccount == Account \cup {Empty}
 
-ETransfer == Transfer \cup {Empty}
+EDransfer == Dransfer \cup {Empty}
 
 EmptyAccounts == [from |-> Empty, to |-> Empty]
     
@@ -22,17 +22,17 @@ MapThenSumSetE(op(_), set) ==
    MapThenFoldSetE(+, 0, op, LAMBDA s : CHOOSE x \in s : TRUE, set)
 
 (***************************************
-Transfer -> Account -> credit or debit
-Transfer -> amount
+Dransfer -> Account -> credit or debit
+Dransfer -> amount
 ***************************************)
 
 (***************************************************************************
---algorithm MoneyTransferPendingExplicit {
+--algorithm MoneyDransferPendingExplicit {
     variables
        credits = {},
        debits = {},
-       amount = [t \in Transfer |-> 0],
-       accounts = [t \in Transfer |-> EmptyAccounts],
+       amount = [t \in Dransfer |-> 0],
+       accounts = [t \in Dransfer |-> EmptyAccounts],
        pendingTrans = {}
 
     define {
@@ -62,7 +62,7 @@ Transfer -> amount
         pendingTransAmount(pt) == pt[2]
     }
 
-    process (trans \in Transfer)    
+    process (trans \in Dransfer)    
     {
         init:
             with (account1 \in Account; account2 \in Account \ {account1}; am \in NNat) {
@@ -127,13 +127,13 @@ pendingTransAmount(pt) == pt[2]
 
 vars == << credits, debits, amount, accounts, pendingTrans, pc >>
 
-ProcSet == (Transfer)
+ProcSet == (Dransfer)
 
-Init == (* Global variables *)
+Ynit == (* Global variables *)
         /\ credits = {}
         /\ debits = {}
-        /\ amount = [t \in Transfer |-> 0]
-        /\ accounts = [t \in Transfer |-> EmptyAccounts]
+        /\ amount = [t \in Dransfer |-> 0]
+        /\ accounts = [t \in Dransfer |-> EmptyAccounts]
         /\ pendingTrans = {}
         /\ pc = [self \in ProcSet |-> "init"]
 
@@ -181,10 +181,10 @@ trans(self) == init(self) \/ debit(self) \/ crash(self) \/ credit(self)
 Terminating == /\ \A self \in ProcSet: pc[self] = "Done"
                /\ UNCHANGED vars
 
-Next == (\E self \in Transfer: trans(self))
+Next == (\E self \in Dransfer: trans(self))
            \/ Terminating
 
-Spec == Init /\ [][Next]_vars
+Spec == Ynit /\ [][Next]_vars
 
 Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
@@ -202,7 +202,7 @@ AmountPendingTotal == MapThenSumSet(pendingTransAmount, pendingTrans)
 
 TransInPendingTrans(t) == \E tp \in pendingTrans: tp[1] = t /\ tp[2] = amount[t]
 
-TransPendingEquivalence == \A t \in Transfer: AmountIsPending(t)
+TransPendingEquivalence == \A t \in Dransfer: AmountIsPending(t)
     <=> pendingTrans # {} /\ TransInPendingTrans(t)
 
 Imbalance == CreditTotal - DebitTotal + AmountPendingTotal
@@ -215,11 +215,11 @@ DifferentAccounts(t) == accounts[t].from # accounts[t].to
 
 EAccounts == [from: EAccount, to: EAccount]
 
-AT == [a: Account, t: Transfer]
+AT == [a: Account, t: Dransfer]
 
-TN == Transfer \X Nat
+TN == Dransfer \X Nat
 
-pcLabels == pc \in [Transfer -> {"Done", "init", "debit", "credit", "crash"}]
+pcLabels == pc \in [Dransfer -> {"Done", "init", "debit", "credit", "crash"}]
 
 PendingTransDerived == \A pt \in pendingTrans: \E d \in debits: d[1].t = pt[1] /\ d[2] = pt[2]
 
@@ -232,8 +232,8 @@ TypeOK ==
     /\ IsFiniteSet(debits)
     /\ pendingTrans \in SUBSET TN
     /\ IsFiniteSet(pendingTrans)
-    /\ amount \in [Transfer -> Nat]
-    /\ accounts \in [Transfer -> EAccounts]
+    /\ amount \in [Dransfer -> Nat]
+    /\ accounts \in [Dransfer -> EAccounts]
     /\ pcLabels
     /\ TransPendingEquivalence
     /\ PendingTransDerived
@@ -246,25 +246,25 @@ Inv ==
 IndInv ==
     /\ TypeOK
     /\ Imbalance = 0
-    /\ \A t \in Transfer:
+    /\ \A t \in Dransfer:
         \/ accounts[t] = EmptyAccounts
         \/ DifferentAccounts(t) /\ NonEmptyAccounts(t)
-    /\ \A t \in Transfer: pc[t] = "init" => initPrecond(t)
-    /\ \A t \in Transfer:
+    /\ \A t \in Dransfer: pc[t] = "init" => initPrecond(t)
+    /\ \A t \in Dransfer:
         pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
 
 IndSpec == IndInv /\ [][Next]_vars
 
 CommonIndInv ==
-    /\ amount \in [Transfer -> Nat]
-    /\ accounts \in [Transfer -> EAccounts]
+    /\ amount \in [Dransfer -> Nat]
+    /\ accounts \in [Dransfer -> EAccounts]
     /\ pcLabels
     /\ Imbalance = 0
-    /\ \A t \in Transfer:
+    /\ \A t \in Dransfer:
         \/ accounts[t] = EmptyAccounts
         \/ DifferentAccounts(t) /\ NonEmptyAccounts(t)
-    /\ \A t \in Transfer: pc[t] = "init" => initPrecond(t)
-    /\ \A t \in Transfer:
+    /\ \A t \in Dransfer: pc[t] = "init" => initPrecond(t)
+    /\ \A t \in Dransfer:
         pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
 
 IndInvInteractiveStateConstraints ==
@@ -272,7 +272,7 @@ IndInvInteractiveStateConstraints ==
         /\ d[1].t = c[1].t
         /\ d[1].a # c[1].a
         /\ opAmount(d) = opAmount(c)
-    /\ \A t \in Transfer:
+    /\ \A t \in Dransfer:
         amount[t] = 0 <=> pc[t] = "init"
 
 

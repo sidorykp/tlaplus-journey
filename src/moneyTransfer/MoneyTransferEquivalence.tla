@@ -36,13 +36,17 @@ IndInvE == IndInv /\ pendingTransE = pendingTransDerived
 IndSpecE == IndInvE /\ [][NextE]_varsE
 
 E == INSTANCE MoneyTransferPendingExplicit
-    WITH pendingTrans <- pendingTransE, credits <- creditsDerived, debits <- debitsDerived
+    WITH
+        pendingTrans <- pendingTransE,
+        credits <- creditsDerived,
+        debits <- debitsDerived,
+        Dransfer <- Transfer
 
 ASSUME EquivalentSymbolsAssumption ==
     /\ EmptyAccounts = E!EmptyAccounts
 
-THEOREM InitEquivalence == E!Init <=> InitE
-BY EquivalentSymbolsAssumption DEF E!Init, InitE, Init, pendingTransDerived,
+THEOREM InitEquivalence == E!Ynit <=> InitE
+BY EquivalentSymbolsAssumption DEF E!Ynit, InitE, Init, pendingTransDerived,
     pcLabels, E!ProcSet, ProcSet,
     AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem,
     creditsDerived, debitsDerived
