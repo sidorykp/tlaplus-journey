@@ -38,7 +38,7 @@ PROVE Imbalance = 0
 
 THEOREM initProperty == ASSUME Ynit PROVE IndInv
 <1> USE DEF Ynit, IndInv, TypeOK
-<1>1 IsFiniteSet(credits) BY FS_EmptySet
+<1>1 IsFiniteSet(kredits) BY FS_EmptySet
 <1>2 IsFiniteSet(debits) BY FS_EmptySet
 <1>3 IsFiniteSet(pendingTrans) BY FS_EmptySet
 <1>4 accounts \in [Dransfer -> EEccounts] BY DEF EEccount, EmptyAccounts, EEccounts
@@ -62,8 +62,8 @@ BY DEF crash, AmountPendingTotal
 THEOREM crash_IndInv == ASSUME IndInv, NEW self \in Dransfer, crash(self)
 PROVE IndInv'
 <1> USE DEF IndInv, TypeOK
-<1>1 credits' \in SUBSET (AT \X Nat) BY DEF crash
-<1>2 IsFiniteSet(credits)' BY DEF crash
+<1>1 kredits' \in SUBSET (AT \X Nat) BY DEF crash
+<1>2 IsFiniteSet(kredits)' BY DEF crash
 <1>3 debits' \in SUBSET (AT \X Nat) BY DEF crash
 <1>4 IsFiniteSet(debits)' BY DEF crash
 <1>5 pendingTrans' \in SUBSET TN BY DEF crash
@@ -130,8 +130,8 @@ PROVE IndInv'
 <1> DEFINE account1 == selfAccounts.from
 <1> DEFINE account2 == selfAccounts.to
 <1> USE DEF IndInv, TypeOK
-<1>1 credits' \in SUBSET (AT \X Nat) BY DEF init
-<1>2 IsFiniteSet(credits)' BY DEF init
+<1>1 kredits' \in SUBSET (AT \X Nat) BY DEF init
+<1>2 IsFiniteSet(kredits)' BY DEF init
 <1>3 debits' \in SUBSET (AT \X Nat) BY DEF init
 <1>4 IsFiniteSet(debits)' BY DEF init
 <1>5 pendingTrans' \in SUBSET TN BY DEF init
@@ -193,7 +193,7 @@ PROVE IndInv'
             <4> QED BY <3>1, <1>29, <2>1, <2>2 DEF TransInPendingTrans, TransPendingEquivalence
         <3>2 CASE pendingTrans # {}
             <4>1 ~TransInPendingTrans(self) BY <3>2, <2>1 DEF TransPendingEquivalence
-            <4>2 ~\E pt \in pendingTrans: pt[1] = self BY DEF init, initPrecond, PendingTransDerived, PendingTransUniqueness
+            <4>2 ~\E pt \in pendingTrans: pt[1] = self BY <3>2 DEF init, initPrecond, PendingTransDerived, PendingTransUniqueness
             <4> QED BY <3>2, <4>1, <4>2 DEF init, TransInPendingTrans
         <3> QED BY <3>1, <3>2
     <2> QED BY <1>29, <2>3 DEF init, TransInPendingTrans
@@ -257,7 +257,7 @@ BY DEF debit, AmountPendingTotal
 
 LEMMA debit_Imbalance == ASSUME IndInv, NEW self \in Dransfer, debit(self)
 PROVE Imbalance' = Imbalance
-<1>1 credits' = credits BY DEF debit
+<1>1 kredits' = kredits BY DEF debit
 <1>2 CreditTotal' = CreditTotal
     BY <1>1 DEF CreditTotal
 <1>3 CASE debitPrecond(self)
@@ -269,12 +269,12 @@ PROVE Imbalance' = Imbalance
 
 THEOREM debit_IndInv_common == ASSUME IndInv, NEW self \in Dransfer, debit(self)
 PROVE (
-    /\ credits \in SUBSET (AT \X Nat)
-    /\ IsFiniteSet(credits)
+    /\ kredits \in SUBSET (AT \X Nat)
+    /\ IsFiniteSet(kredits)
     /\ CommonIndInv)'
 <1> USE DEF CommonIndInv
-<1>1 credits' \in SUBSET (AT \X Nat) BY DEF debit, IndInv, TypeOK
-<1>2 IsFiniteSet(credits)' BY DEF debit, IndInv, TypeOK
+<1>1 kredits' \in SUBSET (AT \X Nat) BY DEF debit, IndInv, TypeOK
+<1>2 IsFiniteSet(kredits)' BY DEF debit, IndInv, TypeOK
 <1>3 amount' \in [Dransfer -> Nat] BY DEF debit, IndInv, TypeOK
 <1>4 accounts' \in [Dransfer -> EEccounts] BY DEF debit, IndInv, TypeOK
 <1>5 pc' = [pc EXCEPT ![self] = "crash"] BY DEF debit
@@ -335,13 +335,13 @@ PROVE IndInv'
     <2>10 pendingTrans' \in SUBSET TN BY <2>8, <2>9
     <2>11 IsFiniteSet(pendingTrans)' BY <1>1, FS_AddElement DEF debit
     
-    <2>12 credits' = credits BY DEF debit
+    <2>12 kredits' = kredits BY DEF debit
     
+    <2>14 pendingTrans' # {} BY <2>8
     <2>13 AmountIsPending(self)' <=> TransInPendingTrans(self)'
-        BY <1>1, <2>1, <2>8, <2>12
+        BY <1>1, <2>1, <2>8, <2>12, <2>14
         DEF TransInPendingTrans, debit, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem,
             pcLabels
-    <2>14 pendingTrans' # {} BY <2>8
     <2>15 AmountIsPending(self)' <=> pendingTrans' # {} /\ TransInPendingTrans(self)'
         BY <2>13, <2>14
     <2>16 (\A t \in Dransfer \ {self}: AmountIsPending(t) <=> pendingTrans # {} /\ TransInPendingTrans(t))'
@@ -417,12 +417,12 @@ PROVE CreditTotal' = CreditTotal + amount[self]
 <1> DEFINE a == accounts[self].to
 <1> DEFINE nadd == <<[a |-> a, t |-> self], amount[self]>>
 <1> USE DEF IndInv, TypeOK, creditPrecond
-<1>1 nadd \notin credits BY DEF isTransKnown, isTransKnownToItem, AT
-<1>2 credits' = credits \cup {nadd} BY DEF credit
-<1>3 \A nb \in credits: opAmount(nb) \in Nat BY DEF opAmount
+<1>1 nadd \notin kredits BY DEF isTransKnown, isTransKnownToItem, AT
+<1>2 kredits' = kredits \cup {nadd} BY DEF credit
+<1>3 \A nb \in kredits: opAmount(nb) \in Nat BY DEF opAmount
 <1>4 opAmount(nadd) \in Nat BY DEF opAmount
-<1>5 MapThenSumSet(opAmount, credits') =
-    MapThenSumSet(opAmount, credits) + opAmount(nadd)
+<1>5 MapThenSumSet(opAmount, kredits') =
+    MapThenSumSet(opAmount, kredits) + opAmount(nadd)
     BY <1>1, <1>2, <1>3, <1>4, MapThenSumSetAddElem
 <1>6 CreditTotal' = CreditTotal + opAmount(nadd)
     BY <1>5 DEF CreditTotal
@@ -438,7 +438,7 @@ PROVE Imbalance' = Imbalance
     <2>1 CreditTotal' = CreditTotal + amount[self] BY <1>3, credit_CreditTotal
     <2>2 AmountPendingTotal' = AmountPendingTotal - amount[self] BY <1>3, credit_AmountPendingTotal_creditPrecond
     <2>3 amount[self] \in Nat BY DEF IndInv, TypeOK
-    <2>4 \A c \in credits: opAmount(c) \in Nat BY DEF opAmount, IndInv, TypeOK
+    <2>4 \A c \in kredits: opAmount(c) \in Nat BY DEF opAmount, IndInv, TypeOK
     <2>5 CreditTotal \in Nat BY <2>4, MapThenSumSetType DEF CreditTotal, IndInv, TypeOK
     <2>6 IsFiniteSet(pendingTrans) BY DEF IndInv, TypeOK
     <2>7 \A pt \in pendingTrans: pendingTransAmount(pt) \in Nat BY pendingTransAmountInNat, <1>3 DEF credit, IndInv
@@ -466,7 +466,7 @@ PROVE (
 <1>1 debits' \in SUBSET (AT \X Nat) BY DEF credit, IndInv, TypeOK
 <1>2 IsFiniteSet(debits)' BY DEF credit
 <1>3 amount' \in [Dransfer -> Nat] BY DEF credit, IndInv, TypeOK
-<1>4 accounts' \in [Dransfer -> EEccounts] BY DEF credit
+<1>4 accounts' \in [Dransfer -> EEccounts] BY DEF credit, IndInv, TypeOK
 <1>5 pc[self]' = "Done" BY DEF credit
 <1>6 pcLabels' BY <1>5 DEF credit, pcLabels, ProcSet
 <1>7 \A t \in Dransfer:
@@ -508,14 +508,14 @@ PROVE (
 <1> HIDE DEF IndInv, TypeOK, CommonIndInv
 <1>25 AmountIsPending(self)' <=> TransInPendingTrans(self)'
     <2>1 CASE ~creditPrecond(self)
-        <3>1 credits' = credits BY <2>1 DEF credit
+        <3>1 kredits' = kredits BY <2>1 DEF credit
         <3>2 pendingTrans' = pendingTrans BY <2>1 DEF credit
         <3> QED BY <3>1, <3>2 DEF TransInPendingTrans, credit, AmountIsPending
      <2>2 CASE creditPrecond(self)
         <3> DEFINE a == accounts[self].to
         <3> DEFINE nadd == <<[a |-> a, t |-> self], amount[self]>>
         <3> DEFINE ptAdd == <<self, amount[self]>>
-        <3>1 credits' = credits \cup {nadd} BY <2>2 DEF credit
+        <3>1 kredits' = kredits \cup {nadd} BY <2>2 DEF credit
         <3>2 pendingTrans' = pendingTrans \ {ptAdd} BY <2>2 DEF credit
         <3> QED BY <2>2, <3>1, <3>2
             DEF TransInPendingTrans, credit, AmountIsPending
@@ -524,7 +524,7 @@ PROVE (
 <1>26 TransPendingEquivalence'
     BY <1>25 DEF credit, TransPendingEquivalence, TransInPendingTrans, AmountIsPending, PendingTransDerived
 
-<1>27 PendingTransDerived' BY <1>20, <1>25 DEF credit, PendingTransDerived
+<1>27 PendingTransDerived' BY <1>20, <1>25 DEF credit, PendingTransDerived, IndInv, TypeOK
 
 <1>28 PendingTransUniqueness' BY <1>25 DEF credit, PendingTransUniqueness
 
@@ -538,19 +538,19 @@ PROVE IndInv'
 <1> DEFINE nadd == <<[a |-> a, t |-> self], amount[self]>>
 <1> USE DEF IndInv, TypeOK, CommonIndInv
 <1>1 CASE creditPrecond(self)
-    <2>3 credits' = credits \cup {nadd} BY <1>1 DEF credit
+    <2>3 kredits' = kredits \cup {nadd} BY <1>1 DEF credit
     <2>4 a \in EEccount BY DEF EEccounts
     <2>5 a # Empty BY DEF credit, NonEmptyAccounts
     <2>6 a \in Eccount BY <2>4, <2>5 DEF EEccount
     <2>7 nadd \in AT \X Nat BY <2>6 DEF AT
-    <2>8 credits' \in SUBSET (AT \X Nat)
+    <2>8 kredits' \in SUBSET (AT \X Nat)
         BY <2>3, <2>7
-    <2>9 IsFiniteSet(credits)' BY <1>1, FS_AddElement DEF credit
+    <2>9 IsFiniteSet(kredits)' BY <1>1, FS_AddElement DEF credit
     <2> QED BY <2>8, <2>9, <1>1, credit_IndInv_common, credit_Imbalance
         DEF IndInv, TypeOK, CommonIndInv
 <1>2 CASE ~creditPrecond(self)
-    <2>3 credits' \in SUBSET (AT \X Nat) BY <1>2 DEF credit
-    <2>4 IsFiniteSet(credits)' BY <1>2 DEF credit
+    <2>3 kredits' \in SUBSET (AT \X Nat) BY <1>2 DEF credit
+    <2>4 IsFiniteSet(kredits)' BY <1>2 DEF credit
     <2> QED BY <2>3, <2>4, <1>1, credit_IndInv_common, credit_Imbalance
 <1> QED BY <1>1, <1>2
 

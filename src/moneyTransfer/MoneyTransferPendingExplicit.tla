@@ -29,7 +29,7 @@ Dransfer -> amount
 (***************************************************************************
 --algorithm MoneyDransferPendingExplicit {
     variables
-       credits = {},
+       kredits = {},
        debits = {},
        amount = [t \in Dransfer |-> 0],
        accounts = [t \in Dransfer |-> EmptyAccounts],
@@ -38,11 +38,11 @@ Dransfer -> amount
     define {
         opAmount(dc) == dc[2]
 
-        accountCreditsSum(a) == MapThenSumSetE(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, credits)
+        accountkreditsSum(a) == MapThenSumSetE(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, kredits)
 
         accountDebitsSum(a) == MapThenSumSetE(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 0, debits)
 
-        amountAvail(a) == NAvail + accountCreditsSum(a) - accountDebitsSum(a)
+        amountAvail(a) == NAvail + accountkreditsSum(a) - accountDebitsSum(a)
         
         isTransKnownToItem(t, a, dc) == dc[1].a = a /\ dc[1].t = t
         
@@ -52,10 +52,10 @@ Dransfer -> amount
         
         debitPrecond(t) == ~\E a \in Eccount:
             \/ isTransKnown(t, a, debits)
-            \/ isTransKnown(t, a, credits)
+            \/ isTransKnown(t, a, kredits)
         
         creditPrecond(t) ==
-            /\ ~\E a \in Eccount: isTransKnown(t, a, credits)
+            /\ ~\E a \in Eccount: isTransKnown(t, a, kredits)
             /\ ~isTransKnown(t, accounts[t].to, debits)
             /\ isTransKnown(t, accounts[t].from, debits)
         
@@ -88,24 +88,24 @@ Dransfer -> amount
         credit:
             with (a = accounts[self].to; at = [a |-> a, t |-> self]) {
                 if (creditPrecond(self)) {
-                    credits := credits \cup {<<at, amount[self]>>};
+                    kredits := kredits \cup {<<at, amount[self]>>};
                     pendingTrans := pendingTrans \ {<<self, amount[self]>>};
                 }
             };
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "24bef2ae" /\ chksum(tla) = "c16fb92f")
-VARIABLES credits, debits, amount, accounts, pendingTrans, pc
+\* BEGIN TRANSLATION (chksum(pcal) = "79c74773" /\ chksum(tla) = "ec35564d")
+VARIABLES kredits, debits, amount, accounts, pendingTrans, pc
 
 (* define statement *)
 opAmount(dc) == dc[2]
 
-accountCreditsSum(a) == MapThenSumSetE(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, credits)
+accountkreditsSum(a) == MapThenSumSetE(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, kredits)
 
 accountDebitsSum(a) == MapThenSumSetE(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 0, debits)
 
-amountAvail(a) == NAvail + accountCreditsSum(a) - accountDebitsSum(a)
+amountAvail(a) == NAvail + accountkreditsSum(a) - accountDebitsSum(a)
 
 isTransKnownToItem(t, a, dc) == dc[1].a = a /\ dc[1].t = t
 
@@ -115,22 +115,22 @@ initPrecond(t) == ~\E a \in Eccount: isTransKnown(t, a, debits)
 
 debitPrecond(t) == ~\E a \in Eccount:
     \/ isTransKnown(t, a, debits)
-    \/ isTransKnown(t, a, credits)
+    \/ isTransKnown(t, a, kredits)
 
 creditPrecond(t) ==
-    /\ ~\E a \in Eccount: isTransKnown(t, a, credits)
+    /\ ~\E a \in Eccount: isTransKnown(t, a, kredits)
     /\ ~isTransKnown(t, accounts[t].to, debits)
     /\ isTransKnown(t, accounts[t].from, debits)
 
 pendingTransAmount(pt) == pt[2]
 
 
-vars == << credits, debits, amount, accounts, pendingTrans, pc >>
+vars == << kredits, debits, amount, accounts, pendingTrans, pc >>
 
 ProcSet == (Dransfer)
 
 Ynit == (* Global variables *)
-        /\ credits = {}
+        /\ kredits = {}
         /\ debits = {}
         /\ amount = [t \in Dransfer |-> 0]
         /\ accounts = [t \in Dransfer |-> EmptyAccounts]
@@ -146,7 +146,7 @@ init(self) == /\ pc[self] = "init"
                        /\ accounts' = [accounts EXCEPT ![self] = [from |-> account1, to |-> account2]]
                        /\ amount' = [amount EXCEPT ![self] = am]
               /\ pc' = [pc EXCEPT ![self] = "debit"]
-              /\ UNCHANGED << credits, debits, pendingTrans >>
+              /\ UNCHANGED << kredits, debits, pendingTrans >>
 
 debit(self) == /\ pc[self] = "debit"
                /\ LET a == accounts[self].from IN
@@ -156,22 +156,22 @@ debit(self) == /\ pc[self] = "debit"
                        ELSE /\ TRUE
                             /\ UNCHANGED << debits, pendingTrans >>
                /\ pc' = [pc EXCEPT ![self] = "crash"]
-               /\ UNCHANGED << credits, amount, accounts >>
+               /\ UNCHANGED << kredits, amount, accounts >>
 
 crash(self) == /\ pc[self] = "crash"
                /\ \/ /\ TRUE
                      /\ pc' = [pc EXCEPT ![self] = "credit"]
                   \/ /\ pc' = [pc EXCEPT ![self] = "debit"]
-               /\ UNCHANGED << credits, debits, amount, accounts, pendingTrans >>
+               /\ UNCHANGED << kredits, debits, amount, accounts, pendingTrans >>
 
 credit(self) == /\ pc[self] = "credit"
                 /\ LET a == accounts[self].to IN
                      LET at == [a |-> a, t |-> self] IN
                        IF creditPrecond(self)
-                          THEN /\ credits' = (credits \cup {<<at, amount[self]>>})
+                          THEN /\ kredits' = (kredits \cup {<<at, amount[self]>>})
                                /\ pendingTrans' = pendingTrans \ {<<self, amount[self]>>}
                           ELSE /\ TRUE
-                               /\ UNCHANGED << credits, pendingTrans >>
+                               /\ UNCHANGED << kredits, pendingTrans >>
                 /\ pc' = [pc EXCEPT ![self] = "Done"]
                 /\ UNCHANGED << debits, amount, accounts >>
 
@@ -190,7 +190,7 @@ Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
 \* END TRANSLATION
     
-CreditTotal == MapThenSumSet(opAmount, credits)
+CreditTotal == MapThenSumSet(opAmount, kredits)
 
 DebitTotal == MapThenSumSet(opAmount, debits)
 
@@ -226,8 +226,8 @@ PendingTransDerived == \A pt \in pendingTrans: \E d \in debits: d[1].t = pt[1] /
 PendingTransUniqueness == pendingTrans = {} \/ ~\E pt1, pt2 \in pendingTrans: pt1 # pt2 /\ pt1[1] = pt2[1]
 
 TypeOK ==
-    /\ credits \in SUBSET (AT \X Nat)
-    /\ IsFiniteSet(credits)
+    /\ kredits \in SUBSET (AT \X Nat)
+    /\ IsFiniteSet(kredits)
     /\ debits \in SUBSET (AT \X Nat)
     /\ IsFiniteSet(debits)
     /\ pendingTrans \in SUBSET TN
@@ -268,7 +268,7 @@ CommonIndInv ==
         pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
 
 IndInvInteractiveStateConstraints ==
-    /\ \A c \in credits: \E d \in debits: 
+    /\ \A c \in kredits: \E d \in debits: 
         /\ d[1].t = c[1].t
         /\ d[1].a # c[1].a
         /\ opAmount(d) = opAmount(c)

@@ -38,7 +38,7 @@ IndSpecE == IndInvE /\ [][NextE]_varsE
 E == INSTANCE MoneyTransferPendingExplicit
     WITH
         pendingTrans <- pendingTransE,
-        credits <- creditsDerived,
+        kredits <- creditsDerived,
         debits <- debitsDerived,
         Dransfer <- Transfer,
         Eccount <- Account
