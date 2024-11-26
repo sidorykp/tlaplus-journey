@@ -1,15 +1,15 @@
 ---- MODULE MoneyTransferPendingExplicit_proofs ----
 EXTENDS MoneyTransferPendingExplicit, FiniteSetsExt_theorems, FiniteSetTheorems, TLAPS
 
-CONSTANTS NAccount, NDransfer
+CONSTANTS NEccount, NDransfer
 
-ASSUME AccountAssumption == Account = 1..NAccount
+ASSUME EccountAssumption == Eccount = 1..NEccount
 
 ASSUME DransferAssumption == Dransfer = 1..NDransfer
 
 ASSUME NDransferAssumption == NDransfer \in NNat
 
-ASSUME NAccountAssumption == NAccount \in NNat
+ASSUME NEccountAssumption == NEccount \in NNat
 
 ASSUME NAvailAssumption == NAvail \in NNat
 
@@ -41,7 +41,7 @@ THEOREM initProperty == ASSUME Ynit PROVE IndInv
 <1>1 IsFiniteSet(credits) BY FS_EmptySet
 <1>2 IsFiniteSet(debits) BY FS_EmptySet
 <1>3 IsFiniteSet(pendingTrans) BY FS_EmptySet
-<1>4 accounts \in [Dransfer -> EAccounts] BY DEF EAccount, EmptyAccounts, EAccounts
+<1>4 accounts \in [Dransfer -> EEccounts] BY DEF EEccount, EmptyAccounts, EEccounts
 <1>5 pcLabels BY DEF pcLabels, ProcSet
 <1>6 \A t \in Dransfer: pc[t] = "init" => initPrecond(t)
     BY DEF initPrecond, isTransKnown, isTransKnownToItem
@@ -69,7 +69,7 @@ PROVE IndInv'
 <1>5 pendingTrans' \in SUBSET TN BY DEF crash
 <1>6 IsFiniteSet(pendingTrans)' BY DEF crash
 <1>7 amount' \in [Dransfer -> Nat] BY DEF crash
-<1>8 accounts' \in [Dransfer -> EAccounts] BY DEF crash
+<1>8 accounts' \in [Dransfer -> EEccounts] BY DEF crash
 
 <1>9 pc'[self] \in {"credit", "debit"} BY DEF crash, pcLabels
 <1>10 pcLabels' BY <1>9 DEF crash, pcLabels
@@ -140,15 +140,15 @@ PROVE IndInv'
 <1>7 am \in Nat BY DEF init, NNat
 <1>8 amount' \in [Dransfer -> Nat] BY <1>7 DEF init
 
-<1>9 selfAccounts \in EAccounts BY DEF init, EAccounts, EAccount
-<1>10 accounts' \in [Dransfer -> EAccounts] BY <1>9 DEF init
+<1>9 selfAccounts \in EEccounts BY DEF init, EEccounts, EEccount
+<1>10 accounts' \in [Dransfer -> EEccounts] BY <1>9 DEF init
 
 <1>11 pcLabels' BY DEF init, ProcSet, pcLabels
 
 <1>12 Imbalance' = Imbalance BY init_AmountPendingTotal DEF init, Imbalance, creditPrecond, CreditTotal, DebitTotal
 <1>13 Imbalance' = 0 BY <1>12
 
-<1>14 Empty \notin Account BY EmptyAssumption, AccountAssumption
+<1>14 Empty \notin Eccount BY EmptyAssumption, EccountAssumption
 <1>15 account1 # Empty BY <1>14 DEF init
 <1>16 account2 # Empty BY <1>14 DEF init
 <1>17 account1 # account2 BY DEF init
@@ -184,14 +184,26 @@ PROVE IndInv'
     <2>2 \A t \in Dransfer \ {self}: AmountIsPending(t)' = AmountIsPending(t) BY DEF init,
         pcLabels, AmountIsPending, creditPrecond
     <2> QED BY <2>1, <2>2
-<1>31 TransPendingEquivalence' = TransPendingEquivalence BY <1>29, <1>30 DEF init, TransPendingEquivalence,
-    TransInPendingTrans, pcLabels, AmountIsPending, creditPrecond, initPrecond, PendingTransDerived
+<1>31 \A t \in Dransfer: TransInPendingTrans(t)' = TransInPendingTrans(t)
+    <2>1 ~AmountIsPending(self) BY DEF init,
+        pcLabels, AmountIsPending, creditPrecond, initPrecond
+    <2>2 ~AmountIsPending(self)' BY <2>1, <1>30
+    <2>3 TransInPendingTrans(self)' = TransInPendingTrans(self)
+        <3>1 CASE pendingTrans = {}
+            <4> QED BY <3>1, <1>29, <2>1, <2>2 DEF TransInPendingTrans, TransPendingEquivalence
+        <3>2 CASE pendingTrans # {}
+            <4>1 ~TransInPendingTrans(self) BY <3>2, <2>1 DEF TransPendingEquivalence
+            <4>2 ~\E pt \in pendingTrans: pt[1] = self BY DEF init, initPrecond, PendingTransDerived, PendingTransUniqueness
+            <4> QED BY <3>2, <4>1, <4>2 DEF init, TransInPendingTrans
+        <3> QED BY <3>1, <3>2
+    <2> QED BY <1>29, <2>3 DEF init, TransInPendingTrans
+<1>32 TransPendingEquivalence' = TransPendingEquivalence BY <1>29, <1>30, <1>31 DEF init, TransPendingEquivalence, TransInPendingTrans
 
-<1>32 PendingTransDerived' BY DEF init, PendingTransDerived
+<1>33 PendingTransDerived' BY DEF init, PendingTransDerived
 
-<1>33 PendingTransUniqueness' BY DEF init, PendingTransUniqueness
+<1>34 PendingTransUniqueness' BY DEF init, PendingTransUniqueness
 
-<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>8, <1>10, <1>11, <1>13, <1>19, <1>22, <1>28, <1>31, <1>32, <1>33
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>8, <1>10, <1>11, <1>13, <1>19, <1>22, <1>28, <1>32, <1>33, <1>34
 
 
 LEMMA debit_DebitTotal_debitPrecond == ASSUME IndInv, NEW self \in Dransfer, debit(self),
@@ -264,7 +276,7 @@ PROVE (
 <1>1 credits' \in SUBSET (AT \X Nat) BY DEF debit, IndInv, TypeOK
 <1>2 IsFiniteSet(credits)' BY DEF debit, IndInv, TypeOK
 <1>3 amount' \in [Dransfer -> Nat] BY DEF debit, IndInv, TypeOK
-<1>4 accounts' \in [Dransfer -> EAccounts] BY DEF debit, IndInv, TypeOK
+<1>4 accounts' \in [Dransfer -> EEccounts] BY DEF debit, IndInv, TypeOK
 <1>5 pc' = [pc EXCEPT ![self] = "crash"] BY DEF debit
 <1>6 pc'[self] = "crash" BY <1>5 DEF pcLabels, IndInv, TypeOK
 <1>7 pcLabels' BY <1>6 DEF debit, pcLabels, ProcSet
@@ -311,9 +323,9 @@ PROVE IndInv'
 <1> USE DEF IndInv, TypeOK, CommonIndInv
 <1>1 CASE debitPrecond(self)
     <2>1 debits' = debits \cup {nadd} BY <1>1 DEF debit
-    <2>2 a \in EAccount BY DEF EAccounts
+    <2>2 a \in EEccount BY DEF EEccounts
     <2>3 a # Empty BY DEF debit, NonEmptyAccounts
-    <2>4 a \in Account BY <2>2, <2>3 DEF EAccount
+    <2>4 a \in Eccount BY <2>2, <2>3 DEF EEccount
     <2>5 nadd \in AT \X Nat BY <2>4 DEF AT
     <2>6 debits' \in SUBSET (AT \X Nat)
         BY <2>1, <2>5
@@ -454,7 +466,7 @@ PROVE (
 <1>1 debits' \in SUBSET (AT \X Nat) BY DEF credit, IndInv, TypeOK
 <1>2 IsFiniteSet(debits)' BY DEF credit
 <1>3 amount' \in [Dransfer -> Nat] BY DEF credit, IndInv, TypeOK
-<1>4 accounts' \in [Dransfer -> EAccounts] BY DEF credit
+<1>4 accounts' \in [Dransfer -> EEccounts] BY DEF credit
 <1>5 pc[self]' = "Done" BY DEF credit
 <1>6 pcLabels' BY <1>5 DEF credit, pcLabels, ProcSet
 <1>7 \A t \in Dransfer:
@@ -527,9 +539,9 @@ PROVE IndInv'
 <1> USE DEF IndInv, TypeOK, CommonIndInv
 <1>1 CASE creditPrecond(self)
     <2>3 credits' = credits \cup {nadd} BY <1>1 DEF credit
-    <2>4 a \in EAccount BY DEF EAccounts
+    <2>4 a \in EEccount BY DEF EEccounts
     <2>5 a # Empty BY DEF credit, NonEmptyAccounts
-    <2>6 a \in Account BY <2>4, <2>5 DEF EAccount
+    <2>6 a \in Eccount BY <2>4, <2>5 DEF EEccount
     <2>7 nadd \in AT \X Nat BY <2>6 DEF AT
     <2>8 credits' \in SUBSET (AT \X Nat)
         BY <2>3, <2>7

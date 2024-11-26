@@ -40,7 +40,8 @@ E == INSTANCE MoneyTransferPendingExplicit
         pendingTrans <- pendingTransE,
         credits <- creditsDerived,
         debits <- debitsDerived,
-        Dransfer <- Transfer
+        Dransfer <- Transfer,
+        Eccount <- Account
 
 ASSUME EquivalentSymbolsAssumption ==
     /\ EmptyAccounts = E!EmptyAccounts

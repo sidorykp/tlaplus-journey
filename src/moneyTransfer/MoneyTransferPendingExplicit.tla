@@ -1,11 +1,11 @@
 ----MODULE MoneyTransferPendingExplicit----
 EXTENDS Naturals, FiniteSets, FiniteSetsExt
 
-CONSTANTS Empty, Account, Dransfer, NAvail
+CONSTANTS Empty, Eccount, Dransfer, NAvail
 
 NNat == Nat \ {0}
 
-EAccount == Account \cup {Empty}
+EEccount == Eccount \cup {Empty}
 
 EDransfer == Dransfer \cup {Empty}
 
@@ -48,14 +48,14 @@ Dransfer -> amount
         
         isTransKnown(t, a, bal) == \E dc \in bal: isTransKnownToItem(t, a, dc)
         
-        initPrecond(t) == ~\E a \in Account: isTransKnown(t, a, debits)
+        initPrecond(t) == ~\E a \in Eccount: isTransKnown(t, a, debits)
         
-        debitPrecond(t) == ~\E a \in Account:
+        debitPrecond(t) == ~\E a \in Eccount:
             \/ isTransKnown(t, a, debits)
             \/ isTransKnown(t, a, credits)
         
         creditPrecond(t) ==
-            /\ ~\E a \in Account: isTransKnown(t, a, credits)
+            /\ ~\E a \in Eccount: isTransKnown(t, a, credits)
             /\ ~isTransKnown(t, accounts[t].to, debits)
             /\ isTransKnown(t, accounts[t].from, debits)
         
@@ -65,7 +65,7 @@ Dransfer -> amount
     process (trans \in Dransfer)    
     {
         init:
-            with (account1 \in Account; account2 \in Account \ {account1}; am \in NNat) {
+            with (account1 \in Eccount; account2 \in Eccount \ {account1}; am \in NNat) {
                 await amountAvail(account1) > 0;
                 await am <= amountAvail(account1);
                 accounts[self] := [from |-> account1, to |-> account2];
@@ -95,7 +95,7 @@ Dransfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "fb70e6a8" /\ chksum(tla) = "58f42086")
+\* BEGIN TRANSLATION (chksum(pcal) = "24bef2ae" /\ chksum(tla) = "c16fb92f")
 VARIABLES credits, debits, amount, accounts, pendingTrans, pc
 
 (* define statement *)
@@ -111,14 +111,14 @@ isTransKnownToItem(t, a, dc) == dc[1].a = a /\ dc[1].t = t
 
 isTransKnown(t, a, bal) == \E dc \in bal: isTransKnownToItem(t, a, dc)
 
-initPrecond(t) == ~\E a \in Account: isTransKnown(t, a, debits)
+initPrecond(t) == ~\E a \in Eccount: isTransKnown(t, a, debits)
 
-debitPrecond(t) == ~\E a \in Account:
+debitPrecond(t) == ~\E a \in Eccount:
     \/ isTransKnown(t, a, debits)
     \/ isTransKnown(t, a, credits)
 
 creditPrecond(t) ==
-    /\ ~\E a \in Account: isTransKnown(t, a, credits)
+    /\ ~\E a \in Eccount: isTransKnown(t, a, credits)
     /\ ~isTransKnown(t, accounts[t].to, debits)
     /\ isTransKnown(t, accounts[t].from, debits)
 
@@ -138,8 +138,8 @@ Ynit == (* Global variables *)
         /\ pc = [self \in ProcSet |-> "init"]
 
 init(self) == /\ pc[self] = "init"
-              /\ \E account1 \in Account:
-                   \E account2 \in Account \ {account1}:
+              /\ \E account1 \in Eccount:
+                   \E account2 \in Eccount \ {account1}:
                      \E am \in NNat:
                        /\ amountAvail(account1) > 0
                        /\ am <= amountAvail(account1)
@@ -213,9 +213,9 @@ NonEmptyAccounts(t) ==
     
 DifferentAccounts(t) == accounts[t].from # accounts[t].to
 
-EAccounts == [from: EAccount, to: EAccount]
+EEccounts == [from: EEccount, to: EEccount]
 
-AT == [a: Account, t: Dransfer]
+AT == [a: Eccount, t: Dransfer]
 
 TN == Dransfer \X Nat
 
@@ -233,7 +233,7 @@ TypeOK ==
     /\ pendingTrans \in SUBSET TN
     /\ IsFiniteSet(pendingTrans)
     /\ amount \in [Dransfer -> Nat]
-    /\ accounts \in [Dransfer -> EAccounts]
+    /\ accounts \in [Dransfer -> EEccounts]
     /\ pcLabels
     /\ TransPendingEquivalence
     /\ PendingTransDerived
@@ -257,7 +257,7 @@ IndSpec == IndInv /\ [][Next]_vars
 
 CommonIndInv ==
     /\ amount \in [Dransfer -> Nat]
-    /\ accounts \in [Dransfer -> EAccounts]
+    /\ accounts \in [Dransfer -> EEccounts]
     /\ pcLabels
     /\ Imbalance = 0
     /\ \A t \in Dransfer:
