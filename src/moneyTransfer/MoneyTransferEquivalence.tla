@@ -173,6 +173,57 @@ BY PTL, nextEquivalence, InitEquivalence, unchangedEquivalence, unchangedEquival
     DEF E!Spec, SpecE,
     E!vars, vars, varsE
 
+PendingTransInv == pendingTransE = pendingTransDerived
+
+THEOREM pendingTransInit == ASSUME InitE PROVE PendingTransInv
+BY DEF PendingTransInv, InitE
+
+THEOREM pendingTransTrans == ASSUME NEW self \in Transfer, transE(self),
+PendingTransInv
+PROVE PendingTransInv'
+BY DEF PendingTransInv, transE, initE, debitE, crashE, creditE
+
+THEOREM pendingTransUnchanged == PendingTransInv /\ UNCHANGED varsE => PendingTransInv'
+<1> SUFFICES ASSUME PendingTransInv, UNCHANGED varsE PROVE PendingTransInv' OBVIOUS
+<1> QED BY DEF PendingTransInv, varsE,
+    pendingTransDerived, AmountIsPending, creditPrecond,
+    isTransKnown, isTransKnownToItem
+
+THEOREM pendingTransNext == PendingTransInv /\ NextE => PendingTransInv'
+<1> SUFFICES ASSUME PendingTransInv, NextE
+    PROVE PendingTransInv'
+    OBVIOUS
+<1> USE DEF PendingTransInv, NextE, TerminatingE
+<1>1 CASE ~TerminatingE
+    <2> QED BY <1>1, pendingTransTrans
+<1>2 CASE TerminatingE
+    <2>1 UNCHANGED varsE BY <1>2 DEF TerminatingE
+    <2> QED BY <1>2, <2>1, pendingTransUnchanged
+<1> QED BY <1>1, <1>2
+
+THEOREM PendingTransInvPreserved == SpecE => []PendingTransInv
+<1>1 PendingTransInv /\ UNCHANGED varsE => PendingTransInv'
+    BY pendingTransUnchanged
+<1> QED BY PTL, pendingTransInit, pendingTransNext, <1>1 DEF SpecE
+
+THEOREM creditPrecondEquivalence == ASSUME E!IndInv
+PROVE
+\A t \in Transfer: E!creditPrecond(t) = creditPrecond(t)
+BY DEF E!creditPrecond, creditPrecond,
+    E!isTransKnown, isTransKnown,
+    E!isTransKnownToItem, isTransKnownToItem,
+    E!IndInv, E!TypeOK,
+    creditsDerived, debitsDerived
+
+THEOREM amountIsPendingEquivalence == ASSUME E!IndInv
+PROVE
+\A t \in Transfer: E!AmountIsPending(t) = AmountIsPending(t)
+BY creditPrecondEquivalence DEF E!AmountIsPending, AmountIsPending,
+    E!IndInv, E!TypeOK, E!TransPendingEquivalence
+
+\* proved in MoneyTransferPendingExplicit_proofs
+THEOREM IndInvPreservedE == E!Spec => []E!IndInv OMITTED
+
 
 THEOREM unchangedVarsProperty == E!IndInv /\ UNCHANGED E!vars => E!IndInv'
 <1> SUFFICES ASSUME E!IndInv, UNCHANGED E!vars
