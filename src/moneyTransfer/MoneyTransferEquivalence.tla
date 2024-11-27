@@ -224,6 +224,64 @@ BY creditPrecondEquivalence DEF E!AmountIsPending, AmountIsPending,
 \* proved in MoneyTransferPendingExplicit_proofs
 THEOREM IndInvPreservedE == E!Spec => []E!IndInv OMITTED
 
+CONSTANTS NTransfer
+
+ASSUME TransferAssumption == Transfer = 1..NTransfer
+
+ASSUME NTransferAssumption == NTransfer \in NNat
+
+THEOREM mapThenSumSetEquivalence == ASSUME NEW S \in SUBSET Transfer,
+NEW am \in [Transfer -> Nat]
+PROVE E!MapThenSumSetE(LAMBDA pt: pt[2], {<<t, am[t]>>: t \in S})
+= E!MapThenSumSetE(LAMBDA t: am[t], S)
+<1>1 \A t \in S: <<t, am[t]>>[2] = am[t] OBVIOUS
+<1> QED OMITTED
+
+THEOREM amountPendingTotalEquivalence == ASSUME E!IndInv, PendingTransInv
+PROVE E!AmountPendingTotal = AmountPendingTotal
+<1>1 E!AmountPendingTotal = E!MapThenSumSetE(E!pendingTransAmount, pendingTransE)
+    BY DEF E!AmountPendingTotal
+<1>2 PendingTransInv BY specEquivalence, PendingTransInvPreserved
+<1>3 pendingTransE = pendingTransDerived BY DEF PendingTransInv
+<1>4 E!AmountPendingTotal = E!MapThenSumSetE(E!pendingTransAmount, {<<t, amount[t]>>: t \in {t \in Transfer: AmountIsPending(t)}})
+    BY <1>1, <1>3 DEF pendingTransDerived
+<1>5 E!AmountPendingTotal = E!MapThenSumSetE(LAMBDA pt: pt[2], {<<t, amount[t]>>: t \in {t \in Transfer: AmountIsPending(t)}})
+    BY <1>4 DEF E!pendingTransAmount
+<1>6 {t \in Transfer : AmountIsPending(t)} \in SUBSET Transfer OBVIOUS
+<1>7 E!AmountPendingTotal = E!MapThenSumSetE(LAMBDA t: amount[t], {t \in Transfer: AmountIsPending(t)})
+    BY <1>5, <1>6, mapThenSumSetEquivalence DEF E!IndInv, E!TypeOK, NNat
+<1>8 AmountPendingTotal = MapThenSumSet(transAmount, transPending)
+    BY DEF AmountPendingTotal
+<1>9 AmountPendingTotal = MapThenSumSet(transAmount, {t \in Transfer: AmountIsPending(t)})
+    BY <1>8 DEF transPending
+<1>10 AmountPendingTotal = MapThenSumSet(LAMBDA t: amount[t], {t \in Transfer: AmountIsPending(t)})
+    BY <1>9 DEF transAmount
+<1> QED BY <1>7, <1>10, amountIsPendingEquivalence
+    DEF E!MapThenSumSetE, MapThenSumSet, E!MapThenFoldSetE, MapThenFoldSet
+
+THEOREM imbalanceByComponents == ASSUME E!DebitTotal = DebitTotal,
+E!CreditTotal = CreditTotal,
+E!AmountPendingTotal = AmountPendingTotal
+PROVE E!Imbalance = Imbalance
+BY DEF E!Imbalance, Imbalance
+
+THEOREM IndInvPreserved == SpecE => [](Imbalance = 0)
+<1> SUFFICES ASSUME SpecE PROVE [](Imbalance = 0) OBVIOUS
+<1>1 []E!IndInv BY IndInvPreservedE, specEquivalence
+<1>2 E!IndInv BY PTL, <1>1
+<1>3 E!DebitTotal = DebitTotal OMITTED
+<1>4 E!CreditTotal = CreditTotal OMITTED
+<1>5 [](E!AmountPendingTotal = AmountPendingTotal) BY PTL, <1>1,
+    PendingTransInvPreserved, amountPendingTotalEquivalence
+<1>6 E!AmountPendingTotal = AmountPendingTotal BY PTL, <1>5
+<1>7 E!Imbalance = Imbalance BY <1>3, <1>4, <1>6, imbalanceByComponents
+<1>8 E!Imbalance = 0 BY <1>2 DEF E!IndInv
+<1>9 Imbalance = 0 BY <1>7, <1>8
+<1> QED BY PTL, <1>9
+
+THEOREM DebitTotalEquivalence == E!DebitTotal = DebitTotal
+<1> QED OMITTED
+
 
 THEOREM unchangedVarsProperty == E!IndInv /\ UNCHANGED E!vars => E!IndInv'
 <1> SUFFICES ASSUME E!IndInv, UNCHANGED E!vars
