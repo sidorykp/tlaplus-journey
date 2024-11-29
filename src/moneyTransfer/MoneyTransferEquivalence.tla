@@ -265,8 +265,8 @@ E!AmountPendingTotal = AmountPendingTotal
 PROVE E!Imbalance = Imbalance
 BY DEF E!Imbalance, Imbalance
 
-THEOREM Imbalance0 == SpecE => [](Imbalance = 0)
-<1> SUFFICES ASSUME SpecE PROVE [](Imbalance = 0) OBVIOUS
+THEOREM ImbalanceIsZero == SpecE => Imbalance = 0
+<1> SUFFICES ASSUME SpecE PROVE Imbalance = 0 OBVIOUS
 <1>1 []E!IndInv BY IndInvPreservedE, specEquivalence
 <1>2 E!IndInv BY PTL, <1>1
 <1>3 E!DebitTotal = DebitTotal OMITTED
@@ -276,8 +276,7 @@ THEOREM Imbalance0 == SpecE => [](Imbalance = 0)
 <1>6 E!Imbalance = Imbalance BY <1>3, <1>4, <1>5, imbalanceByComponents
 <1>7 Imbalance = 0 BY <1>2, <1>6 DEF E!IndInv
 <1>8 E!IndInv => Imbalance = 0 BY <1>2, <1>7
-<1>9 [](E!IndInv => Imbalance = 0) OMITTED
-<1> QED BY PTL, <1>1, <1>9
+<1> QED BY <1>2, <1>8
 
 
 THEOREM unchangedVarsProperty == E!IndInv /\ UNCHANGED E!vars => E!IndInv'
