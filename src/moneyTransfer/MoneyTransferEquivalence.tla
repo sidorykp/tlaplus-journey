@@ -173,6 +173,8 @@ BY PTL, nextEquivalence, InitEquivalence, unchangedEquivalence, unchangedEquival
     DEF E!Spec, SpecE,
     E!vars, vars, varsE
 
+
+
 PendingTransInv == pendingTransE = pendingTransDerived
 
 THEOREM pendingTransInit == ASSUME InitE PROVE PendingTransInv
@@ -220,6 +222,7 @@ PROVE
 \A t \in Transfer: E!AmountIsPending(t) = AmountIsPending(t)
 BY creditPrecondEquivalence DEF E!AmountIsPending, AmountIsPending,
     E!IndInv, E!TypeOK, E!TransPendingEquivalence
+    
 
 \* proved in MoneyTransferPendingExplicit_proofs
 THEOREM IndInvPreservedE == E!Spec => []E!IndInv OMITTED
@@ -243,20 +246,16 @@ PROVE E!AmountPendingTotal = AmountPendingTotal
     BY DEF E!AmountPendingTotal
 <1>2 PendingTransInv BY specEquivalence, PendingTransInvPreserved
 <1>3 pendingTransE = pendingTransDerived BY DEF PendingTransInv
-<1>4 E!AmountPendingTotal = E!MapThenSumSetE(E!pendingTransAmount, {<<t, amount[t]>>: t \in {t \in Transfer: AmountIsPending(t)}})
-    BY <1>1, <1>3 DEF pendingTransDerived
-<1>5 E!AmountPendingTotal = E!MapThenSumSetE(LAMBDA pt: pt[2], {<<t, amount[t]>>: t \in {t \in Transfer: AmountIsPending(t)}})
-    BY <1>4 DEF E!pendingTransAmount
-<1>6 {t \in Transfer : AmountIsPending(t)} \in SUBSET Transfer OBVIOUS
-<1>7 E!AmountPendingTotal = E!MapThenSumSetE(LAMBDA t: amount[t], {t \in Transfer: AmountIsPending(t)})
-    BY <1>5, <1>6, mapThenSumSetEquivalence DEF E!IndInv, E!TypeOK, NNat
-<1>8 AmountPendingTotal = MapThenSumSet(transAmount, transPending)
+<1>4 E!AmountPendingTotal = E!MapThenSumSetE(LAMBDA pt: pt[2], {<<t, amount[t]>>: t \in {t \in Transfer: AmountIsPending(t)}})
+    BY <1>1, <1>3 DEF pendingTransDerived, E!pendingTransAmount
+<1>5 {t \in Transfer : AmountIsPending(t)} \in SUBSET Transfer OBVIOUS
+<1>6 E!AmountPendingTotal = E!MapThenSumSetE(LAMBDA t: amount[t], {t \in Transfer: AmountIsPending(t)})
+    BY <1>4, <1>5, mapThenSumSetEquivalence DEF E!IndInv, E!TypeOK, NNat
+<1>7 AmountPendingTotal = MapThenSumSet(transAmount, transPending)
     BY DEF AmountPendingTotal
-<1>9 AmountPendingTotal = MapThenSumSet(transAmount, {t \in Transfer: AmountIsPending(t)})
-    BY <1>8 DEF transPending
-<1>10 AmountPendingTotal = MapThenSumSet(LAMBDA t: amount[t], {t \in Transfer: AmountIsPending(t)})
-    BY <1>9 DEF transAmount
-<1> QED BY <1>7, <1>10, amountIsPendingEquivalence
+<1>8 AmountPendingTotal = MapThenSumSet(LAMBDA t: amount[t], {t \in Transfer: AmountIsPending(t)})
+    BY <1>7 DEF transPending, transAmount
+<1> QED BY <1>6, <1>8
     DEF E!MapThenSumSetE, MapThenSumSet, E!MapThenFoldSetE, MapThenFoldSet
 
 THEOREM imbalanceByComponents == ASSUME E!DebitTotal = DebitTotal,
