@@ -49,7 +49,7 @@ THEOREM initProperty == ASSUME Init PROVE IndInv
         pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
     BY DEF ProcSet, NonEmptyAccounts, EmptyAccounts
 <1>8 TransPendingEquivalence BY DEF TransPendingEquivalence, AmountIsPending, creditPrecond,
-    isTransKnown, isTransKnownToItem
+    isTransKnown, isTransKnownToItem, TransInPendingTrans
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>7, <1>8, init_Imbalance
     DEF PendingTransDerived, PendingTransUniqueness
 
@@ -177,14 +177,20 @@ PROVE IndInv'
 <1>28 \A t \in Transfer: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
     BY <1>24, <1>27 DEF init, ProcSet, pcLabels
 
-<1>29 TransPendingEquivalence' = TransPendingEquivalence BY DEF init, TransPendingEquivalence, TransInPendingTrans,
-    pcLabels, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+<1>29 ~AmountIsPending(self) BY DEF init, AmountIsPending, creditPrecond, initPrecond
+<1>30 ~AmountIsPending(self)' BY DEF init, AmountIsPending, creditPrecond, initPrecond
+<1>31 TransInPendingTrans(self)' = TransInPendingTrans(self) BY DEF init, TransInPendingTrans
+<1>32 (AmountIsPending(self) <=> TransInPendingTrans(self)) ' = (AmountIsPending(self) <=> TransInPendingTrans(self))
+    BY <1>29, <1>30, <1>31
+<1>33 \A t \in Transfer \ {self}: (AmountIsPending(t) <=> TransInPendingTrans(t)) ' = (AmountIsPending(t) <=> TransInPendingTrans(t))
+    BY DEF init, AmountIsPending, TransInPendingTrans
+<1>34 TransPendingEquivalence'  = TransPendingEquivalence BY <1>32, <1>33 DEF TransPendingEquivalence
 
-<1>30 PendingTransDerived' BY DEF init, PendingTransDerived
+<1>35 PendingTransDerived' BY DEF init, PendingTransDerived
 
-<1>31 PendingTransUniqueness' BY DEF init, PendingTransUniqueness
+<1>36 PendingTransUniqueness' BY DEF init, PendingTransUniqueness
 
-<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>8, <1>10, <1>11, <1>13, <1>19, <1>22, <1>28, <1>29, <1>30, <1>31
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>8, <1>10, <1>11, <1>13, <1>19, <1>22, <1>28, <1>34, <1>35, <1>36
 
 
 LEMMA debit_DebitTotal_debitPrecond == ASSUME IndInv, NEW self \in Transfer, debit(self),
@@ -318,30 +324,17 @@ PROVE IndInv'
     
     <2>12 credits' = credits BY DEF debit
     
-    <2>13 AmountIsPending(self)' <=> TransInPendingTrans(self)'
+    <2>13 (AmountIsPending(self) <=> TransInPendingTrans(self))'
         BY <1>1, <2>1, <2>8, <2>12
         DEF TransInPendingTrans, debit, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
-    <2>14 pendingTrans' # {} BY <2>8
-    <2>15 AmountIsPending(self)' <=> pendingTrans' # {} /\ TransInPendingTrans(self)'
-        BY <2>13, <2>14
-    <2>16 (\A t \in Transfer \ {self}: AmountIsPending(t) <=> pendingTrans # {} /\ TransInPendingTrans(t))'
-        <3>1 CASE pendingTrans # {}
-            <4>1 (\A t \in Transfer \ {self}: AmountIsPending(t) <=> TransInPendingTrans(t))'
-                BY <3>1, <1>1, <2>1, <2>8, <2>12
-                DEF TransInPendingTrans, debit, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
-            <4>2 (\A t \in Transfer \ {self}: AmountIsPending(t) <=> pendingTrans # {} /\ TransInPendingTrans(t))'
-                BY <4>1, <3>1 DEF TransInPendingTrans
-            <4> QED BY <4>2
-        <3>2 CASE pendingTrans = {}
-            <4>1 pendingTrans' = {ptAdd} BY <3>2, <2>8
-            <4>2 \A t \in Transfer: ~AmountIsPending(t) BY <3>2 DEF TransPendingEquivalence
-            <4>3 (\A t \in Transfer \ {self}: AmountIsPending(t) <=> pendingTrans # {} /\ TransInPendingTrans(t))'
-                BY <3>2, <1>1, <2>1, <2>8, <2>12, <4>1, <4>2
-                DEF TransInPendingTrans, debit, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
-            <4> QED BY <4>3
-        <3> QED BY <3>1, <3>2
+    <2>14 \A t \in Transfer \ {self}: TransInPendingTrans(t) = TransInPendingTrans(t)'
+        BY <1>1, <2>1, <2>8, <2>12
+        DEF TransInPendingTrans, debit
+    <2>16 \A t \in Transfer \ {self}: AmountIsPending(t) = AmountIsPending(t)'
+        BY <1>1, <2>1, <2>8, <2>12
+        DEF debit, AmountIsPending, pcLabels, creditPrecond, isTransKnown, isTransKnownToItem
     <2>17 TransPendingEquivalence' = TransPendingEquivalence
-        BY <2>15, <2>16 DEF TransPendingEquivalence
+        BY <2>13, <2>14, <2>16 DEF TransPendingEquivalence
 
     <2>18 \E d \in debits': d[1].t = ptAdd[1] /\ d[2] = ptAdd[2] BY <1>1, <2>1
     <2> HIDE DEF IndInv, TypeOK, CommonIndInv
