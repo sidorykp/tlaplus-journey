@@ -479,7 +479,7 @@ PROVE (
 <1>23 pendingTrans' \in SUBSET TN  BY DEF credit, IndInv, TypeOK
 <1>24 IsFiniteSet(pendingTrans)' BY DEF credit
 <1> HIDE DEF IndInv, TypeOK, CommonIndInv
-<1>25 AmountIsPending(self)' <=> TransInPendingTrans(self)'
+<1>25 AmountIsPending(self)' <=> TransInPendingTrans(self)' /\ PendingTransUniqueness'
     <2>1 CASE ~creditPrecond(self)
         <3>1 credits' = credits BY <2>1 DEF credit
         <3>2 pendingTrans' = pendingTrans BY <2>1 DEF credit
@@ -499,9 +499,7 @@ PROVE (
 
 <1>27 PendingTransDerived' BY <1>20, <1>25 DEF credit, PendingTransDerived
 
-<1>28 PendingTransUniqueness' BY <1>25 DEF credit, PendingTransUniqueness
-
-<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>6, <1>7, <1>11, <1>21, <1>23, <1>24, <1>27, <1>28, <1>26, credit_Imbalance
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>6, <1>7, <1>11, <1>21, <1>23, <1>24, <1>26, <1>27, credit_Imbalance
     DEF IndInv, TypeOK, CommonIndInv
 
 
