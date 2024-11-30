@@ -227,11 +227,11 @@ BY creditPrecondEquivalence DEF E!AmountIsPending, AmountIsPending,
 \* proved in MoneyTransferPendingExplicit_proofs
 THEOREM IndInvPreservedE == E!Spec => []E!IndInv OMITTED
 
-CONSTANTS NTransfer
-
-ASSUME TransferAssumption == Transfer = 1..NTransfer
-
-ASSUME NTransferAssumption == NTransfer \in NNat
+\*CONSTANTS NTransfer
+\*
+\*ASSUME TransferAssumption == Transfer = 1..NTransfer
+\*
+\*ASSUME NTransferAssumption == NTransfer \in NNat
 
 THEOREM mapThenSumSetEquivalence == ASSUME NEW S \in SUBSET Transfer,
 NEW am \in [Transfer -> Nat]
