@@ -43,8 +43,8 @@ THEOREM initProperty == ASSUME Init PROVE IndInv
 <1>3 IsFiniteSet(pendingTrans) BY FS_EmptySet
 <1>4 accounts \in [Transfer -> EAccounts] BY DEF EAccount, EmptyAccounts, EAccounts
 <1>5 pcLabels BY DEF pcLabels, ProcSet
-<1>6 \A t \in Transfer: pc[t] = "init" => initPrecond(t)
-    BY DEF initPrecond, isTransKnown, isTransKnownToItem
+<1>6 \A t \in Transfer: pc[t] = "init" => debitPrecond(t)
+    BY DEF debitPrecond, isTransKnown, isTransKnownToItem
 <1>7 \A t \in Transfer:
         pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
     BY DEF ProcSet, NonEmptyAccounts, EmptyAccounts
@@ -96,8 +96,8 @@ PROVE IndInv'
 <1>20 pc'[self] \notin {"init"} <=> NonEmptyAccounts(self)'
     BY <1>16, <1>17, <1>18, <1>19
 
-<1>21 pc'[self] = "init" => initPrecond(self)' BY <1>9
-<1>22 \A t \in Transfer: pc'[t] = "init" => initPrecond(t)'
+<1>21 pc'[self] = "init" => debitPrecond(self)' BY <1>9
+<1>22 \A t \in Transfer: pc'[t] = "init" => debitPrecond(t)'
     BY <1>21 DEF crash, pcLabels
 
 <1>23 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> pc[t] \notin {"init"}
@@ -160,9 +160,9 @@ PROVE IndInv'
      \/ DifferentAccounts(t) /\ NonEmptyAccounts(t))'
     BY <1>18 DEF init, EmptyAccounts, DifferentAccounts, NonEmptyAccounts
 
-<1>20 initPrecond(self)' BY DEF init, initPrecond, isTransKnown, isTransKnownToItem
-<1>21 pc'[self] = "init" => initPrecond(self)' BY <1>20 DEF ProcSet
-<1>22 \A t \in Transfer: pc'[t] = "init" => initPrecond(t)' BY <1>21 DEF init, pcLabels
+<1>20 debitPrecond(self)' BY DEF init, debitPrecond, isTransKnown, isTransKnownToItem
+<1>21 pc'[self] = "init" => debitPrecond(self)' BY <1>20 DEF ProcSet
+<1>22 \A t \in Transfer: pc'[t] = "init" => debitPrecond(t)' BY <1>21 DEF init, pcLabels
 
 <1>23 NonEmptyAccounts(self)' BY <1>15, <1>16 DEF NonEmptyAccounts
 <1>24 pc'[self] \notin {"init"} <=> NonEmptyAccounts(self)' BY <1>23 DEF init, ProcSet, pcLabels
@@ -177,8 +177,8 @@ PROVE IndInv'
 <1>28 \A t \in Transfer: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
     BY <1>24, <1>27 DEF init, ProcSet, pcLabels
 
-<1>29 ~AmountIsPending(self) BY DEF init, AmountIsPending, creditPrecond, initPrecond
-<1>30 ~AmountIsPending(self)' BY DEF init, AmountIsPending, creditPrecond, initPrecond
+<1>29 ~AmountIsPending(self) BY DEF init, AmountIsPending, creditPrecond, debitPrecond
+<1>30 ~AmountIsPending(self)' BY DEF init, AmountIsPending, creditPrecond, debitPrecond
 <1>31 TransInPendingTrans(self)' = TransInPendingTrans(self) BY DEF init, TransInPendingTrans
 <1>32 (AmountIsPending(self) <=> TransInPendingTrans(self)) ' = (AmountIsPending(self) <=> TransInPendingTrans(self))
     BY <1>29, <1>30, <1>31
@@ -272,10 +272,10 @@ PROVE (
     \/ DifferentAccounts(t)' /\ NonEmptyAccounts(t)'
     BY DEF debit, EmptyAccounts, DifferentAccounts, NonEmptyAccounts, IndInv, TypeOK
 
-<1>9 pc'[self] = "init" => initPrecond(self)' BY <1>6
+<1>9 pc'[self] = "init" => debitPrecond(self)' BY <1>6
 <1>10 \A t \in Transfer \ {self}: pc[t]' = pc[t]
     BY <1>5 DEF pcLabels, IndInv, TypeOK
-<1>11 \A t \in Transfer: pc'[t] = "init" => initPrecond(t)'
+<1>11 \A t \in Transfer: pc'[t] = "init" => debitPrecond(t)'
     BY <1>9, <1>10 DEF IndInv
 
 <1>12 \A t \in Transfer: pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
@@ -448,10 +448,10 @@ PROVE (
     BY DEF credit, EmptyAccounts, DifferentAccounts, NonEmptyAccounts, IndInv, TypeOK
 
 <1>8 pc' = [pc EXCEPT ![self] = "Done"] BY DEF credit
-<1>9 pc'[self] = "init" => initPrecond(self)' BY <1>5
+<1>9 pc'[self] = "init" => debitPrecond(self)' BY <1>5
 <1>10 \A t \in Transfer \ {self}: pc[t]' = pc[t]
     BY <1>8 DEF pcLabels, IndInv, TypeOK
-<1>11 \A t \in Transfer: pc'[t] = "init" => initPrecond(t)'
+<1>11 \A t \in Transfer: pc'[t] = "init" => debitPrecond(t)'
     BY <1>9, <1>10 DEF IndInv
 
 <1>12 \A t \in Transfer: pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
@@ -553,9 +553,9 @@ THEOREM unchangedVarsProperty == IndInv /\ UNCHANGED vars => IndInv'
         \/ accounts[t] = EmptyAccounts
         \/ DifferentAccounts(t) /\ NonEmptyAccounts(t)
     BY DEF DifferentAccounts, NonEmptyAccounts
-<1>3 (/\ \A t \in Transfer: pc[t] = "init" => initPrecond(t))' =
-    /\ \A t \in Transfer: pc[t] = "init" => initPrecond(t)
-    BY DEF initPrecond
+<1>3 (/\ \A t \in Transfer: pc[t] = "init" => debitPrecond(t))' =
+    /\ \A t \in Transfer: pc[t] = "init" => debitPrecond(t)
+    BY DEF debitPrecond
 <1>4 (/\ \A t \in Transfer:
         pc[t] \notin {"init"} <=> NonEmptyAccounts(t))' =
       /\ \A t \in Transfer:
