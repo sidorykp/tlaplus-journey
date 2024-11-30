@@ -146,7 +146,18 @@ PROVE IndInv'
 
 <1>11 pcLabels' BY DEF init, ProcSet, pcLabels
 
-<1>12 Imbalance' = Imbalance BY init_AmountPendingTotal DEF init, Imbalance, creditPrecond, CreditTotal, DebitTotal
+<1>39 \A t \in Transfer \ {self}: amount[t]' = amount[t] BY DEF init
+<1>40 CreditTotal' = CreditTotal
+    <2>1 credits' = credits BY DEF init
+    <2>2 \A c \in credits: ~\E a \in Account: c.a = a /\ c.t = self
+        BY DEF init, debitPrecond, isTransKnown, isTransKnownToItem
+    <2> QED BY <2>1, <2>2, <1>39 DEF init, CreditTotal, opAmount, MapThenSumSet, MapThenFoldSet
+<1>41 DebitTotal' = DebitTotal
+    <2>1 debits' = debits BY DEF init
+    <2>2 \A d \in debits: ~\E a \in Account: d.a = a /\ d.t = self
+        BY DEF init, debitPrecond, isTransKnown, isTransKnownToItem
+    <2> QED BY <2>1, <2>2, <1>39 DEF init, DebitTotal, opAmount, MapThenSumSet, MapThenFoldSet
+<1>12 Imbalance' = Imbalance BY init_AmountPendingTotal, <1>40, <1>41 DEF Imbalance
 <1>13 Imbalance' = 0 BY <1>12
 
 <1>14 Empty \notin Account BY EmptyAssumption, AccountAssumption
