@@ -88,7 +88,7 @@ PROVE creditE(self)
         <3>1 UNCHANGED <<credits, pendingTransE>> BY <2>2 DEF E!credit
         <3> QED BY <2>2, <3>1 DEF E!credit, pendingTransDerived,
             pcLabels, E!ProcSet, ProcSet,
-            AmountIsPending, creditPrecond
+            AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
     <2> QED BY <2>1, <2>2
 <1> QED BY <1>1, <1>2 DEF creditE
 
@@ -130,6 +130,17 @@ THEOREM specEquivalence == E!Spec <=> SpecE
 BY PTL, nextEquivalence, InitEquivalence, unchangedEquivalence
     DEF E!Spec, SpecE,
     E!vars, vars, varsE
+
+\* trying to prove that E!AmountPendingTotal equals AmountPendingTotal
+THEOREM DebitTotalEquivalence == E!DebitTotal = DebitTotal
+BY DEF E!DebitTotal, DebitTotal,
+    E!MapThenSumSetE, E!MapThenFoldSetE, MapThenSumSet, MapThenFoldSet,
+    E!opAmount, opAmount
+
+THEOREM CreditTotalEquivalence == E!CreditTotal = CreditTotal
+BY DEF E!CreditTotal, CreditTotal,
+    E!MapThenSumSetE, E!MapThenFoldSetE, MapThenSumSet, MapThenFoldSet,
+    E!opAmount, opAmount
 
 
 THEOREM unchangedVarsProperty == E!IndInv /\ UNCHANGED E!vars => E!IndInv'

@@ -190,9 +190,9 @@ Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
 \* END TRANSLATION
     
-CreditTotal == MapThenSumSet(opAmount, credits)
+CreditTotal == MapThenSumSetE(opAmount, credits)
 
-DebitTotal == MapThenSumSet(opAmount, debits)
+DebitTotal == MapThenSumSetE(opAmount, debits)
 
 AmountIsPending(t) ==
     /\ pc[t] \in {"credit", "debit", "crash"}
