@@ -1,5 +1,5 @@
 ----MODULE MoneyTransferEquivalence----
-EXTENDS MoneyTransfer, TLAPS
+EXTENDS MoneyTransfer, TLAPS, FiniteSetsExt_theorems
 
 VARIABLE pendingTransE
 
@@ -132,29 +132,6 @@ BY PTL, nextEquivalence, InitEquivalence, unchangedEquivalence
     E!vars, vars, varsE
 
 
-\* proved in MoneyTransferPendingExplicit_proofs
-THEOREM IndInvPreservedE == E!Spec => []E!IndInv OMITTED
-
-\* proved in MoneyTransfer_proofs
-THEOREM IndInvPreserved == Spec => []IndInv
-
-THEOREM initProperty == ASSUME Init PROVE IndInv
-
-THEOREM init_IndInv == ASSUME IndInv, NEW self \in Transfer, init(self)
-PROVE IndInv'
-
-THEOREM crash_IndInv == ASSUME IndInv, NEW self \in Transfer, crash(self)
-PROVE IndInv'
-
-THEOREM debit_IndInv == ASSUME IndInv, NEW self \in Transfer, debit(self)
-PROVE IndInv'
-
-THEOREM credit_IndInv == ASSUME IndInv, NEW self \in Transfer, credit(self)
-PROVE IndInv'
-
-THEOREM unchangedVarsProperty == IndInv /\ UNCHANGED vars => IndInv'
-
-
 PendingTransInv == pendingTransE = pendingTransDerived
 
 THEOREM pendingTransInit == ASSUME InitE PROVE PendingTransInv
@@ -189,34 +166,39 @@ THEOREM PendingTransInvPreserved == SpecE => []PendingTransInv
 <1> QED BY PTL, pendingTransInit, pendingTransNext, <1>1 DEF SpecE
 
 
+\* proved in MoneyTransferPendingExplicit_proofs
+THEOREM IndInvPreservedE == E!Spec => []E!IndInv OMITTED
+
+\* proved in MoneyTransfer_proofs: begin
+THEOREM initProperty == ASSUME Init PROVE IndInv
+
+THEOREM init_IndInv == ASSUME IndInv, NEW self \in Transfer, init(self)
+PROVE IndInv'
+
+THEOREM crash_IndInv == ASSUME IndInv, NEW self \in Transfer, crash(self)
+PROVE IndInv'
+
+THEOREM debit_IndInv == ASSUME IndInv, NEW self \in Transfer, debit(self)
+PROVE IndInv'
+
+THEOREM credit_IndInv == ASSUME IndInv, NEW self \in Transfer, credit(self)
+PROVE IndInv'
+
+THEOREM unchangedVarsProperty == IndInv /\ UNCHANGED vars => IndInv'
+\* proved in MoneyTransfer_proofs: end
+
 THEOREM initEProperty == ASSUME InitE PROVE IndInv
 BY initProperty DEF InitE
-
-THEOREM initE_IndInv == ASSUME IndInv, NEW self \in Transfer, initE(self)
-PROVE IndInv'
-BY init_IndInv DEF initE
-
-THEOREM crashE_IndInv == ASSUME IndInv, NEW self \in Transfer, crashE(self)
-PROVE IndInv'
-BY crash_IndInv DEF crashE
-
-THEOREM debitE_IndInv == ASSUME IndInv, NEW self \in Transfer, debitE(self)
-PROVE IndInv'
-BY debit_IndInv DEF debitE
-
-THEOREM creditE_IndInv == ASSUME IndInv, NEW self \in Transfer, creditE(self)
-PROVE IndInv'
-BY credit_IndInv DEF creditE
 
 THEOREM nextNonTerminatingE == ASSUME IndInv, NextE, ~TerminatingE
 PROVE IndInv'
 <1> SUFFICES ASSUME IndInv, NEW self \in Transfer, transE(self)
     PROVE IndInv'
     BY DEF NextE, transE
-<1>1 CASE initE(self) BY <1>1, initE_IndInv
-<1>2 CASE debitE(self) BY <1>2, debitE_IndInv
-<1>3 CASE crashE(self) BY <1>3, crashE_IndInv
-<1>4 CASE creditE(self) BY <1>4, creditE_IndInv
+<1>1 CASE initE(self) BY <1>1, init_IndInv DEF initE
+<1>2 CASE debitE(self) BY <1>2, debit_IndInv DEF debitE
+<1>3 CASE crashE(self) BY <1>3, crash_IndInv DEF crashE
+<1>4 CASE creditE(self) BY <1>4, credit_IndInv DEF creditE
 <1> QED BY <1>1, <1>2, <1>3, <1>4 DEF transE
 
 THEOREM unchangedVarsPropertyE == IndInv /\ UNCHANGED varsE => IndInv'
@@ -260,21 +242,21 @@ BY DEF E!CreditTotal, CreditTotal,
     E!MapThenSumSetE, E!MapThenFoldSetE, MapThenSumSet, MapThenFoldSet,
     E!opAmount, opAmount
 
-THEOREM imbalanceByComponents == ASSUME E!DebitTotal = DebitTotal,
+THEOREM imbalanceByComponents == ASSUME E!DebitTotal = DebitTotal, IndInv,
     E!CreditTotal = CreditTotal,
     E!Imbalance = Imbalance
 PROVE E!AmountPendingTotal = AmountPendingTotal
-<1>1 E!CreditTotal - E!DebitTotal = CreditTotal - DebitTotal OBVIOUS
-<1>2 (E!CreditTotal - E!DebitTotal) + E!AmountPendingTotal
+<1>1 (E!CreditTotal - E!DebitTotal) + E!AmountPendingTotal
     = (CreditTotal - DebitTotal) + AmountPendingTotal BY DEF E!Imbalance, Imbalance
-<1>10 E!CreditTotal \in Nat OMITTED
-<1>11 E!DebitTotal \in Nat OMITTED
-<1>12 E!AmountPendingTotal \in Nat OMITTED
-<1>20 CreditTotal \in Nat OMITTED
-<1>21 DebitTotal \in Nat OMITTED
-<1>22 AmountPendingTotal \in Nat OMITTED
-<1> QED BY <1>2,
-    <1>10, <1>11, <1>12, <1>20, <1>21, <1>22
+<1>2 DebitTotal \in Nat
+    <2>1 \A d \in debits: opAmount(d) \in Nat BY DEF opAmount, IndInv, TypeOK
+    <2> QED BY <2>1, MapThenSumSetType DEF DebitTotal, IndInv, TypeOK
+<1>3 E!AmountPendingTotal \in Nat OMITTED
+<1>4 CreditTotal \in Nat
+    <2>1 \A c \in credits: opAmount(c) \in Nat BY DEF opAmount, IndInv, TypeOK
+    <2> QED BY <2>1, MapThenSumSetType DEF CreditTotal, IndInv, TypeOK
+<1>5 AmountPendingTotal \in Nat OMITTED
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5
     
 THEOREM SpecE => E!AmountPendingTotal = AmountPendingTotal
 <1> SUFFICES ASSUME SpecE PROVE E!AmountPendingTotal = AmountPendingTotal
@@ -282,7 +264,8 @@ THEOREM SpecE => E!AmountPendingTotal = AmountPendingTotal
 <1>1 Imbalance = 0 BY PTL, IndInvPreservedEE DEF IndInv
 <1>2 E!Imbalance = 0 BY PTL, IndInvPreservedE, specEquivalence DEF E!IndInv
 <1>3 E!Imbalance = Imbalance BY <1>1, <1>2
-<1> QED BY <1>3, DebitTotalEquivalence, CreditTotalEquivalence, imbalanceByComponents
+<1>4 IndInv BY PTL, IndInvPreservedEE
+<1> QED BY <1>3, <1>4, DebitTotalEquivalence, CreditTotalEquivalence, imbalanceByComponents
     DEF E!Imbalance, Imbalance
 
 
