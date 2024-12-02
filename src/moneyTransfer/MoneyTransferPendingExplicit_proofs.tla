@@ -25,12 +25,22 @@ PROVE IsFiniteSet(Transfer)
 <1>2 \A t \in Transfer: t <= NTransfer BY TransferAssumption
 <1> QED BY <1>1, <1>2, FS_BoundedSetOfNaturals DEF NNat
 
+LEMMA AmountPendingTotalInNat == ASSUME NTransferAssumption, IndInv
+PROVE AmountPendingTotal \in Nat
+<1>1 IsFiniteSet(Transfer) BY transSetIsFinite, NTransferAssumption
+<1>2 IsFiniteSet({t \in Transfer : AmountIsPending(t)}) BY <1>1, FS_Subset
+<1>3 IsFiniteSet(pendingTrans) BY <1>2, FS_Image DEF IndInv, TypeOK
+<1>4 \A pt \in pendingTrans: pt \in TN BY DEF TN, IndInv, TypeOK
+<1>5 \A pt \in pendingTrans: pendingTransAmount(pt) \in Nat BY <1>4, pendingTransAmountInNat
+    DEF IndInv
+<1> QED BY <1>3, <1>5, MapThenSumSetType DEF AmountPendingTotal
+
 
 LEMMA init_Imbalance == ASSUME Init
 PROVE Imbalance = 0
 <1> USE DEF Init
-<1>1 CreditTotal = 0 BY MapThenSumSetEmpty DEF CreditTotal
-<1>2 DebitTotal = 0 BY MapThenSumSetEmpty DEF DebitTotal
+<1>1 CreditTotal = 0 BY MapThenSumSetEmpty DEF CreditTotal, MapThenSumSetE, MapThenFoldSetE
+<1>2 DebitTotal = 0 BY MapThenSumSetEmpty DEF DebitTotal, MapThenSumSetE, MapThenFoldSetE
 <1>3 AmountPendingTotal = 0
     BY MapThenSumSetEmpty DEF AmountPendingTotal, AmountIsPending, creditPrecond, isTransKnown
 <1> QED BY <1>1, <1>2, <1>3 DEF Imbalance
@@ -207,7 +217,7 @@ PROVE DebitTotal' = DebitTotal + amount[self]
     MapThenSumSet(opAmount, debits) + opAmount(nadd)
     BY <1>1, <1>2, <1>3, <1>4, MapThenSumSetAddElem
 <1>6 DebitTotal' = DebitTotal + opAmount(nadd)
-    BY <1>5 DEF DebitTotal
+    BY <1>5 DEF DebitTotal, MapThenSumSetE, MapThenFoldSetE, MapThenSumSet, MapThenFoldSet
 <1> QED BY <1>6 DEF opAmount
 
 
@@ -398,7 +408,7 @@ PROVE CreditTotal' = CreditTotal + amount[self]
     MapThenSumSet(opAmount, credits) + opAmount(nadd)
     BY <1>1, <1>2, <1>3, <1>4, MapThenSumSetAddElem
 <1>6 CreditTotal' = CreditTotal + opAmount(nadd)
-    BY <1>5 DEF CreditTotal
+    BY <1>5 DEF CreditTotal, MapThenSumSetE, MapThenFoldSetE, MapThenSumSet, MapThenFoldSet
 <1> QED BY <1>6 DEF opAmount
 
 
@@ -412,7 +422,8 @@ PROVE Imbalance' = Imbalance
     <2>2 AmountPendingTotal' = AmountPendingTotal - amount[self] BY <1>3, credit_AmountPendingTotal_creditPrecond
     <2>3 amount[self] \in Nat BY DEF IndInv, TypeOK
     <2>4 \A c \in credits: opAmount(c) \in Nat BY DEF opAmount, IndInv, TypeOK
-    <2>5 CreditTotal \in Nat BY <2>4, MapThenSumSetType DEF CreditTotal, IndInv, TypeOK
+    <2>5 CreditTotal \in Nat BY <2>4, MapThenSumSetType DEF CreditTotal, IndInv, TypeOK,
+        MapThenSumSetE, MapThenFoldSetE, MapThenSumSet, MapThenFoldSet
     <2>6 IsFiniteSet(pendingTrans) BY DEF IndInv, TypeOK
     <2>7 \A pt \in pendingTrans: pendingTransAmount(pt) \in Nat BY pendingTransAmountInNat, <1>3 DEF credit, IndInv
     <2>8 AmountPendingTotal \in Nat BY <2>6, <2>7, MapThenSumSetType DEF AmountPendingTotal
