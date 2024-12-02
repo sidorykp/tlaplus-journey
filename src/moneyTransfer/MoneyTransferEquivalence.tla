@@ -167,8 +167,18 @@ THEOREM PendingTransInvPreserved == SpecE => []PendingTransInv
 <1> QED BY PTL, pendingTransInit, pendingTransNext, <1>1 DEF SpecE
 
 
+CONSTANTS NTransfer
+
+ASSUME NTransferAssumption == NTransfer \in NNat
+
+ASSUME TransferAssumption == Transfer = 1..NTransfer
+
 \* proved in MoneyTransferPendingExplicit_proofs
 THEOREM IndInvPreservedE == E!Spec => []E!IndInv OMITTED
+
+\* proved in MoneyTransferPendingExplicit_proofs
+LEMMA AmountPendingTotalInNat == ASSUME NTransferAssumption, E!IndInv
+PROVE E!AmountPendingTotal \in Nat OMITTED
 
 \* proved in MoneyTransfer_proofs: begin
 THEOREM initProperty == ASSUME Init PROVE IndInv
@@ -245,12 +255,6 @@ BY DEF E!CreditTotal, CreditTotal,
     E!MapThenSumSetE, E!MapThenFoldSetE, MapThenSumSet, MapThenFoldSet,
     E!opAmount, opAmount
     
-CONSTANTS NTransfer
-
-ASSUME NTransferAssumption == NTransfer \in NNat
-
-ASSUME TransferAssumption == Transfer = 1..NTransfer
-    
 LEMMA transPendingAmountNat == ASSUME IndInv
 PROVE \A am \in transPending: transAmount(am) \in Nat
 BY DEF AmountIsPending, isTransKnown, transAmount, transPending, IndInv, TypeOK
@@ -281,14 +285,7 @@ PROVE E!AmountPendingTotal = AmountPendingTotal
 <1>2 DebitTotal \in Nat
     <2>1 \A d \in debits: opAmount(d) \in Nat BY DEF opAmount, IndInv, TypeOK
     <2> QED BY <2>1, MapThenSumSetType DEF DebitTotal, IndInv, TypeOK
-<1>3 E!AmountPendingTotal \in Nat
-    <2>2 IsFiniteSet(Transfer) BY transSetIsFinite, NTransferAssumption
-    <2>3 IsFiniteSet({t \in Transfer : AmountIsPending(t)}) BY <2>2, FS_Subset
-    <2>4 IsFiniteSet(pendingTransE) BY <2>3, FS_Image DEF pendingTransDerived
-    <2>5 \A pt \in pendingTransE: pt \in E!TN BY DEF E!TN, pendingTransDerived, IndInv, TypeOK
-    <2>6 \A pt \in pendingTransE: E!pendingTransAmount(pt) \in Nat BY <2>5, pendingTransAmountInNat
-        DEF E!IndInv
-    <2> QED BY <2>4, <2>6, MapThenSumSetType DEF E!AmountPendingTotal, E!MapThenSumSetE, E!MapThenFoldSetE, MapThenSumSet, MapThenFoldSet
+<1>3 E!AmountPendingTotal \in Nat BY AmountPendingTotalInNat, NTransferAssumption
 <1>4 CreditTotal \in Nat
     <2>1 \A c \in credits: opAmount(c) \in Nat BY DEF opAmount, IndInv, TypeOK
     <2> QED BY <2>1, MapThenSumSetType DEF CreditTotal, IndInv, TypeOK

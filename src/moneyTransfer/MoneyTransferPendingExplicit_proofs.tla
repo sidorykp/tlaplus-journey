@@ -25,6 +25,16 @@ PROVE IsFiniteSet(Transfer)
 <1>2 \A t \in Transfer: t <= NTransfer BY TransferAssumption
 <1> QED BY <1>1, <1>2, FS_BoundedSetOfNaturals DEF NNat
 
+LEMMA AmountPendingTotalInNat == ASSUME NTransferAssumption, IndInv
+PROVE AmountPendingTotal \in Nat
+<1>2 IsFiniteSet(Transfer) BY transSetIsFinite, NTransferAssumption
+<1>3 IsFiniteSet({t \in Transfer : AmountIsPending(t)}) BY <1>2, FS_Subset
+<1>4 IsFiniteSet(pendingTrans) BY <1>3, FS_Image DEF IndInv, TypeOK
+<1>5 \A pt \in pendingTrans: pt \in TN BY DEF TN, IndInv, TypeOK
+<1>6 \A pt \in pendingTrans: pendingTransAmount(pt) \in Nat BY <1>5, pendingTransAmountInNat
+    DEF IndInv
+<1> QED BY <1>4, <1>6, MapThenSumSetType DEF AmountPendingTotal
+
 
 LEMMA init_Imbalance == ASSUME Init
 PROVE Imbalance = 0
