@@ -264,7 +264,14 @@ PROVE IsFiniteSet(Transfer)
 LEMMA transPendingIsFinite == IsFiniteSet(transPending)
 BY transSetIsFinite, FS_Subset, NTransferAssumption DEF transPending
 
-THEOREM imbalanceByComponents == ASSUME E!DebitTotal = DebitTotal, IndInv,
+LEMMA pendingTransAmountInNat == ASSUME E!TypeOK, NEW self \in E!TN
+PROVE E!pendingTransAmount(self) \in Nat
+BY DEF E!TypeOK, E!pendingTransAmount, E!TN
+
+THEOREM imbalanceByComponents == ASSUME
+    pendingTransE = pendingTransDerived,
+    E!DebitTotal = DebitTotal,
+    IndInv, E!IndInv,
     E!CreditTotal = CreditTotal,
     E!Imbalance = 0,
     Imbalance = 0
@@ -274,7 +281,14 @@ PROVE E!AmountPendingTotal = AmountPendingTotal
 <1>2 DebitTotal \in Nat
     <2>1 \A d \in debits: opAmount(d) \in Nat BY DEF opAmount, IndInv, TypeOK
     <2> QED BY <2>1, MapThenSumSetType DEF DebitTotal, IndInv, TypeOK
-<1>3 E!AmountPendingTotal \in Nat OMITTED
+<1>3 E!AmountPendingTotal \in Nat
+    <2>2 IsFiniteSet(Transfer) BY transSetIsFinite, NTransferAssumption
+    <2>3 IsFiniteSet({t \in Transfer : AmountIsPending(t)}) BY <2>2, FS_Subset
+    <2>4 IsFiniteSet(pendingTransE) BY <2>3, FS_Image DEF pendingTransDerived
+    <2>5 \A pt \in pendingTransE: pt \in E!TN BY DEF E!TN, pendingTransDerived, IndInv, TypeOK
+    <2>6 \A pt \in pendingTransE: E!pendingTransAmount(pt) \in Nat BY <2>5, pendingTransAmountInNat
+        DEF E!IndInv
+    <2> QED BY <2>4, <2>6, MapThenSumSetType DEF E!AmountPendingTotal, E!MapThenSumSetE, E!MapThenFoldSetE, MapThenSumSet, MapThenFoldSet
 <1>4 CreditTotal \in Nat
     <2>1 \A c \in credits: opAmount(c) \in Nat BY DEF opAmount, IndInv, TypeOK
     <2> QED BY <2>1, MapThenSumSetType DEF CreditTotal, IndInv, TypeOK
@@ -287,13 +301,17 @@ THEOREM SpecE => E!AmountPendingTotal = AmountPendingTotal
 <1>1 Imbalance = 0 BY PTL, IndInvPreservedEE DEF IndInv
 <1>2 E!Imbalance = 0 BY PTL, IndInvPreservedE, specEquivalence DEF E!IndInv
 <1>3 IndInv BY PTL, IndInvPreservedEE
-<1> QED BY <1>1, <1>2, <1>3, DebitTotalEquivalence, CreditTotalEquivalence, imbalanceByComponents
+<1>4 pendingTransE = pendingTransDerived BY PTL, PendingTransInvPreserved DEF PendingTransInv
+<1>5 E!IndInv BY PTL, IndInvPreservedE, specEquivalence
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, DebitTotalEquivalence, CreditTotalEquivalence, imbalanceByComponents
 
 THEOREM SpecE => [](E!AmountPendingTotal = AmountPendingTotal)
 <1>1 SpecE => [](E!Imbalance = 0 /\ Imbalance = 0) BY PTL, IndInvPreservedE, IndInvPreservedEE,
     specEquivalence DEF E!IndInv, IndInv
 <1>2 SpecE => []IndInv BY IndInvPreservedEE
-<1> QED BY PTL, <1>1, <1>2,
+<1>3 SpecE => [](pendingTransE = pendingTransDerived) BY PendingTransInvPreserved DEF PendingTransInv
+<1>4 SpecE => []E!IndInv BY IndInvPreservedE, specEquivalence
+<1> QED BY PTL, <1>1, <1>2, <1>3, <1>4,
     DebitTotalEquivalence, CreditTotalEquivalence, imbalanceByComponents
 
 
