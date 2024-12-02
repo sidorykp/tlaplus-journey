@@ -1,5 +1,5 @@
 ----MODULE MoneyTransferEquivalence----
-EXTENDS MoneyTransfer, TLAPS, FiniteSetsExt_theorems
+EXTENDS MoneyTransfer, TLAPS, FiniteSetsExt_theorems, FiniteSetTheorems
 
 VARIABLE pendingTransE
 
@@ -49,9 +49,9 @@ BY DEF E!init, initE, pendingTransDerived,
 
 THEOREM initEquivalenceRev == ASSUME NEW self \in Transfer, initE(self)
 PROVE E!init(self)
-BY DEF E!init, initE, pendingTransDerived,
+BY DEF E!init, initE, init, pendingTransDerived,
     pcLabels, E!ProcSet, ProcSet,
-    AmountIsPending, creditPrecond
+    AmountIsPending
 
 THEOREM debitEquivalence == ASSUME NEW self \in Transfer, E!debit(self)
 PROVE debitE(self)
@@ -61,9 +61,8 @@ BY DEF E!debit, debitE, pendingTransDerived,
 
 THEOREM debitEquivalenceRev == ASSUME NEW self \in Transfer, debitE(self)
 PROVE E!debit(self)
-BY DEF E!debit, debitE, pendingTransDerived,
-    pcLabels, E!ProcSet, ProcSet, E!debitPrecond,
-    AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+BY DEF E!debit, debitE, debit, pendingTransDerived,
+    pcLabels, E!ProcSet, ProcSet, E!debitPrecond, AmountIsPending
     
 THEOREM crashEquivalence == ASSUME NEW self \in Transfer, E!crash(self)
 PROVE crashE(self)
@@ -73,9 +72,9 @@ BY DEF E!crash, crashE, pendingTransDerived,
     
 THEOREM crashEquivalenceRev == ASSUME NEW self \in Transfer, crashE(self)
 PROVE E!crash(self)
-BY DEF E!crash, crashE, pendingTransDerived,
+BY DEF E!crash, crashE, crash, pendingTransDerived,
     pcLabels, E!ProcSet, ProcSet,
-    AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+    AmountIsPending, creditPrecond
 
 THEOREM creditEquivalence == ASSUME NEW self \in Transfer, E!credit(self)
 PROVE creditE(self)
@@ -86,7 +85,9 @@ PROVE creditE(self)
             pcLabels, E!ProcSet, ProcSet
     <2>2 CASE ~E!creditPrecond(self)
         <3>1 UNCHANGED <<credits, pendingTransE>> BY <2>2 DEF E!credit
-        <3> QED BY <2>2, <3>1 DEF E!credit, pendingTransDerived,
+        <3>2 UNCHANGED <<debits, amount, accounts>> BY <2>2 DEF E!credit
+        <3>3 pc' = [pc EXCEPT ![self] = "Done"] BY <2>2 DEF E!credit
+        <3> QED BY <2>2, <3>1, <3>2, <3>3 DEF pendingTransDerived,
             pcLabels, E!ProcSet, ProcSet,
             AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
     <2> QED BY <2>1, <2>2
@@ -95,7 +96,7 @@ PROVE creditE(self)
 THEOREM creditEquivalenceRev == ASSUME NEW self \in Transfer, creditE(self)
 PROVE E!credit(self)
 BY DEF E!credit, creditE, credit, pendingTransDerived,
-    pcLabels, E!ProcSet, ProcSet
+    pcLabels, E!ProcSet, ProcSet, E!creditPrecond, AmountIsPending
     
 THEOREM transEquivalence == ASSUME NEW self \in Transfer, E!trans(self)
 PROVE transE(self)
@@ -243,6 +244,25 @@ THEOREM CreditTotalEquivalence == E!CreditTotal = CreditTotal
 BY DEF E!CreditTotal, CreditTotal,
     E!MapThenSumSetE, E!MapThenFoldSetE, MapThenSumSet, MapThenFoldSet,
     E!opAmount, opAmount
+    
+CONSTANTS NTransfer
+
+ASSUME NTransferAssumption == NTransfer \in NNat
+
+ASSUME TransferAssumption == Transfer = 1..NTransfer
+    
+LEMMA transPendingAmountNat == ASSUME IndInv
+PROVE \A am \in transPending: transAmount(am) \in Nat
+BY DEF AmountIsPending, isTransKnown, transAmount, transPending, IndInv, TypeOK
+
+LEMMA transSetIsFinite == ASSUME NTransferAssumption
+PROVE IsFiniteSet(Transfer)
+<1>1 Transfer \in SUBSET (Nat) BY TransferAssumption
+<1>2 \A t \in Transfer: t <= NTransfer BY TransferAssumption
+<1> QED BY <1>1, <1>2, FS_BoundedSetOfNaturals DEF NNat
+
+LEMMA transPendingIsFinite == IsFiniteSet(transPending)
+BY transSetIsFinite, FS_Subset, NTransferAssumption DEF transPending
 
 THEOREM imbalanceByComponents == ASSUME E!DebitTotal = DebitTotal, IndInv,
     E!CreditTotal = CreditTotal,
@@ -258,7 +278,7 @@ PROVE E!AmountPendingTotal = AmountPendingTotal
 <1>4 CreditTotal \in Nat
     <2>1 \A c \in credits: opAmount(c) \in Nat BY DEF opAmount, IndInv, TypeOK
     <2> QED BY <2>1, MapThenSumSetType DEF CreditTotal, IndInv, TypeOK
-<1>5 AmountPendingTotal \in Nat OMITTED
+<1>5 AmountPendingTotal \in Nat BY transPendingAmountNat, transPendingIsFinite, MapThenSumSetType DEF AmountPendingTotal
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5
     
 THEOREM SpecE => E!AmountPendingTotal = AmountPendingTotal
