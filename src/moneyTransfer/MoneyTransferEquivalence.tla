@@ -226,10 +226,12 @@ THEOREM nextPropertyE == IndInv /\ NextE => IndInv'
     <2> QED BY <1>2, nextTerminatingE    
 <1> QED BY <1>1, <1>2
 
-THEOREM IndInvPreservedEE == SpecE => []IndInv
+THEOREM IndInvPreservedEE == SpecE => [](IndInv /\ E!IndInv)
 <1>1 IndInv /\ UNCHANGED varsE => IndInv'
     BY unchangedVarsPropertyE
-<1> QED BY PTL, initEProperty, nextPropertyE, <1>1 DEF SpecE
+<1>2 SpecE => []E!IndInv BY IndInvPreservedE, specEquivalence
+<1>3 SpecE => []IndInv BY PTL, initEProperty, nextPropertyE, <1>1 DEF SpecE
+<1> QED BY <1>2, <1>3
 
 
 THEOREM DebitTotalEquivalence == E!DebitTotal = DebitTotal
