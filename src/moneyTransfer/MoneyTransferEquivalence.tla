@@ -246,7 +246,8 @@ BY DEF E!CreditTotal, CreditTotal,
 
 THEOREM imbalanceByComponents == ASSUME E!DebitTotal = DebitTotal, IndInv,
     E!CreditTotal = CreditTotal,
-    E!Imbalance = Imbalance
+    E!Imbalance = 0,
+    Imbalance = 0
 PROVE E!AmountPendingTotal = AmountPendingTotal
 <1>1 (E!CreditTotal - E!DebitTotal) + E!AmountPendingTotal
     = (CreditTotal - DebitTotal) + AmountPendingTotal BY DEF E!Imbalance, Imbalance
@@ -265,10 +266,15 @@ THEOREM SpecE => E!AmountPendingTotal = AmountPendingTotal
     OBVIOUS
 <1>1 Imbalance = 0 BY PTL, IndInvPreservedEE DEF IndInv
 <1>2 E!Imbalance = 0 BY PTL, IndInvPreservedE, specEquivalence DEF E!IndInv
-<1>3 E!Imbalance = Imbalance BY <1>1, <1>2
-<1>4 IndInv BY PTL, IndInvPreservedEE
-<1> QED BY <1>3, <1>4, DebitTotalEquivalence, CreditTotalEquivalence, imbalanceByComponents
-    DEF E!Imbalance, Imbalance
+<1>3 IndInv BY PTL, IndInvPreservedEE
+<1> QED BY <1>1, <1>2, <1>3, DebitTotalEquivalence, CreditTotalEquivalence, imbalanceByComponents
+
+THEOREM SpecE => [](E!AmountPendingTotal = AmountPendingTotal)
+<1>1 SpecE => [](E!Imbalance = 0 /\ Imbalance = 0) BY PTL, IndInvPreservedE, IndInvPreservedEE,
+    specEquivalence DEF E!IndInv, IndInv
+<1>2 SpecE => []IndInv BY IndInvPreservedEE
+<1> QED BY PTL, <1>1, <1>2,
+    DebitTotalEquivalence, CreditTotalEquivalence, imbalanceByComponents
 
 
 THEOREM E!IndInv /\ UNCHANGED E!vars => E!IndInv'
