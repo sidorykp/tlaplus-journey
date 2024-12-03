@@ -31,7 +31,7 @@ IndInvE == IndInv /\ pendingTransE = pendingTransDerived
 
 IndSpecE == IndInvE /\ [][NextE]_varsE
 
-E == INSTANCE MoneyTransferPendingExplicit WITH pendingTrans <- pendingTransE
+E == INSTANCE MoneyTransferPendingExplicit WITH pendingTrans <- pendingTransDerived
 
 ASSUME EquivalentSymbolsAssumption ==
     /\ EmptyAccounts = E!EmptyAccounts

@@ -34,23 +34,23 @@ Proving that "Imbalance = 0" is always true is the **ultimate goal** of the proo
 **MapThenSumSet** resolves to a **recursive function**. It maps items from the "transPending" set and sums up mapped values. But it does not make proofs hard alone. It is the way that "transPending" is defined combined with the recursive function that makes the proof hard:
 >transPending == {t \in Transfer: AmountIsPending(t)}
 
-"transPending" is a subset of the Transfer set that changes **implicitly** during some steps: "debit" and "credit".
+"transPending" is a subset of the Transfer set, and it changes **implicitly** during some steps: "debit" and "credit".
 
 # A Redundant Algorithm: [MoneyTransferPendingExplicit](src/moneyTransfer/MoneyTransferPendingExplicit.tla)
 
-MoneyTransfer is hard to prove. Almost all theorems that required to prove how AmountPendingTotal changes (or does not change) in a given step required extra effort. And theorem init_AmountPendingTotal was the hardest from them all.
+MoneyTransfer is hard to prove. Almost all theorems that require to prove how AmountPendingTotal changes (or does not change) in a given step required extra effort. And theorem init_AmountPendingTotal is the hardest from them all.
 
 It is much easier to prove a redundant algorithm: MoneyTransferPendingExplicit, which:
 
 1. has one more variable: "pendingTrans"
-1. the "pendingTrans" set explicitly (and redundantly) **duplicates** the dynamically calculated "transPending" set
+1. the "pendingTrans" is set explicitly, it is redundant, and it **duplicates** the dynamically calculated "transPending" set
 1. "pendingTrans" can be derived from the original MoneyTransfer algorithm
-1. its IndInv has all MoneyTransfer's IndInv constraints including "Imbalance = 0", and has additional constraints making it inductively invariant.
+1. its IndInv has all MoneyTransfer's IndInv constraints including "Imbalance = 0", and it has additional constraints making it inductively invariant.
 
 The redundant algorithm uses the following expression
 >AmountPendingTotal == MapThenSumSet(pendingTransAmount, pendingTrans)
 
-"pendingTrans" changes **explicitly** during the "debit" and "credit" steps, making proofs of how AmountPendingTotal changes (or does not change) in algorithm steps very easy, like in the following fragment of a proof:
+"pendingTrans" changes **explicitly** during the "debit" and "credit" steps, making proofs of how AmountPendingTotal changes (or does not change) in algorithm steps very easy, like in the following fragment of the proof:
 > PROVE AmountPendingTotal' = AmountPendingTotal - amount[self]
 BY DEF credit, AmountPendingTotal
 
@@ -108,7 +108,7 @@ It is proved that AmountPendingTotal is indeed the same under SpecE:
 
 A **direct proof** of the above theorem by using E!AmountPendingTotal and AmountPendingTotal definitions **failed**.
 
-But the **indirect proof succeeded**. The crucial part of the indirect proof is this:
+But the **indirect proof succeeds**. The crucial part of the indirect proof is this:
 > SpecE => [](E!Imbalance = 0 /\ Imbalance = 0)
 
 and the **specEquivalence** theorem is used to prove this crucial part.
