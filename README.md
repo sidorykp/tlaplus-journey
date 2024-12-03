@@ -17,7 +17,7 @@ The inductive invariant **IndInv** is defined in the MoneyTransfer module. The m
 1. true in the initial state Init
 1. maintained in all state transitions: init, debit, crash, credit
 
-The following theorem confirm the two above properties of the MoneyTransfer algorithm:
+The following theorem confirms the two above properties of the MoneyTransfer algorithm:
 >THEOREM IndInvPreserved == Spec => []IndInv
 
 IndInv contains condition **"Imbalance = 0"**, which means that total amount of money modeled by the algorithm does not change when the algorithm is being executed. Imbalance is defined as follows:
@@ -31,21 +31,21 @@ Proving that "Imbalance = 0" is always true is the **ultimate goal** of the proo
 
 >AmountPendingTotal == MapThenSumSet(transAmount, transPending)
 
-**MapThenSumSet** resolves to a **recursive function**. It maps items from the "transPending" set and sums up mapped values. But does not make proofs hard alone. The way that "transPending" is defined combined with the recursive function makes the proof hard:
+**MapThenSumSet** resolves to a **recursive function**. It maps items from the "transPending" set and sums up mapped values. But it does not make proofs hard alone. It is the way that "transPending" is defined combined with the recursive function that makes the proof hard:
 >transPending == {t \in Transfer: AmountIsPending(t)}
 
 "transPending" is a subset of the Transfer set that changes **implicitly** during some steps: "debit" and "credit".
 
 # A Redundant Algorithm: [MoneyTransferPendingExplicit](src/moneyTransfer/MoneyTransferPendingExplicit.tla)
 
-MoneyTransfer was hard to prove. Almost all theorems that required to prove how AmountPendingTotal changes (or does not change) in a given step required extra effort. And theorem init_AmountPendingTotal was the hardest from them all.
+MoneyTransfer is hard to prove. Almost all theorems that required to prove how AmountPendingTotal changes (or does not change) in a given step required extra effort. And theorem init_AmountPendingTotal was the hardest from them all.
 
-It was much easier to prove a redundant algorithm: MoneyTransferPendingExplicit, which:
+It is much easier to prove a redundant algorithm: MoneyTransferPendingExplicit, which:
 
 1. has one more variable: "pendingTrans"
 1. the "pendingTrans" set explicitly (and redundantly) **duplicates** the dynamically calculated "transPending" set
-1. "pendingTrans" can be derived from the original algorithm
-1. its IndInv has all PendingTransfer's IndInv constraints including "Imbalance = 0", and has additional constraints making it inductively invariant.
+1. "pendingTrans" can be derived from the original MoneyTransfer algorithm
+1. its IndInv has all MoneyTransfer's IndInv constraints including "Imbalance = 0", and has additional constraints making it inductively invariant.
 
 The redundant algorithm uses the following expression
 >AmountPendingTotal == MapThenSumSet(pendingTransAmount, pendingTrans)
@@ -54,7 +54,7 @@ The redundant algorithm uses the following expression
 > PROVE AmountPendingTotal' = AmountPendingTotal - amount[self]
 BY DEF credit, AmountPendingTotal
 
-The MoneyTransferPendingExplicit [proof](src/moneyTransfer/MoneyTransferPendingExplicit_proofs.tla) concludes with an analogous the orem as in the MoneyTransfer proof:
+The MoneyTransferPendingExplicit [proof](src/moneyTransfer/MoneyTransferPendingExplicit_proofs.tla) concludes with the analogous theorem as in the MoneyTransfer proof:
 >THEOREM IndInvPreserved == Spec => []IndInv
 
 The main difference compared to MoneyTransfer is that a **different expression for AmountPendingTotal** is used in MoneyTransferPendingExplicit.
@@ -74,7 +74,7 @@ The specification of the "E" algorithm is **E!Spec** and it is the Spec of **Mon
 The specification of the MoneyTransfer algorithm becomes this:
 >SpecE == InitE /\ [][NextE]_varsE
 
-where SpecE, InitE, NextE, and varsE are Spec, Init, Next, and vars components of the **MoneyTransfer** algorithm with additional variable attached: pendingTransE equal pendingTransDerived.
+where Spec**E**, Init**E**, Next**E**, and vars**E** are Spec, Init, Next, and vars components of the **MoneyTransfer** algorithm with an additional variable attached: pendingTransE equal to pendingTransDerived.
 
 It is [proved](src/moneyTransfer/MoneyTransferEquivalence.tla) that SpecE and E!Spec are identical:
 >THEOREM specEquivalence == E!Spec <=> SpecE
@@ -85,9 +85,9 @@ Proving equivalence between two algorithms is an **advanced topic** but the need
 
 This is because algorithm implementations usually contain **more variables** than (abstract) algorithms contain. You could e.g. add timestamps to each state transition in the algorithm implementation, and it would mean more variables.
 
-It should be **proved** that adding more variables makes invariants that are meant to be invariants in the implementation **intact**.
+It should be **proved** that adding more variables maintains invariants that are meant to be invariants in the implementation **intact**.
 
-If we do not prove the above we risk that our precious invariants are violated.
+If we do not prove the above fact then we risk that our precious invariants are violated.
 
 # Utilization of the equivalence between two algorithms
 Our assumption about MoneyTransfer and MoneyTransferPendingExplicit is that they both produce the same value for AmountPendingTotal.
