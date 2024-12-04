@@ -38,7 +38,7 @@ Proving that "Imbalance = 0" is always true is the **ultimate goal** of the proo
 
 # A Redundant Algorithm: [MoneyTransferPendingExplicit](src/moneyTransfer/MoneyTransferPendingExplicit.tla)
 
-MoneyTransfer is hard to prove. Almost all theorems that require to prove how AmountPendingTotal changes (or does not change) in a given step required extra effort. And theorem init_AmountPendingTotal is the hardest from them all.
+MoneyTransfer is hard to prove. Almost all theorems that require to prove how AmountPendingTotal changes (or does not change) in a given step required extra effort. And theorem init_AmountPendingTotal_initPrecond is the hardest from them all.
 
 It is much easier to prove a redundant algorithm: MoneyTransferPendingExplicit, which:
 
@@ -63,27 +63,22 @@ The main difference compared to MoneyTransfer is that a **different expression f
 The MoneyTransfer becomes **identical** to MoneyTransferPendingExplicit when pendingTrans is **derived** by using the following expression:
 > pendingTransDerived == {<<t, amount[t]>>: t \in {t \in Transfer: AmountIsPending(t)}}
 
-Proving that it indeed becomes identical allows to act on a **higher level**, above the algorithm level.
+Proving that it indeed becomes identical allows to act on a **higher level**, above the individual algorithm level.
 
 The derivation of pendingTrans in MoneyTransferPendingExplicit is done by using the following substitution:
->E == INSTANCE MoneyTransferPendingExplicit WITH pendingTrans <- pendingTransE
+>E == INSTANCE MoneyTransferPendingExplicit WITH pendingTrans <- pendingTransDerived
 
 The specification of the "E" algorithm is **E!Spec** and it is the Spec of **MoneyTransferPendingExplicit** with pendingTrans substituted with this:
 >{<<t, amount[t]>>: t \in {t \in Transfer: AmountIsPending(t)}}
 
-The specification of the MoneyTransfer algorithm becomes this:
->SpecE == InitE /\ [][NextE]_varsE
-
-where Spec**E**, Init**E**, Next**E**, and vars**E** are Spec, Init, Next, and vars components of the **MoneyTransfer** algorithm with an additional variable attached: pendingTransE equal to pendingTransDerived.
-
-It is [proved](src/moneyTransfer/MoneyTransferEquivalence.tla) that SpecE and E!Spec are identical:
->THEOREM specEquivalence == E!Spec <=> SpecE
+It is [proved](src/moneyTransfer/MoneyTransferEquivalence.tla) that Spec and E!Spec are identical:
+>THEOREM specEquivalence == E!Spec <=> Spec
 
 # Common use of equivalence between two algorithms
 
 Proving equivalence between two algorithms is an **advanced topic** but the need to prove such equivalence is **common**.
 
-This is because algorithm implementations usually contain **more variables** than (abstract) algorithms contain. You could e.g. add timestamps to each state transition in the algorithm implementation, and it would mean more variables.
+This is because algorithm implementations usually contain **more variables** than (abstract) algorithms contain. You could add e.g. timestamps to each state transition in the algorithm implementation, and it would mean more variables.
 
 It should be **proved** that adding more variables maintains invariants that are meant to be invariants in the implementation **intact**.
 
@@ -92,31 +87,42 @@ If we do not prove the above fact then we risk that our precious invariants are 
 # Utilization of the equivalence between two algorithms
 Our assumption about MoneyTransfer and MoneyTransferPendingExplicit is that they both produce the same value for AmountPendingTotal.
 They use **different variables** to calculate AmountPendingTotal though:
->MapThenSumSet(transAmount, transPending)
-> 
-> in AmountPendingTotal
+>MapThenSumSet(transAmount, transPending)\
+> in MoneyTransfer
 > 
 vs
-> MapThenSumSet(pendingTransAmount, pendingTrans)
-> 
+> MapThenSumSet(pendingTransAmount, pendingTrans)\
 > in MoneyTransferPendingExplicit
 
-"transPending" is implicit and is calculated from existing variables. "pendingTrans" is a variable and is set explicitly.
+"transPending" is implicit and is derived from existing variables. "pendingTrans" is a variable and is set explicitly.
 
-It is proved that AmountPendingTotal is indeed the same under SpecE:
->THEOREM SpecE => [](E!AmountPendingTotal = AmountPendingTotal)
+It is proved that AmountPendingTotal is indeed the same under Spec:
+>THEOREM Spec => [](E!AmountPendingTotal = AmountPendingTotal)
 
-A **direct proof** of the above theorem by using E!AmountPendingTotal and AmountPendingTotal definitions **failed**.
+A **direct proof** of the above theorem by using E!AmountPendingTotal and AmountPendingTotal definitions **failed** so far.
 
 But the **indirect proof succeeds**. The crucial part of the indirect proof is this:
-> SpecE => [](E!Imbalance = 0 /\ Imbalance = 0)
+> Spec => [](E!Imbalance = 0 /\ Imbalance = 0)
 
 and the **specEquivalence** theorem is used to prove this crucial part.
 
 Utilizing equivalence between algorithms is an advanced topic because it requires:
 1. proving two different algorithms individually
-2. proving equivalence between two algorithms
-3. proving that the equivalence allows to prove the property that we are interested in
+1. proving equivalence between two algorithms
+1. proving the property that we are interested in based on the proved equivalence
+
+# The price we pay for having two equivalent algorithms
+One fragment of the **specEquivalence** proof was particularly hard during developing the two MoneyTransfer algorithms:
+>ASSUME NEW self \in Transfer, init(self)
+PROVE E!init(self)
+
+The workaround was to use one **redundant** condition:
+>init:\
+>&nbsp;&nbsp;&nbsp;&nbsp;if(initPrecond(self)) {
+
+The above redundant condition is **completely unnecessary** in each of the two MoneyTransfer algorithms when treated separately.
+
+The sole purpose of this redundant condition is to make the specEquivalence proof possible.
 
 # Pre-Requisites
 The project is being developed using:
