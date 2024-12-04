@@ -38,7 +38,7 @@ Proving that "Imbalance = 0" is always true is the **ultimate goal** of the proo
 
 # A Redundant Algorithm: [MoneyTransferPendingExplicit](src/moneyTransfer/MoneyTransferPendingExplicit.tla)
 
-MoneyTransfer is hard to prove. Almost all theorems that require to prove how AmountPendingTotal changes (or does not change) in a given step required extra effort. And theorem init_AmountPendingTotal_initPrecond is the hardest from them all.
+MoneyTransfer is hard to prove. Almost all theorems that require to prove how AmountPendingTotal changes (or does not change) in a given step require extra effort. And theorem init_AmountPendingTotal_initPrecond is the hardest from them all.
 
 It is much easier to prove a redundant algorithm: MoneyTransferPendingExplicit, which:
 

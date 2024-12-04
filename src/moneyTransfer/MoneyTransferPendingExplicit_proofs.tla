@@ -612,7 +612,7 @@ THEOREM nextProperty == IndInv /\ Next => IndInv'
 <1> QED BY <1>1, <1>2
 
 
-THEOREM IndInvPreserved == Spec => []IndInv
+THEOREM IndInvPreservedE == Spec => []IndInv
 <1>1 IndInv /\ UNCHANGED vars => IndInv'
     BY unchangedVarsProperty
 <1> QED BY PTL, initProperty, nextProperty, <1>1 DEF Spec
