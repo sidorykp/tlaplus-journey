@@ -1,171 +1,119 @@
 ----MODULE MoneyTransferEquivalence----
 EXTENDS MoneyTransfer, TLAPS, FiniteSetsExt_theorems, FiniteSetTheorems
 
-VARIABLE pendingTransE
-
 pendingTransDerived == {<<t, amount[t]>>: t \in {t \in Transfer: AmountIsPending(t)}}
-
-varsE == <<credits, debits, amount, accounts, pc, pendingTransE>>
-
-InitE == Init /\ pendingTransE = pendingTransDerived
-
-initE(self) == init(self) /\ pendingTransE' = pendingTransDerived'
-
-debitE(self) == debit(self) /\ pendingTransE' = pendingTransDerived'
-
-crashE(self) == crash(self) /\ pendingTransE' = pendingTransDerived'
-
-creditE(self) == credit(self) /\ pendingTransE' = pendingTransDerived'
-
-transE(self) == initE(self) \/ debitE(self) \/ crashE(self) \/ creditE(self)
-
-TerminatingE == /\ \A self \in ProcSet: pc[self] = "Done"
-                /\ UNCHANGED varsE
-
-NextE == (\E self \in Transfer: transE(self))
-         \/ TerminatingE
-
-SpecE == InitE /\ [][NextE]_varsE
-
-IndInvE == IndInv /\ pendingTransE = pendingTransDerived
-
-IndSpecE == IndInvE /\ [][NextE]_varsE
 
 E == INSTANCE MoneyTransferPendingExplicit WITH pendingTrans <- pendingTransDerived
 
 ASSUME EquivalentSymbolsAssumption ==
-    /\ EmptyAccounts = E!EmptyAccounts
+    /\ E!EmptyAccounts = EmptyAccounts
 
-THEOREM InitEquivalence == E!Init <=> InitE
-BY EquivalentSymbolsAssumption DEF E!Init, InitE, Init, pendingTransDerived,
-    pcLabels, E!ProcSet, ProcSet,
+THEOREM InitEquivalence == E!Init <=> Init
+BY EquivalentSymbolsAssumption DEF E!Init, Init, pendingTransDerived,
+    E!ProcSet, ProcSet,
     AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
 
 THEOREM initEquivalence == ASSUME NEW self \in Transfer, E!init(self)
-PROVE initE(self)
-BY DEF E!init, initE, pendingTransDerived,
-    pcLabels, E!ProcSet, ProcSet,
+PROVE init(self)
+BY DEF E!init, init, pendingTransDerived,
+    E!initPrecond, initPrecond,
+    E!isTransKnown, E!isTransKnownToItem,
+    isTransKnown, isTransKnownToItem,
     AmountIsPending, creditPrecond
 
-THEOREM initEquivalenceRev == ASSUME NEW self \in Transfer, initE(self)
+THEOREM initEquivalenceRev == ASSUME NEW self \in Transfer, init(self)
 PROVE E!init(self)
-BY DEF E!init, initE, init, pendingTransDerived,
-    pcLabels, E!ProcSet, ProcSet,
-    AmountIsPending
+<1>1 CASE initPrecond(self)
+    <2>1 ~AmountIsPending(self) BY <1>1 DEF init, AmountIsPending, creditPrecond,
+        isTransKnown, isTransKnownToItem, initPrecond
+    <2>2 UNCHANGED {<<t, amount[t]>>: t \in {t \in Transfer : AmountIsPending(t)}}
+        BY <1>1, <2>1 DEF init, AmountIsPending, creditPrecond,
+        isTransKnown, isTransKnownToItem, initPrecond
+    <2> QED BY <2>2
+        DEF pendingTransDerived,
+        E!init, init,
+        E!initPrecond, initPrecond,
+        E!isTransKnown, E!isTransKnownToItem,
+        isTransKnown, isTransKnownToItem,
+        AmountIsPending, creditPrecond
+<1>2 CASE ~initPrecond(self)
+    <2>1 ~AmountIsPending(self) BY <1>2 DEF init, AmountIsPending, creditPrecond,
+        isTransKnown, isTransKnownToItem, initPrecond
+    <2>2 UNCHANGED {<<t, amount[t]>>: t \in {t \in Transfer : AmountIsPending(t)}}
+        BY <1>2, <2>1 DEF init, AmountIsPending, creditPrecond,
+        isTransKnown, isTransKnownToItem, initPrecond
+    <2> QED BY <2>2
+        DEF pendingTransDerived,
+        E!init, init,
+        E!initPrecond, initPrecond,
+        E!isTransKnown, E!isTransKnownToItem,
+        isTransKnown, isTransKnownToItem,
+        AmountIsPending, creditPrecond
+<1> QED BY <1>1, <1>2
+
 
 THEOREM debitEquivalence == ASSUME NEW self \in Transfer, E!debit(self)
-PROVE debitE(self)
-BY DEF E!debit, debitE, pendingTransDerived,
-    pcLabels, E!ProcSet, ProcSet, E!debitPrecond,
-    AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+PROVE debit(self)
+BY DEF E!debit, debit, pendingTransDerived,
+    AmountIsPending, debitPrecond, isTransKnown, isTransKnownToItem,
+    E!debitPrecond
 
-THEOREM debitEquivalenceRev == ASSUME NEW self \in Transfer, debitE(self)
+THEOREM debitEquivalenceRev == ASSUME NEW self \in Transfer, debit(self)
 PROVE E!debit(self)
-BY DEF E!debit, debitE, debit, pendingTransDerived,
-    pcLabels, E!ProcSet, ProcSet, E!debitPrecond, AmountIsPending
+BY DEF E!debit, debit
     
 THEOREM crashEquivalence == ASSUME NEW self \in Transfer, E!crash(self)
-PROVE crashE(self)
-BY DEF E!crash, crashE, pendingTransDerived,
-    pcLabels, E!ProcSet, ProcSet,
-    AmountIsPending, creditPrecond
+PROVE crash(self)
+BY DEF E!crash, crash
     
-THEOREM crashEquivalenceRev == ASSUME NEW self \in Transfer, crashE(self)
+THEOREM crashEquivalenceRev == ASSUME NEW self \in Transfer, crash(self)
 PROVE E!crash(self)
-BY DEF E!crash, crashE, crash, pendingTransDerived,
-    pcLabels, E!ProcSet, ProcSet,
-    AmountIsPending, creditPrecond
+BY DEF E!crash, crash, pendingTransDerived,
+    AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
 
 THEOREM creditEquivalence == ASSUME NEW self \in Transfer, E!credit(self)
-PROVE creditE(self)
-<1>1 credit(self) BY DEF E!credit, creditE
-<1>2 pendingTransE' = pendingTransDerived'
-    <2>1 CASE E!creditPrecond(self)
-        <3> QED BY <2>1 DEF E!credit, pendingTransDerived,
-            pcLabels, E!ProcSet, ProcSet
-    <2>2 CASE ~E!creditPrecond(self)
-        <3>1 UNCHANGED <<credits, pendingTransE>> BY <2>2 DEF E!credit
-        <3>2 UNCHANGED <<debits, amount, accounts>> BY <2>2 DEF E!credit
-        <3>3 pc' = [pc EXCEPT ![self] = "Done"] BY <2>2 DEF E!credit
-        <3> QED BY <2>2, <3>1, <3>2, <3>3 DEF pendingTransDerived,
-            pcLabels, E!ProcSet, ProcSet,
-            AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
-    <2> QED BY <2>1, <2>2
-<1> QED BY <1>1, <1>2 DEF creditE
+PROVE credit(self)
+BY DEF E!credit, credit, pendingTransDerived,
+    E!creditPrecond
 
-THEOREM creditEquivalenceRev == ASSUME NEW self \in Transfer, creditE(self)
+THEOREM creditEquivalenceRev == ASSUME NEW self \in Transfer, credit(self)
 PROVE E!credit(self)
-BY DEF E!credit, creditE, credit, pendingTransDerived,
-    pcLabels, E!ProcSet, ProcSet, E!creditPrecond, AmountIsPending
+BY DEF E!credit, credit
     
 THEOREM transEquivalence == ASSUME NEW self \in Transfer, E!trans(self)
-PROVE transE(self)
-<1>1 CASE E!init(self) BY <1>1, initEquivalence DEF E!trans, transE
-<1>2 CASE E!debit(self) BY <1>2, debitEquivalence DEF E!trans, transE
-<1>3 CASE E!crash(self) BY <1>3, crashEquivalence DEF E!trans, transE
-<1>4 CASE E!credit(self) BY <1>4, creditEquivalence DEF E!trans, transE
+PROVE trans(self)
+<1>1 CASE E!init(self) BY <1>1, initEquivalence DEF E!trans, trans
+<1>2 CASE E!debit(self) BY <1>2, debitEquivalence DEF E!trans, trans
+<1>3 CASE E!crash(self) BY <1>3, crashEquivalence DEF E!trans, trans
+<1>4 CASE E!credit(self) BY <1>4, creditEquivalence DEF E!trans, trans
 <1> QED BY <1>1, <1>2, <1>3, <1>4
     DEF E!trans
 
-THEOREM transEquivalenceRev == ASSUME NEW self \in Transfer, transE(self)
+THEOREM transEquivalenceRev == ASSUME NEW self \in Transfer, trans(self)
 PROVE E!trans(self)
-<1>1 CASE initE(self) BY <1>1, initEquivalenceRev DEF E!trans, transE
-<1>2 CASE debitE(self) BY <1>2, debitEquivalenceRev DEF E!trans, transE
-<1>3 CASE crashE(self) BY <1>3, crashEquivalenceRev DEF E!trans, transE
-<1>4 CASE creditE(self) BY <1>4, creditEquivalenceRev DEF E!trans, transE
+<1>1 CASE init(self) BY <1>1, initEquivalenceRev DEF E!trans, trans
+<1>2 CASE debit(self) BY <1>2, debitEquivalenceRev DEF E!trans, trans
+<1>3 CASE crash(self) BY <1>3, crashEquivalenceRev DEF E!trans, trans
+<1>4 CASE credit(self) BY <1>4, creditEquivalenceRev DEF E!trans, trans
 <1> QED BY <1>1, <1>2, <1>3, <1>4
-    DEF transE
+    DEF trans
 
-THEOREM unchangedEquivalence == UNCHANGED E!vars <=> UNCHANGED varsE
-BY DEF E!vars, vars, varsE
+THEOREM unchangedEquivalence == UNCHANGED E!vars <=> UNCHANGED vars
+BY DEF E!vars, vars, pendingTransDerived, AmountIsPending,
+    creditPrecond, isTransKnown, isTransKnownToItem
 
-THEOREM terminatingEquivalence == E!Terminating <=> TerminatingE
-BY unchangedEquivalence DEF E!Terminating, TerminatingE,
+THEOREM terminatingEquivalence == E!Terminating <=> Terminating
+BY unchangedEquivalence DEF E!Terminating, Terminating,
     E!ProcSet, ProcSet
     
-THEOREM nextEquivalence == E!Next <=> NextE
+THEOREM nextEquivalence == E!Next <=> Next
 BY transEquivalence, transEquivalenceRev, terminatingEquivalence
-    DEF E!Next, NextE
+    DEF E!Next, Next
 
-THEOREM specEquivalence == E!Spec <=> SpecE
+THEOREM specEquivalence == E!Spec <=> Spec
 BY PTL, nextEquivalence, InitEquivalence, unchangedEquivalence
-    DEF E!Spec, SpecE,
-    E!vars, vars, varsE
-
-
-PendingTransInv == pendingTransE = pendingTransDerived
-
-THEOREM pendingTransInit == ASSUME InitE PROVE PendingTransInv
-BY DEF PendingTransInv, InitE
-
-THEOREM pendingTransTrans == ASSUME NEW self \in Transfer, transE(self),
-PendingTransInv
-PROVE PendingTransInv'
-BY DEF PendingTransInv, transE, initE, debitE, crashE, creditE
-
-THEOREM pendingTransUnchanged == PendingTransInv /\ UNCHANGED varsE => PendingTransInv'
-<1> SUFFICES ASSUME PendingTransInv, UNCHANGED varsE PROVE PendingTransInv' OBVIOUS
-<1> QED BY DEF PendingTransInv, varsE,
-    pendingTransDerived, AmountIsPending, creditPrecond,
-    isTransKnown, isTransKnownToItem
-
-THEOREM pendingTransNext == PendingTransInv /\ NextE => PendingTransInv'
-<1> SUFFICES ASSUME PendingTransInv, NextE
-    PROVE PendingTransInv'
-    OBVIOUS
-<1> USE DEF PendingTransInv, NextE, TerminatingE
-<1>1 CASE ~TerminatingE
-    <2> QED BY <1>1, pendingTransTrans
-<1>2 CASE TerminatingE
-    <2>1 UNCHANGED varsE BY <1>2 DEF TerminatingE
-    <2> QED BY <1>2, <2>1, pendingTransUnchanged
-<1> QED BY <1>1, <1>2
-
-THEOREM PendingTransInvPreserved == SpecE => []PendingTransInv
-<1>1 PendingTransInv /\ UNCHANGED varsE => PendingTransInv'
-    BY pendingTransUnchanged
-<1> QED BY PTL, pendingTransInit, pendingTransNext, <1>1 DEF SpecE
-
+    DEF E!Spec, Spec,
+    E!vars, vars
 
 CONSTANTS NTransfer
 
@@ -180,70 +128,8 @@ THEOREM IndInvPreservedE == E!Spec => []E!IndInv OMITTED
 LEMMA AmountPendingTotalInNat == ASSUME NTransferAssumption, E!IndInv
 PROVE E!AmountPendingTotal \in Nat OMITTED
 
-\* proved in MoneyTransfer_proofs: begin
-THEOREM initProperty == ASSUME Init PROVE IndInv
-
-THEOREM init_IndInv == ASSUME IndInv, NEW self \in Transfer, init(self)
-PROVE IndInv'
-
-THEOREM crash_IndInv == ASSUME IndInv, NEW self \in Transfer, crash(self)
-PROVE IndInv'
-
-THEOREM debit_IndInv == ASSUME IndInv, NEW self \in Transfer, debit(self)
-PROVE IndInv'
-
-THEOREM credit_IndInv == ASSUME IndInv, NEW self \in Transfer, credit(self)
-PROVE IndInv'
-
-THEOREM unchangedVarsProperty == IndInv /\ UNCHANGED vars => IndInv'
-\* proved in MoneyTransfer_proofs: end
-
-THEOREM initEProperty == ASSUME InitE PROVE IndInv
-BY initProperty DEF InitE
-
-THEOREM nextNonTerminatingE == ASSUME IndInv, NextE, ~TerminatingE
-PROVE IndInv'
-<1> SUFFICES ASSUME IndInv, NEW self \in Transfer, transE(self)
-    PROVE IndInv'
-    BY DEF NextE, transE
-<1>1 CASE initE(self) BY <1>1, init_IndInv DEF initE
-<1>2 CASE debitE(self) BY <1>2, debit_IndInv DEF debitE
-<1>3 CASE crashE(self) BY <1>3, crash_IndInv DEF crashE
-<1>4 CASE creditE(self) BY <1>4, credit_IndInv DEF creditE
-<1> QED BY <1>1, <1>2, <1>3, <1>4 DEF transE
-
-THEOREM unchangedVarsPropertyE == IndInv /\ UNCHANGED varsE => IndInv'
-<1> SUFFICES ASSUME IndInv, UNCHANGED varsE
-    PROVE IndInv'
-    OBVIOUS
-<1> QED BY unchangedVarsProperty DEF varsE, vars
-
-THEOREM nextTerminatingE == ASSUME IndInv, NextE, TerminatingE
-PROVE IndInv'
-<1> SUFFICES ASSUME IndInv, TerminatingE
-    PROVE IndInv'
-    BY DEF NextE, TerminatingE
-<1>1 UNCHANGED varsE BY DEF TerminatingE
-<1> QED BY <1>1, unchangedVarsPropertyE
-
-THEOREM nextPropertyE == IndInv /\ NextE => IndInv'
-<1> SUFFICES ASSUME IndInv, NextE
-    PROVE IndInv'
-    OBVIOUS
-<1> USE DEF IndInv, NextE, TerminatingE
-<1>1 CASE ~TerminatingE
-    <2> QED BY <1>1, nextNonTerminatingE
-<1>2 CASE TerminatingE
-    <2> QED BY <1>2, nextTerminatingE    
-<1> QED BY <1>1, <1>2
-
-THEOREM IndInvPreservedEE == SpecE => [](IndInv /\ E!IndInv)
-<1>1 IndInv /\ UNCHANGED varsE => IndInv'
-    BY unchangedVarsPropertyE
-<1>2 SpecE => []E!IndInv BY IndInvPreservedE, specEquivalence
-<1>3 SpecE => []IndInv BY PTL, initEProperty, nextPropertyE, <1>1 DEF SpecE
-<1> QED BY <1>2, <1>3
-
+\* proved in MoneyTransfer_proofs
+THEOREM IndInvPreserved == Spec => []IndInv
 
 THEOREM DebitTotalEquivalence == E!DebitTotal = DebitTotal
 BY DEF E!DebitTotal, DebitTotal,
@@ -273,7 +159,6 @@ PROVE E!pendingTransAmount(self) \in Nat
 BY DEF E!TypeOK, E!pendingTransAmount, E!TN
 
 THEOREM imbalanceByComponents == ASSUME
-    pendingTransE = pendingTransDerived,
     E!DebitTotal = DebitTotal,
     IndInv, E!IndInv,
     E!CreditTotal = CreditTotal,
@@ -292,23 +177,22 @@ PROVE E!AmountPendingTotal = AmountPendingTotal
 <1>5 AmountPendingTotal \in Nat BY transPendingAmountNat, transPendingIsFinite, MapThenSumSetType DEF AmountPendingTotal
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5
     
-THEOREM SpecE => E!AmountPendingTotal = AmountPendingTotal
-<1> SUFFICES ASSUME SpecE PROVE E!AmountPendingTotal = AmountPendingTotal
+THEOREM Spec => E!AmountPendingTotal = AmountPendingTotal
+<1> SUFFICES ASSUME Spec PROVE E!AmountPendingTotal = AmountPendingTotal
     OBVIOUS
-<1>1 Imbalance = 0 BY PTL, IndInvPreservedEE DEF IndInv
+<1>1 Imbalance = 0 BY PTL, IndInvPreserved DEF IndInv
 <1>2 E!Imbalance = 0 BY PTL, IndInvPreservedE, specEquivalence DEF E!IndInv
-<1>3 IndInv BY PTL, IndInvPreservedEE
-<1>4 pendingTransE = pendingTransDerived BY PTL, PendingTransInvPreserved DEF PendingTransInv
-<1>5 E!IndInv BY PTL, IndInvPreservedE, specEquivalence
-<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, DebitTotalEquivalence, CreditTotalEquivalence, imbalanceByComponents
+<1>3 IndInv BY PTL, IndInvPreserved
+<1>4 E!IndInv BY PTL, IndInvPreservedE, specEquivalence
+<1> QED BY <1>1, <1>2, <1>3, <1>4, DebitTotalEquivalence, CreditTotalEquivalence, imbalanceByComponents
 
-THEOREM SpecE => [](E!AmountPendingTotal = AmountPendingTotal)
-<1>1 SpecE => [](E!Imbalance = 0 /\ Imbalance = 0) BY PTL, IndInvPreservedE, IndInvPreservedEE,
+THEOREM Spec => [](E!AmountPendingTotal = AmountPendingTotal)
+<1>1 Spec => [](E!Imbalance = 0 /\ Imbalance = 0) BY PTL,
+    IndInvPreserved, IndInvPreservedE,
     specEquivalence DEF E!IndInv, IndInv
-<1>2 SpecE => []IndInv BY IndInvPreservedEE
-<1>3 SpecE => [](pendingTransE = pendingTransDerived) BY PendingTransInvPreserved DEF PendingTransInv
-<1>4 SpecE => []E!IndInv BY IndInvPreservedE, specEquivalence
-<1> QED BY PTL, <1>1, <1>2, <1>3, <1>4,
+<1>2 Spec => []IndInv BY IndInvPreserved
+<1>3 Spec => []E!IndInv BY IndInvPreservedE, specEquivalence
+<1> QED BY PTL, <1>1, <1>2, <1>3,
     DebitTotalEquivalence, CreditTotalEquivalence, imbalanceByComponents
 
 
