@@ -38,9 +38,9 @@ Transfer -> amount
     define {
         opAmount(dc) == dc[2]
 
-        accountCreditsSum(a) == MapThenSumSet(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, credits)
+        accountCreditsSum(a) == MapThenSumSetE(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, credits)
 
-        accountDebitsSum(a) == MapThenSumSet(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 0, debits)
+        accountDebitsSum(a) == MapThenSumSetE(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 0, debits)
 
         amountAvail(a) == NAvail + accountCreditsSum(a) - accountDebitsSum(a)
         
@@ -65,11 +65,13 @@ Transfer -> amount
     process (trans \in Transfer)    
     {
         init:
-            with (account1 \in Account; account2 \in Account \ {account1}; am \in NNat) {
-                await amountAvail(account1) > 0;
-                await am <= amountAvail(account1);
-                accounts[self] := [from |-> account1, to |-> account2];
-                amount[self] := am;
+            if (initPrecond(self)) {
+                with (account1 \in Account; account2 \in Account \ {account1}; am \in NNat) {
+                    await amountAvail(account1) > 0;
+                    await am <= amountAvail(account1);
+                    accounts[self] := [from |-> account1, to |-> account2];
+                    amount[self] := am;
+                }
             };
             
         debit:
@@ -95,15 +97,15 @@ Transfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "16c927e6" /\ chksum(tla) = "e81432de")
+\* BEGIN TRANSLATION (chksum(pcal) = "cee055b" /\ chksum(tla) = "79206121")
 VARIABLES credits, debits, amount, accounts, pendingTrans, pc
 
 (* define statement *)
 opAmount(dc) == dc[2]
 
-accountCreditsSum(a) == MapThenSumSet(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, credits)
+accountCreditsSum(a) == MapThenSumSetE(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, credits)
 
-accountDebitsSum(a) == MapThenSumSet(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 0, debits)
+accountDebitsSum(a) == MapThenSumSetE(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 0, debits)
 
 amountAvail(a) == NAvail + accountCreditsSum(a) - accountDebitsSum(a)
 
@@ -138,13 +140,16 @@ Init == (* Global variables *)
         /\ pc = [self \in ProcSet |-> "init"]
 
 init(self) == /\ pc[self] = "init"
-              /\ \E account1 \in Account:
-                   \E account2 \in Account \ {account1}:
-                     \E am \in NNat:
-                       /\ amountAvail(account1) > 0
-                       /\ am <= amountAvail(account1)
-                       /\ accounts' = [accounts EXCEPT ![self] = [from |-> account1, to |-> account2]]
-                       /\ amount' = [amount EXCEPT ![self] = am]
+              /\ IF initPrecond(self)
+                    THEN /\ \E account1 \in Account:
+                              \E account2 \in Account \ {account1}:
+                                \E am \in NNat:
+                                  /\ amountAvail(account1) > 0
+                                  /\ am <= amountAvail(account1)
+                                  /\ accounts' = [accounts EXCEPT ![self] = [from |-> account1, to |-> account2]]
+                                  /\ amount' = [amount EXCEPT ![self] = am]
+                    ELSE /\ TRUE
+                         /\ UNCHANGED << amount, accounts >>
               /\ pc' = [pc EXCEPT ![self] = "debit"]
               /\ UNCHANGED << credits, debits, pendingTrans >>
 
