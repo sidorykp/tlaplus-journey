@@ -146,9 +146,8 @@ PROVE AmountPendingTotal' = AmountPendingTotal
 <1>5 \A t \in Transfer: transAmount(t)' = transAmount(t) BY
     DEF init, transAmount, creditPrecond
 <1>6 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) BY <1>4, <1>5
-<1>7 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
-<1>8 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') BY <1>4, <1>5 DEF init
-<1> QED BY <1>6, <1>7, <1>8 DEF AmountPendingTotal
+<1>7 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') BY <1>4, <1>5 DEF init
+<1> QED BY <1>6, <1>7 DEF AmountPendingTotal
 
 THEOREM init_AmountPendingTotal_initPrecond == ASSUME IndInv, NEW self \in Transfer, init(self),
 initPrecond(self)
@@ -162,11 +161,57 @@ PROVE AmountPendingTotal' = AmountPendingTotal
 <1>5 \A t \in transPending: transAmount(t)' = transAmount(t) BY
     DEF init, transAmount, creditPrecond, transPending,
     pcLabels, transPending, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
-<1>6 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) BY <1>4, <1>5
-<1>7 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
-<1>8 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)
-    BY <1>4, <1>5 DEF init
-<1> QED BY <1>6, <1>7, <1>8 DEF AmountPendingTotal
+<1>6 (CHOOSE iter :
+          iter
+          = [s \in SUBSET transPending |->
+               IF s = {}
+                 THEN 0
+                 ELSE transAmount(CHOOSE x \in s : TRUE)
+                      + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending]
+    = (CHOOSE iter :
+          iter
+          = [s \in SUBSET transPending' |->
+               IF s = {}
+                 THEN 0
+                 ELSE transAmount(CHOOSE x \in s : TRUE)
+                      + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending']
+    BY <1>4
+<1>7 \A t \in transPending: accounts[t] = accounts[t]' BY <1>1, <1>4 DEF init, pcLabels,
+    transPending, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+<1>8 (CHOOSE iter :
+          iter
+          = [s \in SUBSET transPending |->
+               IF s = {}
+                 THEN 0
+                 ELSE transAmount(CHOOSE x \in s : TRUE)
+                      + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending]
+    = (CHOOSE iter :
+          iter
+          = [s \in SUBSET transPending |->
+               IF s = {}
+                 THEN 0
+                 ELSE transAmount(CHOOSE x \in s : TRUE)'
+                      + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending]
+    BY <1>5, <1>7 DEF init, transAmount,
+    pcLabels, transPending, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+<1>9 (CHOOSE iter :
+          iter
+          = [s \in SUBSET transPending' |->
+               IF s = {}
+                 THEN 0
+                 ELSE transAmount(CHOOSE x \in s : TRUE)
+                      + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending']
+    = (CHOOSE iter :
+          iter
+          = [s \in SUBSET transPending' |->
+               IF s = {}
+                 THEN 0
+                 ELSE transAmount(CHOOSE x \in s : TRUE)'
+                      + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending']
+    BY <1>8, <1>4
+<1>10 MapThenSumSet(transAmount, transPending)' = MapThenSumSet(transAmount, transPending)
+    BY <1>6, <1>9 DEF init, MapThenSumSet, MapThenFoldSet
+<1> QED BY <1>10 DEF AmountPendingTotal
 
 
 THEOREM init_IndInv == ASSUME IndInv, NEW self \in Transfer, init(self)
