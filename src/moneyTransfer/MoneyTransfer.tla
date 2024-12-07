@@ -81,19 +81,13 @@ Transfer -> amount
         credit:
             with (a = accounts[self].to) {
                 if (creditPrecond(self)) {
-                    either credits := credits \cup {<<[a |-> a, t |-> self], amount[self]>>};
-                    or skip;
+                    credits := credits \cup {<<[a |-> a, t |-> self], amount[self]>>};
                 }
-            };
-
-        crash2:
-            if (creditPrecond(self)) {
-                goto credit;
             };
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "9c18131b" /\ chksum(tla) = "175ca41e")
+\* BEGIN TRANSLATION (chksum(pcal) = "6db31177" /\ chksum(tla) = "65b317de")
 VARIABLES credits, debits, amount, accounts, pc
 
 (* define statement *)
@@ -168,22 +162,13 @@ crash(self) == /\ pc[self] = "crash"
 credit(self) == /\ pc[self] = "credit"
                 /\ LET a == accounts[self].to IN
                      IF creditPrecond(self)
-                        THEN /\ \/ /\ credits' = (credits \cup {<<[a |-> a, t |-> self], amount[self]>>})
-                                \/ /\ TRUE
-                                   /\ UNCHANGED credits
+                        THEN /\ credits' = (credits \cup {<<[a |-> a, t |-> self], amount[self]>>})
                         ELSE /\ TRUE
                              /\ UNCHANGED credits
-                /\ pc' = [pc EXCEPT ![self] = "crash2"]
+                /\ pc' = [pc EXCEPT ![self] = "Done"]
                 /\ UNCHANGED << debits, amount, accounts >>
 
-crash2(self) == /\ pc[self] = "crash2"
-                /\ IF creditPrecond(self)
-                      THEN /\ pc' = [pc EXCEPT ![self] = "credit"]
-                      ELSE /\ pc' = [pc EXCEPT ![self] = "Done"]
-                /\ UNCHANGED << credits, debits, amount, accounts >>
-
 trans(self) == init(self) \/ debit(self) \/ crash(self) \/ credit(self)
-                  \/ crash2(self)
 
 (* Allow infinite stuttering to prevent deadlock on termination. *)
 Terminating == /\ \A self \in ProcSet: pc[self] = "Done"
@@ -203,7 +188,7 @@ CreditTotal == MapThenSumSet(opAmount, credits)
 DebitTotal == MapThenSumSet(opAmount, debits)
 
 AmountIsPending(t) ==
-    /\ pc[t] \in {"debit", "crash", "credit", "crash2"}
+    /\ pc[t] \in {"debit", "crash", "credit"}
     /\ creditPrecond(t)
 
 transPending == {t \in Transfer: AmountIsPending(t)}
@@ -222,7 +207,7 @@ EAccounts == [from: EAccount, to: EAccount]
 
 AT == [a: Account, t: Transfer]
 
-pcLabels == pc \in [Transfer -> {"init", "debit", "credit", "crash", "crash2", "Done"}]
+pcLabels == pc \in [Transfer -> {"init", "debit", "credit", "crash", "Done"}]
 
 TypeOK ==
     /\ credits \in SUBSET (AT \X Nat)
