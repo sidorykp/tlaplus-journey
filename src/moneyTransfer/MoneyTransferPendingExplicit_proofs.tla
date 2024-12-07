@@ -197,10 +197,11 @@ PROVE IndInv'
     <2> QED BY <2>1, <2>2
 <1>32 (AmountIsPending(self) <=> TransInPendingTrans(self)) ' = (AmountIsPending(self) <=> TransInPendingTrans(self))
     BY <1>29, <1>30, <1>31
-<1>33 \A t \in Transfer \ {self}: (AmountIsPending(t) <=> TransInPendingTrans(t)) ' = (AmountIsPending(t) <=> TransInPendingTrans(t))
+<1>33 \A t \in Transfer \ {self}: (AmountIsPending(t) <=> TransInPendingTrans(t))' = (AmountIsPending(t) <=> TransInPendingTrans(t))
     <2>1 CASE initPrecond(self)
         <3>1 pendingTrans' = pendingTrans BY DEF init
-        <3> QED BY <2>1, <3>1 DEF init, AmountIsPending, TransInPendingTrans
+        <3> QED BY <2>1, <3>1 DEF init, AmountIsPending, TransInPendingTrans,
+            creditPrecond, isTransKnown, isTransKnownToItem
     <2>2 CASE ~initPrecond(self)
         <3> QED BY <2>2 DEF init, AmountIsPending, TransInPendingTrans
     <2> QED BY <2>1, <2>2
