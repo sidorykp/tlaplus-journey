@@ -90,10 +90,28 @@ PROVE crash(self)
     <2> QED BY <1>2, <2>1 DEF E!crash, crash
 <1> QED BY <1>1, <1>2
     
-THEOREM crashEquivalenceRev == ASSUME NEW self \in Transfer, crash(self)
+THEOREM crashEquivalenceRev == ASSUME NEW self \in Transfer, crash(self), pcLabels
 PROVE E!crash(self)
-BY DEF E!crash, crash, pendingTransDerived,
-    AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+<1>1 CASE debitPrecond(self)
+    <2>1 E!debitPrecond(self) BY <1>1 DEF
+        E!crash, crash,
+        E!debitPrecond, debitPrecond,
+        E!isTransKnown, isTransKnown,
+        E!isTransKnownToItem, isTransKnownToItem
+    <2>2 UNCHANGED pendingTransDerived
+        BY <1>1, <2>1 DEF E!crash, crash, pendingTransDerived, AmountIsPending,
+            creditPrecond, isTransKnown, isTransKnownToItem
+    <2> QED BY <1>1, <2>1, <2>2 DEF E!crash, crash
+<1>2 CASE ~debitPrecond(self)
+    <2>1 ~E!debitPrecond(self) BY <1>2 DEF
+        E!crash, crash,
+        E!debitPrecond, debitPrecond,
+        E!isTransKnown, isTransKnown,
+        E!isTransKnownToItem, isTransKnownToItem
+    <2>2 UNCHANGED pendingTransDerived
+        BY <1>2, <2>1 DEF E!crash, crash, pendingTransDerived
+    <2> QED BY <1>2, <2>1, <2>2 DEF E!crash, crash
+<1> QED BY <1>1, <1>2
 
 THEOREM creditEquivalence == ASSUME NEW self \in Transfer, E!credit(self)
 PROVE credit(self)
