@@ -29,34 +29,40 @@ PROVE init(self)
     AmountIsPending, creditPrecond
 <1> QED BY <1>1, <1>2
 
-THEOREM initEquivalenceRev == ASSUME NEW self \in Transfer, init(self)
+THEOREM initEquivalenceRev == ASSUME NEW self \in Transfer, init(self), IndInv
 PROVE E!init(self)
+<1> USE DEF IndInv, TypeOK, pcLabels
 <1>1 CASE initPrecond(self)
-    <2>1 ~AmountIsPending(self) BY <1>1 DEF init, AmountIsPending, creditPrecond,
-        isTransKnown, isTransKnownToItem, initPrecond
-    <2>2 UNCHANGED {<<t, amount[t]>>: t \in {t \in Transfer : AmountIsPending(t)}}
-        BY <1>1, <2>1 DEF init, AmountIsPending, creditPrecond,
-        isTransKnown, isTransKnownToItem, initPrecond
-    <2> QED BY <2>2
-        DEF pendingTransDerived,
-        E!init, init,
+    <2>1 E!initPrecond(self) BY <1>1 DEF E!init, init,
         E!initPrecond, initPrecond,
-        E!isTransKnown, E!isTransKnownToItem,
-        isTransKnown, isTransKnownToItem,
-        AmountIsPending, creditPrecond
+        E!isTransKnown, isTransKnown,
+        E!isTransKnownToItem, isTransKnownToItem
+    <2>2 UNCHANGED pendingTransDerived
+        BY <1>1, <2>1 DEF init, pendingTransDerived, AmountIsPending,
+        creditPrecond, isTransKnown, isTransKnownToItem, initPrecond,
+        NNat, amountAvail, accountDebits, accountCredits,
+        MapThenSumSet, MapThenFoldSet, opAmount
+    <2> QED BY <1>1, <2>1, <2>2
+        DEF E!init, init,
+            E!NNat, NNat,
+            E!amountAvail, amountAvail,
+            E!accountCredits, accountCredits,
+            E!accountDebits, accountDebits,
+            E!MapThenSumSetE, MapThenSumSet,
+            E!MapThenFoldSetE, MapThenFoldSet,
+            E!opAmount, opAmount
 <1>2 CASE ~initPrecond(self)
-    <2>1 ~AmountIsPending(self) BY <1>2 DEF init, AmountIsPending, creditPrecond,
-        isTransKnown, isTransKnownToItem, initPrecond
-    <2>2 UNCHANGED {<<t, amount[t]>>: t \in {t \in Transfer : AmountIsPending(t)}}
-        BY <1>2, <2>1 DEF init, AmountIsPending, creditPrecond,
-        isTransKnown, isTransKnownToItem, initPrecond
-    <2> QED BY <2>2
-        DEF pendingTransDerived,
-        E!init, init,
+    <2>1 ~E!initPrecond(self) BY <1>2 DEF E!init, init,
         E!initPrecond, initPrecond,
-        E!isTransKnown, E!isTransKnownToItem,
-        isTransKnown, isTransKnownToItem,
-        AmountIsPending, creditPrecond
+        E!isTransKnown, isTransKnown,
+        E!isTransKnownToItem, isTransKnownToItem
+    <2>2 UNCHANGED pendingTransDerived
+        BY <1>2, <2>1 DEF init, pendingTransDerived, AmountIsPending,
+        creditPrecond, isTransKnown, isTransKnownToItem, initPrecond,
+        NNat, amountAvail, accountDebits, accountCredits,
+        MapThenSumSet, MapThenFoldSet, opAmount
+    <2> QED BY <1>2, <2>1, <2>2
+        DEF E!init, init
 <1> QED BY <1>1, <1>2
 
 
