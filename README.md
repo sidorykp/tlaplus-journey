@@ -55,7 +55,7 @@ The redundant algorithm uses the following expression
 BY DEF credit, AmountPendingTotal
 
 The MoneyTransferPendingExplicit [proof](src/moneyTransfer/MoneyTransferPendingExplicit_proofs.tla) concludes with the analogous theorem as in the MoneyTransfer proof:
->THEOREM IndInvPreserved == Spec => []IndInv
+>THEOREM IndInvPreservedE == Spec => []IndInv
 
 The main difference compared to MoneyTransfer is that a **different expression for AmountPendingTotal** is used in MoneyTransferPendingExplicit.
 
