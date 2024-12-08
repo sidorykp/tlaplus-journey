@@ -188,7 +188,7 @@ CreditTotal == MapThenSumSet(opAmount, credits)
 DebitTotal == MapThenSumSet(opAmount, debits)
 
 AmountIsPending(t) ==
-    /\ pc[t] \in {"debit", "crash", "credit"}
+    /\ pc[t] \in {"credit", "debit", "crash"}
     /\ creditPrecond(t)
 
 transPending == {t \in Transfer: AmountIsPending(t)}
@@ -207,7 +207,7 @@ EAccounts == [from: EAccount, to: EAccount]
 
 AT == [a: Account, t: Transfer]
 
-pcLabels == pc \in [Transfer -> {"init", "debit", "credit", "crash", "Done"}]
+pcLabels == pc \in [Transfer -> {"Done", "init", "debit", "credit", "crash"}]
 
 TypeOK ==
     /\ credits \in SUBSET (AT \X Nat)

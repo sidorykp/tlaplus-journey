@@ -205,7 +205,7 @@ CreditTotal == MapThenSumSetE(opAmount, credits)
 DebitTotal == MapThenSumSetE(opAmount, debits)
 
 AmountIsPending(t) ==
-    /\ pc[t] \in {"debit", "crash", "credit"}
+    /\ pc[t] \in {"credit", "debit", "crash"}
     /\ creditPrecond(t)
 
 AmountPendingTotal == MapThenSumSet(pendingTransAmount, pendingTrans)
@@ -229,7 +229,7 @@ AT == [a: Account, t: Transfer]
 
 TN == Transfer \X Nat
 
-pcLabels == pc \in [Transfer -> {"init", "debit", "credit", "crash", "Done"}]
+pcLabels == pc \in [Transfer -> {"Done", "init", "debit", "credit", "crash"}]
 
 PendingTransDerived == \A pt \in pendingTrans: \E d \in debits: d[1].t = pt[1] /\ d[2] = pt[2]
 

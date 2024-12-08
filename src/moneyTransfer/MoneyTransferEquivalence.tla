@@ -29,41 +29,34 @@ PROVE init(self)
     AmountIsPending, creditPrecond
 <1> QED BY <1>1, <1>2
 
-THEOREM initEquivalenceRev == ASSUME NEW self \in Transfer, init(self),
-TypeOK,
-\A t \in Transfer: pc[t] = "init" => initPrecond(t)
+THEOREM initEquivalenceRev == ASSUME NEW self \in Transfer, init(self)
 PROVE E!init(self)
 <1>1 CASE initPrecond(self)
-    <2>1 E!initPrecond(self) BY <1>1 DEF E!init, init,
+    <2>1 ~AmountIsPending(self) BY <1>1 DEF init, AmountIsPending, creditPrecond,
+        isTransKnown, isTransKnownToItem, initPrecond
+    <2>2 UNCHANGED {<<t, amount[t]>>: t \in {t \in Transfer : AmountIsPending(t)}}
+        BY <1>1, <2>1 DEF init, AmountIsPending, creditPrecond,
+        isTransKnown, isTransKnownToItem, initPrecond
+    <2> QED BY <2>2
+        DEF pendingTransDerived,
+        E!init, init,
         E!initPrecond, initPrecond,
-        E!isTransKnown, isTransKnown,
-        E!isTransKnownToItem, isTransKnownToItem
-    <2>2 UNCHANGED pendingTransDerived
-        BY <1>1, <2>1 DEF init, pendingTransDerived, AmountIsPending,
-        creditPrecond, isTransKnown, isTransKnownToItem, initPrecond,
-        NNat, amountAvail, accountDebits, accountCredits,
-        MapThenSumSet, MapThenFoldSet, opAmount, TypeOK, pcLabels
-    <2> QED BY <1>1, <2>1, <2>2
-        DEF E!init, init,
-            E!NNat, NNat,
-            E!amountAvail, amountAvail,
-            E!accountCredits, accountCredits,
-            E!accountDebits, accountDebits,
-            E!MapThenSumSetE, MapThenSumSet,
-            E!MapThenFoldSetE, MapThenFoldSet,
-            E!opAmount, opAmount
+        E!isTransKnown, E!isTransKnownToItem,
+        isTransKnown, isTransKnownToItem,
+        AmountIsPending, creditPrecond
 <1>2 CASE ~initPrecond(self)
-    <2>1 ~E!initPrecond(self) BY <1>2 DEF E!init, init,
+    <2>1 ~AmountIsPending(self) BY <1>2 DEF init, AmountIsPending, creditPrecond,
+        isTransKnown, isTransKnownToItem, initPrecond
+    <2>2 UNCHANGED {<<t, amount[t]>>: t \in {t \in Transfer : AmountIsPending(t)}}
+        BY <1>2, <2>1 DEF init, AmountIsPending, creditPrecond,
+        isTransKnown, isTransKnownToItem, initPrecond
+    <2> QED BY <2>2
+        DEF pendingTransDerived,
+        E!init, init,
         E!initPrecond, initPrecond,
-        E!isTransKnown, isTransKnown,
-        E!isTransKnownToItem, isTransKnownToItem
-    <2>2 UNCHANGED pendingTransDerived
-        BY <1>2, <2>1 DEF init, pendingTransDerived, AmountIsPending,
-        creditPrecond, isTransKnown, isTransKnownToItem, initPrecond,
-        NNat, amountAvail, accountDebits, accountCredits,
-        MapThenSumSet, MapThenFoldSet, opAmount
-    <2> QED BY <1>2, <2>1, <2>2
-        DEF E!init, init
+        E!isTransKnown, E!isTransKnownToItem,
+        isTransKnown, isTransKnownToItem,
+        AmountIsPending, creditPrecond
 <1> QED BY <1>1, <1>2
 
 
@@ -107,7 +100,7 @@ PROVE E!crash(self)
         E!isTransKnownToItem, isTransKnownToItem
     <2>2 UNCHANGED pendingTransDerived
         BY <1>1, <2>1 DEF E!crash, crash, pendingTransDerived, AmountIsPending,
-            creditPrecond, isTransKnown, isTransKnownToItem
+            creditPrecond, isTransKnown, isTransKnownToItem, pcLabels
     <2> QED BY <1>1, <2>1, <2>2 DEF E!crash, crash
 <1>2 CASE ~debitPrecond(self)
     <2>1 ~E!debitPrecond(self) BY <1>2 DEF
@@ -138,11 +131,11 @@ PROVE trans(self)
 <1> QED BY <1>1, <1>2, <1>3, <1>4
     DEF E!trans
 
-THEOREM transEquivalenceRev == ASSUME NEW self \in Transfer, trans(self), IndInv
+THEOREM transEquivalenceRev == ASSUME NEW self \in Transfer, trans(self), pcLabels
 PROVE E!trans(self)
-<1>1 CASE init(self) BY <1>1, initEquivalenceRev DEF E!trans, trans, IndInv
+<1>1 CASE init(self) BY <1>1, initEquivalenceRev DEF E!trans, trans
 <1>2 CASE debit(self) BY <1>2, debitEquivalenceRev DEF E!trans, trans
-<1>3 CASE crash(self) BY <1>3, crashEquivalenceRev DEF E!trans, trans, IndInv, TypeOK
+<1>3 CASE crash(self) BY <1>3, crashEquivalenceRev DEF E!trans, trans, pcLabels
 <1>4 CASE credit(self) BY <1>4, creditEquivalenceRev DEF E!trans, trans
 <1> QED BY <1>1, <1>2, <1>3, <1>4
     DEF trans
