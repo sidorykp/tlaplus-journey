@@ -15,11 +15,19 @@ BY EquivalentSymbolsAssumption DEF E!Init, Init, pendingTransDerived,
 
 THEOREM initEquivalence == ASSUME NEW self \in Transfer, E!init(self)
 PROVE init(self)
-BY DEF E!init, init, pendingTransDerived,
+<1>1 CASE initPrecond(self)
+    <2> QED BY <1>1 DEF E!init, init, pendingTransDerived,
     E!initPrecond, initPrecond,
     E!isTransKnown, E!isTransKnownToItem,
     isTransKnown, isTransKnownToItem,
     AmountIsPending, creditPrecond
+<1>2 CASE ~initPrecond(self)
+    <2> QED BY <1>2 DEF E!init, init, pendingTransDerived,
+    E!initPrecond, initPrecond,
+    E!isTransKnown, E!isTransKnownToItem,
+    isTransKnown, isTransKnownToItem,
+    AmountIsPending, creditPrecond
+<1> QED BY <1>1, <1>2
 
 THEOREM initEquivalenceRev == ASSUME NEW self \in Transfer, init(self)
 PROVE E!init(self)
@@ -60,16 +68,50 @@ BY DEF E!debit, debit, pendingTransDerived,
 
 THEOREM debitEquivalenceRev == ASSUME NEW self \in Transfer, debit(self)
 PROVE E!debit(self)
-BY DEF E!debit, debit
+BY DEF E!debit, debit, pendingTransDerived,
+    AmountIsPending, debitPrecond, isTransKnown, isTransKnownToItem,
+    E!debitPrecond
     
 THEOREM crashEquivalence == ASSUME NEW self \in Transfer, E!crash(self)
 PROVE crash(self)
-BY DEF E!crash, crash
+<1>1 CASE E!debitPrecond(self)
+    <2>1 debitPrecond(self) BY <1>1 DEF
+        E!crash, crash,
+        E!debitPrecond, debitPrecond,
+        E!isTransKnown, isTransKnown,
+        E!isTransKnownToItem, isTransKnownToItem
+    <2> QED BY <1>1, <2>1 DEF E!crash, crash
+<1>2 CASE ~E!debitPrecond(self)
+    <2>1 ~debitPrecond(self) BY <1>2 DEF
+        E!crash, crash,
+        E!debitPrecond, debitPrecond,
+        E!isTransKnown, isTransKnown,
+        E!isTransKnownToItem, isTransKnownToItem
+    <2> QED BY <1>2, <2>1 DEF E!crash, crash
+<1> QED BY <1>1, <1>2
     
 THEOREM crashEquivalenceRev == ASSUME NEW self \in Transfer, crash(self)
 PROVE E!crash(self)
-BY DEF E!crash, crash, pendingTransDerived,
-    AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+<1>1 CASE debitPrecond(self)
+    <2>1 E!debitPrecond(self) BY <1>1 DEF
+        E!crash, crash,
+        E!debitPrecond, debitPrecond,
+        E!isTransKnown, isTransKnown,
+        E!isTransKnownToItem, isTransKnownToItem
+    <2>2 UNCHANGED pendingTransDerived
+        BY <1>1, <2>1 DEF crash, pendingTransDerived, AmountIsPending,
+            creditPrecond, isTransKnown, isTransKnownToItem
+    <2> QED BY <1>1, <2>1, <2>2 DEF E!crash, crash
+<1>2 CASE ~debitPrecond(self)
+    <2>1 ~E!debitPrecond(self) BY <1>2 DEF
+        E!crash, crash,
+        E!debitPrecond, debitPrecond,
+        E!isTransKnown, isTransKnown,
+        E!isTransKnownToItem, isTransKnownToItem
+    <2>2 UNCHANGED pendingTransDerived
+        BY <1>2, <2>1 DEF crash, pendingTransDerived
+    <2> QED BY <1>2, <2>1, <2>2 DEF E!crash, crash
+<1> QED BY <1>1, <1>2
 
 THEOREM creditEquivalence == ASSUME NEW self \in Transfer, E!credit(self)
 PROVE credit(self)
@@ -105,7 +147,7 @@ BY DEF E!vars, vars, pendingTransDerived, AmountIsPending,
 THEOREM terminatingEquivalence == E!Terminating <=> Terminating
 BY unchangedEquivalence DEF E!Terminating, Terminating,
     E!ProcSet, ProcSet
-    
+
 THEOREM nextEquivalence == E!Next <=> Next
 BY transEquivalence, transEquivalenceRev, terminatingEquivalence
     DEF E!Next, Next
@@ -129,7 +171,7 @@ LEMMA AmountPendingTotalInNat == ASSUME NTransferAssumption, E!IndInv
 PROVE E!AmountPendingTotal \in Nat OMITTED
 
 \* proved in MoneyTransfer_proofs
-THEOREM IndInvPreserved == Spec => []IndInv
+THEOREM IndInvPreserved == Spec => []IndInv OMITTED
 
 THEOREM DebitTotalEquivalence == E!DebitTotal = DebitTotal
 BY DEF E!DebitTotal, DebitTotal,

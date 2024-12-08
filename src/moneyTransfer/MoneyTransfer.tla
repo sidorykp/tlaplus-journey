@@ -66,14 +66,17 @@ Transfer -> amount
         debit:
             with (a = accounts[self].from) {
                 if (debitPrecond(self)) {
-                    debits := debits \cup {<<[a |-> a, t |-> self], amount[self]>>};
+                    either debits := debits \cup {<<[a |-> a, t |-> self], amount[self]>>};
+                    or skip;
                 } else {
                     skip;
                 }
             };
             
         crash:
-            either skip or goto debit;
+            if (debitPrecond(self)) {
+                goto debit;
+            };
 
         credit:
             with (a = accounts[self].to) {
@@ -84,7 +87,7 @@ Transfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "91ce4c26" /\ chksum(tla) = "961065dc")
+\* BEGIN TRANSLATION (chksum(pcal) = "6db31177" /\ chksum(tla) = "65b317de")
 VARIABLES credits, debits, amount, accounts, pc
 
 (* define statement *)
@@ -142,16 +145,18 @@ init(self) == /\ pc[self] = "init"
 debit(self) == /\ pc[self] = "debit"
                /\ LET a == accounts[self].from IN
                     IF debitPrecond(self)
-                       THEN /\ debits' = (debits \cup {<<[a |-> a, t |-> self], amount[self]>>})
+                       THEN /\ \/ /\ debits' = (debits \cup {<<[a |-> a, t |-> self], amount[self]>>})
+                               \/ /\ TRUE
+                                  /\ UNCHANGED debits
                        ELSE /\ TRUE
                             /\ UNCHANGED debits
                /\ pc' = [pc EXCEPT ![self] = "crash"]
                /\ UNCHANGED << credits, amount, accounts >>
 
 crash(self) == /\ pc[self] = "crash"
-               /\ \/ /\ TRUE
-                     /\ pc' = [pc EXCEPT ![self] = "credit"]
-                  \/ /\ pc' = [pc EXCEPT ![self] = "debit"]
+               /\ IF debitPrecond(self)
+                     THEN /\ pc' = [pc EXCEPT ![self] = "debit"]
+                     ELSE /\ pc' = [pc EXCEPT ![self] = "credit"]
                /\ UNCHANGED << credits, debits, amount, accounts >>
 
 credit(self) == /\ pc[self] = "credit"

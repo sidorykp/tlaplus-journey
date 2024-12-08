@@ -197,10 +197,11 @@ PROVE IndInv'
     <2> QED BY <2>1, <2>2
 <1>32 (AmountIsPending(self) <=> TransInPendingTrans(self)) ' = (AmountIsPending(self) <=> TransInPendingTrans(self))
     BY <1>29, <1>30, <1>31
-<1>33 \A t \in Transfer \ {self}: (AmountIsPending(t) <=> TransInPendingTrans(t)) ' = (AmountIsPending(t) <=> TransInPendingTrans(t))
+<1>33 \A t \in Transfer \ {self}: (AmountIsPending(t) <=> TransInPendingTrans(t))' = (AmountIsPending(t) <=> TransInPendingTrans(t))
     <2>1 CASE initPrecond(self)
         <3>1 pendingTrans' = pendingTrans BY DEF init
-        <3> QED BY <2>1, <3>1 DEF init, AmountIsPending, TransInPendingTrans
+        <3> QED BY <2>1, <3>1 DEF init, AmountIsPending, TransInPendingTrans,
+            creditPrecond, isTransKnown, isTransKnownToItem
     <2>2 CASE ~initPrecond(self)
         <3> QED BY <2>2 DEF init, AmountIsPending, TransInPendingTrans
     <2> QED BY <2>1, <2>2
@@ -213,8 +214,8 @@ PROVE IndInv'
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>8, <1>10, <1>11, <1>13, <1>19, <1>22, <1>28, <1>34, <1>35, <1>36
 
 
-LEMMA debit_DebitTotal_debitPrecond == ASSUME IndInv, NEW self \in Transfer, debit(self),
-debitPrecond(self)
+LEMMA debit_DebitTotal_debitPrecond_success == ASSUME IndInv, NEW self \in Transfer, debit(self),
+debitPrecond(self), ~(UNCHANGED <<debits, pendingTrans>>)
 PROVE DebitTotal' = DebitTotal + amount[self]
 <1> DEFINE a == accounts[self].from
 <1> DEFINE nadd == <<[a |-> a, t |-> self], amount[self]>>
@@ -230,15 +231,14 @@ PROVE DebitTotal' = DebitTotal + amount[self]
     BY <1>5 DEF DebitTotal, MapThenSumSetE, MapThenFoldSetE, MapThenSumSet, MapThenFoldSet
 <1> QED BY <1>6 DEF opAmount
 
-
-LEMMA debit_DebitTotal_notDebitPrecond == ASSUME IndInv, NEW self \in Transfer, debit(self),
-~debitPrecond(self)
+LEMMA debit_DebitTotal_notDebitPrecond_or_crash == ASSUME IndInv, NEW self \in Transfer, debit(self),
+~debitPrecond(self) \/ UNCHANGED <<debits, pendingTrans>>
 PROVE DebitTotal' = DebitTotal
 BY DEF debit, DebitTotal
 
 
-LEMMA debit_AmountPendingTotal_debitPrecond == ASSUME IndInv, NEW self \in Transfer, debit(self),
-debitPrecond(self)
+LEMMA debit_AmountPendingTotal_debitPrecond_success == ASSUME IndInv, NEW self \in Transfer, debit(self),
+debitPrecond(self), ~(UNCHANGED <<debits, pendingTrans>>)
 PROVE AmountPendingTotal' = AmountPendingTotal + amount[self]
 <1> DEFINE nadd == <<self, amount[self]>>
 <1>1 pendingTrans' = pendingTrans \cup {nadd}
@@ -255,9 +255,8 @@ PROVE AmountPendingTotal' = AmountPendingTotal + amount[self]
     BY <1>5 DEF AmountPendingTotal
 <1> QED BY <1>6 DEF pendingTransAmount
 
-
-LEMMA debit_AmountPendingTotal_notDebitPrecond == ASSUME IndInv, NEW self \in Transfer, debit(self),
-~debitPrecond(self)
+LEMMA debit_AmountPendingTotal_notDebitPrecond_or_crash == ASSUME IndInv, NEW self \in Transfer, debit(self),
+~debitPrecond(self) \/ UNCHANGED <<debits, pendingTrans>>
 PROVE AmountPendingTotal' = AmountPendingTotal
 BY DEF debit, AmountPendingTotal
 
@@ -267,10 +266,13 @@ PROVE Imbalance' = Imbalance
 <1>1 credits' = credits BY DEF debit
 <1>2 CreditTotal' = CreditTotal
     BY <1>1 DEF CreditTotal
-<1>3 CASE debitPrecond(self)
-    <2> QED BY <1>3, <1>2, debit_DebitTotal_debitPrecond, debit_AmountPendingTotal_debitPrecond DEF Imbalance, debit
-<1>4 CASE ~debitPrecond(self)
-    <2> QED BY <1>4, <1>2, debit_DebitTotal_notDebitPrecond, debit_AmountPendingTotal_notDebitPrecond  DEF debit, Imbalance
+<1>3 CASE debitPrecond(self) /\ ~(UNCHANGED <<debits, pendingTrans>>)
+    <2> QED BY <1>3, <1>2, debit_DebitTotal_debitPrecond_success,
+        debit_AmountPendingTotal_debitPrecond_success DEF debit, Imbalance
+<1>4 CASE ~debitPrecond(self) \/ UNCHANGED <<debits, pendingTrans>>
+    <2> QED BY <1>4, <1>2, debit_DebitTotal_notDebitPrecond_or_crash,
+        debit_AmountPendingTotal_notDebitPrecond_or_crash
+        DEF debit, Imbalance
 <1> QED BY <1>3, <1>4
 
 
@@ -328,7 +330,7 @@ PROVE IndInv'
 <1> DEFINE nadd == <<[a |-> a, t |-> self], amount[self]>>
 <1> DEFINE ptAdd == <<self, amount[self]>>
 <1> USE DEF IndInv, TypeOK, CommonIndInv
-<1>1 CASE debitPrecond(self)
+<1>1 CASE debitPrecond(self) /\ ~(UNCHANGED <<debits, pendingTrans>>)
     <2>1 debits' = debits \cup {nadd} BY <1>1 DEF debit
     <2>2 a \in EAccount BY DEF EAccounts
     <2>3 a # Empty BY DEF debit, NonEmptyAccounts
@@ -345,8 +347,12 @@ PROVE IndInv'
     <2>12 credits' = credits BY DEF debit
     
     <2>13 (AmountIsPending(self) <=> TransInPendingTrans(self))'
-        BY <1>1, <2>1, <2>8, <2>12
-        DEF TransInPendingTrans, debit, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+        <3>1 ~AmountIsPending(self) BY <1>1 DEF debit, AmountIsPending, creditPrecond, debitPrecond
+        <3>2 AmountIsPending(self)' BY <1>1 DEF debit, AmountIsPending, creditPrecond,
+            isTransKnown, isTransKnownToItem
+        <3>3 ~TransInPendingTrans(self) BY <1>1, <3>1, TransPendingEquivalence DEF debit
+        <3>4 TransInPendingTrans(self)' BY <1>1, <2>8 DEF debit, TransInPendingTrans
+        <3> QED BY <3>1, <3>2, <3>3, <3>4
     <2>14 \A t \in Transfer \ {self}: TransInPendingTrans(t) = TransInPendingTrans(t)'
         BY <1>1, <2>1, <2>8, <2>12
         DEF TransInPendingTrans, debit
@@ -364,29 +370,21 @@ PROVE IndInv'
         BY <1>1, <2>18, <2>19
     <2>21 PendingTransDerived' BY <2>20 DEF debit, PendingTransDerived
     
-    <2>22 PendingTransUniqueness'
-        <3>1 CASE pendingTrans # {}
-            <4>1 ptAdd \notin pendingTrans BY <2>8, <3>1 DEF debit, TransInPendingTrans
-            <4>2 ~\E pt \in pendingTrans: pt # ptAdd /\ pt[1] = self
-                BY <3>1, <4>1, PendingTransUniqueness DEF debit
-            <4>3 PendingTransUniqueness' = PendingTransUniqueness BY <3>1, <4>2 DEF debit, PendingTransUniqueness
-            <4> QED BY <4>3 DEF IndInv, TypeOK
-        <3>2 CASE pendingTrans = {}
-            <4>1 pendingTrans' = {ptAdd} BY <3>2, <2>8
-            <4> QED BY <3>2, <4>1 DEF PendingTransUniqueness
-        <3> QED BY <3>1, <3>2
+    <2>22 PendingTransUniqueness' = PendingTransUniqueness
+        <3>1 pendingTrans' = {ptAdd} BY <1>1, <2>8 DEF debit
+        <3> QED BY <1>1, <3>1 DEF debit, PendingTransUniqueness
 
     <2> QED BY <2>6, <2>7, <2>10, <2>11, <2>17, <2>21, <2>22, debit_IndInv_common, debit_Imbalance DEF IndInv, TypeOK, CommonIndInv
-<1>2 CASE ~debitPrecond(self)
-    <2>3 debits' \in SUBSET (AT \X Nat) BY <1>2 DEF debit
-    <2>4 IsFiniteSet(debits)' BY <1>2 DEF debit
-    <2>5 pendingTrans' \in SUBSET TN BY <1>2 DEF debit
-    <2>6 IsFiniteSet(pendingTrans)' BY <1>2 DEF debit
-    <2>7 TransPendingEquivalence' BY <1>2 DEF debit, TransPendingEquivalence, TransInPendingTrans,
+<1>2 CASE ~debitPrecond(self) \/ UNCHANGED <<debits, pendingTrans>>
+    <2>1 debits' \in SUBSET (AT \X Nat) BY <1>2 DEF debit
+    <2>2 IsFiniteSet(debits)' BY <1>2 DEF debit
+    <2>3 pendingTrans' \in SUBSET TN BY <1>2 DEF debit
+    <2>4 IsFiniteSet(pendingTrans)' BY <1>2 DEF debit
+    <2>5 TransPendingEquivalence' BY <1>2 DEF debit, TransPendingEquivalence, TransInPendingTrans,
         pcLabels, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
-    <2>8 PendingTransDerived'  BY <1>2 DEF debit, PendingTransDerived
-    <2>9 PendingTransUniqueness' BY <1>2 DEF debit, PendingTransUniqueness
-    <2> QED BY <2>3, <2>4, <2>5, <2>6, <2>7, <2>8, <2>9, <1>1, debit_IndInv_common, debit_Imbalance
+    <2>6 PendingTransDerived'  BY <1>2 DEF debit, PendingTransDerived
+    <2>7 PendingTransUniqueness' BY <1>2 DEF debit, PendingTransUniqueness
+    <2> QED BY <1>1, <2>1, <2>2, <2>3, <2>4, <2>5, <2>6, <2>7, debit_IndInv_common, debit_Imbalance
 <1> QED BY <1>1, <1>2
 
 
