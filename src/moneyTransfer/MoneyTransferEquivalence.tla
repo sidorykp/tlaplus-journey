@@ -29,9 +29,10 @@ PROVE init(self)
     AmountIsPending, creditPrecond
 <1> QED BY <1>1, <1>2
 
-THEOREM initEquivalenceRev == ASSUME NEW self \in Transfer, init(self), IndInv
+THEOREM initEquivalenceRev == ASSUME NEW self \in Transfer, init(self),
+TypeOK,
+\A t \in Transfer: pc[t] = "init" => initPrecond(t)
 PROVE E!init(self)
-<1> USE DEF IndInv, TypeOK, pcLabels
 <1>1 CASE initPrecond(self)
     <2>1 E!initPrecond(self) BY <1>1 DEF E!init, init,
         E!initPrecond, initPrecond,
@@ -41,7 +42,7 @@ PROVE E!init(self)
         BY <1>1, <2>1 DEF init, pendingTransDerived, AmountIsPending,
         creditPrecond, isTransKnown, isTransKnownToItem, initPrecond,
         NNat, amountAvail, accountDebits, accountCredits,
-        MapThenSumSet, MapThenFoldSet, opAmount
+        MapThenSumSet, MapThenFoldSet, opAmount, TypeOK, pcLabels
     <2> QED BY <1>1, <2>1, <2>2
         DEF E!init, init,
             E!NNat, NNat,
@@ -137,11 +138,11 @@ PROVE trans(self)
 <1> QED BY <1>1, <1>2, <1>3, <1>4
     DEF E!trans
 
-THEOREM transEquivalenceRev == ASSUME NEW self \in Transfer, trans(self)
+THEOREM transEquivalenceRev == ASSUME NEW self \in Transfer, trans(self), IndInv
 PROVE E!trans(self)
-<1>1 CASE init(self) BY <1>1, initEquivalenceRev DEF E!trans, trans
+<1>1 CASE init(self) BY <1>1, initEquivalenceRev DEF E!trans, trans, IndInv
 <1>2 CASE debit(self) BY <1>2, debitEquivalenceRev DEF E!trans, trans
-<1>3 CASE crash(self) BY <1>3, crashEquivalenceRev DEF E!trans, trans
+<1>3 CASE crash(self) BY <1>3, crashEquivalenceRev DEF E!trans, trans, IndInv, TypeOK
 <1>4 CASE credit(self) BY <1>4, creditEquivalenceRev DEF E!trans, trans
 <1> QED BY <1>1, <1>2, <1>3, <1>4
     DEF trans
@@ -153,15 +154,30 @@ BY DEF E!vars, vars, pendingTransDerived, AmountIsPending,
 THEOREM terminatingEquivalence == E!Terminating <=> Terminating
 BY unchangedEquivalence DEF E!Terminating, Terminating,
     E!ProcSet, ProcSet
-    
-THEOREM nextEquivalence == E!Next <=> Next
-BY transEquivalence, transEquivalenceRev, terminatingEquivalence
-    DEF E!Next, Next
+
+\* proved in MoneyTransfer_proofs
+THEOREM IndInvPreserved == Spec => []IndInv OMITTED
 
 THEOREM specEquivalence == E!Spec <=> Spec
-BY PTL, nextEquivalence, InitEquivalence, unchangedEquivalence
-    DEF E!Spec, Spec,
-    E!vars, vars
+<1>1 E!Spec => Spec
+    <2>1 E!Next => Next
+        BY transEquivalence, terminatingEquivalence
+        DEF E!Next, Next
+    <2> QED BY <2>1, PTL, InitEquivalence, unchangedEquivalence
+        DEF E!Spec, Spec,
+        E!vars, vars
+<1>2 Spec => E!Spec
+    <2> SUFFICES ASSUME Spec PROVE E!Spec OBVIOUS
+    <2>1 IndInv BY PTL, IndInvPreserved
+    <2>2 Next => E!Next
+        BY <2>1, transEquivalenceRev, terminatingEquivalence
+        DEF E!Next, Next
+    <2>3 Spec => E!Init BY PTL, InitEquivalence DEF E!Spec, Spec
+    <2>4 [E!Next]_E!vars BY <2>2, PTL, unchangedEquivalence
+        DEF E!Spec, Spec,
+        E!vars, vars
+    <2> QED BY PTL, <2>3, <2>4 DEF E!Spec, Spec
+<1> QED BY <1>1, <1>2
 
 CONSTANTS NTransfer
 
@@ -175,9 +191,6 @@ THEOREM IndInvPreservedE == E!Spec => []E!IndInv OMITTED
 \* proved in MoneyTransferPendingExplicit_proofs
 LEMMA AmountPendingTotalInNat == ASSUME NTransferAssumption, E!IndInv
 PROVE E!AmountPendingTotal \in Nat OMITTED
-
-\* proved in MoneyTransfer_proofs
-THEOREM IndInvPreserved == Spec => []IndInv
 
 THEOREM DebitTotalEquivalence == E!DebitTotal = DebitTotal
 BY DEF E!DebitTotal, DebitTotal,
