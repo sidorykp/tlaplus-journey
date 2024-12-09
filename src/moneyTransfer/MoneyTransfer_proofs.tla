@@ -58,73 +58,73 @@ THEOREM initProperty == ASSUME Init PROVE IndInv
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, init_Imbalance
 
 
-THEOREM crash_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, crash(self)
+THEOREM retryDebit_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, retryDebit(self)
 PROVE AmountPendingTotal' = AmountPendingTotal
-<1>1 pc[self] = "crash" BY DEF crash, IndInv, TypeOK
-<1>3 pc'[self] = "credit" \/ pc'[self] =  "debit" BY DEF crash, IndInv, TypeOK, pcLabels
+<1>1 pc[self] = "retryDebit" BY DEF retryDebit, IndInv, TypeOK
+<1>3 pc'[self] = "credit" \/ pc'[self] =  "debit" BY DEF retryDebit, IndInv, TypeOK, pcLabels
 <1>5 transPending' = transPending
     <2>1 CASE creditPrecond(self)
-        <3>1 self \in transPending BY <2>1, <1>1 DEF crash, IndInv, TypeOK,
+        <3>1 self \in transPending BY <2>1, <1>1 DEF retryDebit, IndInv, TypeOK,
             transPending, AmountIsPending, creditPrecond
-        <3>2 self \in transPending' BY <2>1, <1>3 DEF crash, IndInv, TypeOK,
+        <3>2 self \in transPending' BY <2>1, <1>3 DEF retryDebit, IndInv, TypeOK,
             transPending, AmountIsPending, creditPrecond
-        <3> QED BY <3>1, <3>2 DEF crash, pcLabels, IndInv, TypeOK,
+        <3> QED BY <3>1, <3>2 DEF retryDebit, pcLabels, IndInv, TypeOK,
             transPending, AmountIsPending, creditPrecond
     <2>2 CASE ~creditPrecond(self)
-        <3>1 self \notin transPending BY <2>2, <1>1 DEF crash, IndInv, TypeOK,
+        <3>1 self \notin transPending BY <2>2, <1>1 DEF retryDebit, IndInv, TypeOK,
             transPending, AmountIsPending, creditPrecond
-        <3>2 self \notin transPending' BY <2>2, <1>3 DEF crash, IndInv, TypeOK,
+        <3>2 self \notin transPending' BY <2>2, <1>3 DEF retryDebit, IndInv, TypeOK,
             transPending, AmountIsPending, creditPrecond
-        <3> QED BY <3>1, <3>2 DEF crash, pcLabels, IndInv, TypeOK,
+        <3> QED BY <3>1, <3>2 DEF retryDebit, pcLabels, IndInv, TypeOK,
             transPending, AmountIsPending, creditPrecond
     <2> QED BY <2>1, <2>2
-<1>6 \A t \in Transfer: transAmount(t)' = transAmount(t) BY DEF crash, transAmount,
+<1>6 \A t \in Transfer: transAmount(t)' = transAmount(t) BY DEF retryDebit, transAmount,
     creditPrecond, debitPrecond
-<1> QED BY <1>5, <1>6 DEF crash, transPending, transAmount, AmountIsPending, creditPrecond, pcLabels, IndInv, TypeOK,
+<1> QED BY <1>5, <1>6 DEF retryDebit, transPending, transAmount, AmountIsPending, creditPrecond, pcLabels, IndInv, TypeOK,
     isTransKnown, isTransKnownToItem, MapThenSumSet, MapThenFoldSet, AmountPendingTotal
 
 
-THEOREM crash_IndInv == ASSUME IndInv, NEW self \in Transfer, crash(self)
+THEOREM retryDebit_IndInv == ASSUME IndInv, NEW self \in Transfer, retryDebit(self)
 PROVE IndInv'
 <1> USE DEF IndInv, TypeOK
-<1>1 credits' \in SUBSET (AT \X Nat) BY DEF crash
-<1>2 IsFiniteSet(credits)' BY DEF crash
-<1>3 debits' \in SUBSET (AT \X Nat) BY DEF crash
-<1>4 IsFiniteSet(debits)' BY DEF crash
-<1>5 amount' \in [Transfer -> Nat] BY DEF crash
-<1>6 accounts' \in [Transfer -> EAccounts] BY DEF crash
+<1>1 credits' \in SUBSET (AT \X Nat) BY DEF retryDebit
+<1>2 IsFiniteSet(credits)' BY DEF retryDebit
+<1>3 debits' \in SUBSET (AT \X Nat) BY DEF retryDebit
+<1>4 IsFiniteSet(debits)' BY DEF retryDebit
+<1>5 amount' \in [Transfer -> Nat] BY DEF retryDebit
+<1>6 accounts' \in [Transfer -> EAccounts] BY DEF retryDebit
 
-<1>7 pc'[self] \in {"credit", "debit"} BY DEF crash, pcLabels
-<1>8 pcLabels' BY <1>7 DEF crash, pcLabels
+<1>7 pc'[self] \in {"credit", "debit"} BY DEF retryDebit, pcLabels
+<1>8 pcLabels' BY <1>7 DEF retryDebit, pcLabels
 
-<1>9 Imbalance' = Imbalance BY crash_AmountPendingTotal
-    DEF crash, Imbalance, creditPrecond, CreditTotal, DebitTotal
+<1>9 Imbalance' = Imbalance BY retryDebit_AmountPendingTotal
+    DEF retryDebit, Imbalance, creditPrecond, CreditTotal, DebitTotal
 <1>10 Imbalance' = 0 BY <1>9
 
 <1>11 \A t \in Transfer:
     (\/ accounts[t] = EmptyAccounts
      \/ DifferentAccounts(t) /\ NonEmptyAccounts(t))'
-    BY DEF crash, EmptyAccounts, DifferentAccounts, NonEmptyAccounts
+    BY DEF retryDebit, EmptyAccounts, DifferentAccounts, NonEmptyAccounts
 
 <1>12 \A t \in Transfer: pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
     BY DEF IndInv
 <1>13 \A t \in Transfer: NonEmptyAccounts(t)' = NonEmptyAccounts(t)
-    BY DEF crash, NonEmptyAccounts
+    BY DEF retryDebit, NonEmptyAccounts
 <1>14 NonEmptyAccounts(self)' = NonEmptyAccounts(self)
     BY <1>13
 <1>15 pc[self] \notin {"init"} <=> NonEmptyAccounts(self)
     BY <1>12
-<1>16 pc[self] \notin {"init"} BY DEF crash
+<1>16 pc[self] \notin {"init"} BY DEF retryDebit
 <1>17 pc'[self] \notin {"init"} BY <1>7
 <1>18 pc'[self] \notin {"init"} <=> NonEmptyAccounts(self)'
     BY <1>14, <1>15, <1>16, <1>17
 
 <1>19 pc'[self] = "init" => initPrecond(self)' BY <1>7
 <1>20 \A t \in Transfer: pc'[t] = "init" => initPrecond(t)'
-    BY <1>19 DEF crash, pcLabels
+    BY <1>19 DEF retryDebit, pcLabels
 
 <1>21 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> pc[t] \notin {"init"}
-    BY DEF crash, pcLabels
+    BY DEF retryDebit, pcLabels
 <1>22 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
     BY <1>12, <1>13, <1>21
 
@@ -288,7 +288,7 @@ PROVE DebitTotal' = DebitTotal + amount[self]
 <1> QED BY <1>6 DEF opAmount
 
 
-LEMMA debit_DebitTotal_notDebitPrecond_or_crash == ASSUME IndInv, NEW self \in Transfer, debit(self),
+LEMMA debit_DebitTotal_notDebitPrecond_or_retryDebit == ASSUME IndInv, NEW self \in Transfer, debit(self),
 ~debitPrecond(self) \/ UNCHANGED debits
 PROVE DebitTotal' = DebitTotal
 BY DEF debit, DebitTotal
@@ -318,7 +318,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal + amount[self]
 <1> QED BY <1>7, <1>10, <1>3 DEF AmountPendingTotal
 
 
-LEMMA debit_AmountPendingTotal_notDebitPrecond_or_crash == ASSUME IndInv, NEW self \in Transfer, debit(self),
+LEMMA debit_AmountPendingTotal_notDebitPrecond_or_retryDebit == ASSUME IndInv, NEW self \in Transfer, debit(self),
 ~debitPrecond(self) \/ UNCHANGED debits
 PROVE AmountPendingTotal' = AmountPendingTotal
 <1>1 self \notin transPending
@@ -392,8 +392,8 @@ PROVE Imbalance' = Imbalance
     <2> QED BY <1>3, <1>2, debit_DebitTotal_debitPrecond_success,
         debit_AmountPendingTotal_debitPrecond DEF Imbalance, debit
 <1>4 CASE ~debitPrecond(self) \/ UNCHANGED debits
-    <2> QED BY <1>4, <1>2, debit_DebitTotal_notDebitPrecond_or_crash,
-        debit_AmountPendingTotal_notDebitPrecond_or_crash DEF debit, Imbalance
+    <2> QED BY <1>4, <1>2, debit_DebitTotal_notDebitPrecond_or_retryDebit,
+        debit_AmountPendingTotal_notDebitPrecond_or_retryDebit DEF debit, Imbalance
 <1> QED BY <1>3, <1>4
 
 
@@ -413,8 +413,8 @@ PROVE (
     \/ DifferentAccounts(t)' /\ NonEmptyAccounts(t)'
     BY DEF debit, EmptyAccounts, DifferentAccounts, NonEmptyAccounts, IndInv, TypeOK
 
-<1>7 pc' = [pc EXCEPT ![self] = "crash"] BY DEF debit
-<1>8 pc'[self] = "crash" BY <1>7 DEF pcLabels, IndInv, TypeOK
+<1>7 pc' = [pc EXCEPT ![self] = "retryDebit"] BY DEF debit
+<1>8 pc'[self] = "retryDebit" BY <1>7 DEF pcLabels, IndInv, TypeOK
 <1>9 pc'[self] = "init" => initPrecond(self)' BY <1>8
 <1>10 \A t \in Transfer \ {self}: pc[t]' = pc[t]
     BY <1>7 DEF pcLabels, IndInv, TypeOK
@@ -642,7 +642,7 @@ PROVE IndInv'
     BY DEF Next, trans
 <1>1 CASE init(self) BY <1>1, init_IndInv
 <1>2 CASE debit(self) BY <1>2, debit_IndInv
-<1>3 CASE crash(self) BY <1>3, crash_IndInv
+<1>3 CASE retryDebit(self) BY <1>3, retryDebit_IndInv
 <1>4 CASE credit(self) BY <1>4, credit_IndInv
 <1> QED BY <1>1, <1>2, <1>3, <1>4 DEF trans
 
