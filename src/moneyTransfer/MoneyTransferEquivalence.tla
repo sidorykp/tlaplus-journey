@@ -15,19 +15,15 @@ BY EquivalentSymbolsAssumption DEF E!Init, Init, pendingTransDerived,
 
 THEOREM initEquivalence == ASSUME NEW self \in Transfer, E!init(self)
 PROVE init(self)
-<1>1 CASE initPrecond(self)
-    <2> QED BY <1>1 DEF E!init, init, pendingTransDerived,
-    E!initPrecond, initPrecond,
-    E!isTransKnown, E!isTransKnownToItem,
-    isTransKnown, isTransKnownToItem,
-    AmountIsPending, creditPrecond
-<1>2 CASE ~initPrecond(self)
-    <2> QED BY <1>2 DEF E!init, init, pendingTransDerived,
-    E!initPrecond, initPrecond,
-    E!isTransKnown, E!isTransKnownToItem,
-    isTransKnown, isTransKnownToItem,
-    AmountIsPending, creditPrecond
-<1> QED BY <1>1, <1>2
+BY DEF E!init, init,
+    AmountIsPending, creditPrecond,
+    E!NNat, NNat,
+    E!amountAvail, amountAvail,
+    E!accountCredits, E!accountDebits,
+    accountCredits, accountDebits,
+    E!MapThenSumSetE, MapThenSumSet,
+    E!MapThenFoldSetE, MapThenFoldSet,
+    E!opAmount, opAmount
 
 THEOREM initEquivalenceRev == ASSUME NEW self \in Transfer, init(self)
 PROVE E!init(self)
