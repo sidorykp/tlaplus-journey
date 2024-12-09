@@ -54,13 +54,11 @@ Transfer -> amount
     process (trans \in Transfer)    
     {
         init:
-            if(initPrecond(self)) {
-                with (account1 \in Account; account2 \in Account \ {account1}; am \in NNat) {
-                    await amountAvail(account1) > 0;
-                    await am <= amountAvail(account1);
-                    accounts[self] := [from |-> account1, to |-> account2];
-                    amount[self] := am;
-                }
+            with (account1 \in Account; account2 \in Account \ {account1}; am \in NNat) {
+                await amountAvail(account1) > 0;
+                await am <= amountAvail(account1);
+                accounts[self] := [from |-> account1, to |-> account2];
+                amount[self] := am;
             };
             
         debit:
@@ -87,7 +85,7 @@ Transfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "78fd80e1" /\ chksum(tla) = "1bad2f8b")
+\* BEGIN TRANSLATION (chksum(pcal) = "fab5f310" /\ chksum(tla) = "d12c27f4")
 VARIABLES credits, debits, amount, accounts, pc
 
 (* define statement *)
@@ -129,16 +127,13 @@ Init == (* Global variables *)
         /\ pc = [self \in ProcSet |-> "init"]
 
 init(self) == /\ pc[self] = "init"
-              /\ IF initPrecond(self)
-                    THEN /\ \E account1 \in Account:
-                              \E account2 \in Account \ {account1}:
-                                \E am \in NNat:
-                                  /\ amountAvail(account1) > 0
-                                  /\ am <= amountAvail(account1)
-                                  /\ accounts' = [accounts EXCEPT ![self] = [from |-> account1, to |-> account2]]
-                                  /\ amount' = [amount EXCEPT ![self] = am]
-                    ELSE /\ TRUE
-                         /\ UNCHANGED << amount, accounts >>
+              /\ \E account1 \in Account:
+                   \E account2 \in Account \ {account1}:
+                     \E am \in NNat:
+                       /\ amountAvail(account1) > 0
+                       /\ am <= amountAvail(account1)
+                       /\ accounts' = [accounts EXCEPT ![self] = [from |-> account1, to |-> account2]]
+                       /\ amount' = [amount EXCEPT ![self] = am]
               /\ pc' = [pc EXCEPT ![self] = "debit"]
               /\ UNCHANGED << credits, debits >>
 
@@ -189,7 +184,7 @@ CreditTotal == MapThenSumSet(opAmount, credits)
 DebitTotal == MapThenSumSet(opAmount, debits)
 
 AmountIsPending(t) ==
-    /\ pc[t] \in {"credit", "debit", "retryDebit"}
+    /\ pc[t] \in {"debit", "retryDebit", "credit"}
     /\ creditPrecond(t)
 
 transPending == {t \in Transfer: AmountIsPending(t)}
@@ -208,7 +203,7 @@ EAccounts == [from: EAccount, to: EAccount]
 
 AT == [a: Account, t: Transfer]
 
-pcLabels == pc \in [Transfer -> {"Done", "init", "debit", "credit", "retryDebit"}]
+pcLabels == pc \in [Transfer -> {"init", "debit", "retryDebit", "credit", "Done"}]
 
 TypeOK ==
     /\ credits \in SUBSET (AT \X Nat)
