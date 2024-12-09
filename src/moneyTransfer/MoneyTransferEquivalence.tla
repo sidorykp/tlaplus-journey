@@ -27,33 +27,28 @@ BY DEF E!init, init,
 
 THEOREM initEquivalenceRev == ASSUME NEW self \in Transfer, init(self)
 PROVE E!init(self)
-<1>1 CASE initPrecond(self)
-    <2>1 ~AmountIsPending(self) BY <1>1 DEF init, AmountIsPending, creditPrecond,
-        isTransKnown, isTransKnownToItem, initPrecond
-    <2>2 UNCHANGED {<<t, amount[t]>>: t \in {t \in Transfer : AmountIsPending(t)}}
-        BY <1>1, <2>1 DEF init, AmountIsPending, creditPrecond,
-        isTransKnown, isTransKnownToItem, initPrecond
-    <2> QED BY <2>2
-        DEF pendingTransDerived,
-        E!init, init,
-        E!initPrecond, initPrecond,
-        E!isTransKnown, E!isTransKnownToItem,
-        isTransKnown, isTransKnownToItem,
-        AmountIsPending, creditPrecond
-<1>2 CASE ~initPrecond(self)
-    <2>1 ~AmountIsPending(self) BY <1>2 DEF init, AmountIsPending, creditPrecond,
-        isTransKnown, isTransKnownToItem, initPrecond
-    <2>2 UNCHANGED {<<t, amount[t]>>: t \in {t \in Transfer : AmountIsPending(t)}}
-        BY <1>2, <2>1 DEF init, AmountIsPending, creditPrecond,
-        isTransKnown, isTransKnownToItem, initPrecond
-    <2> QED BY <2>2
-        DEF pendingTransDerived,
-        E!init, init,
-        E!initPrecond, initPrecond,
-        E!isTransKnown, E!isTransKnownToItem,
-        isTransKnown, isTransKnownToItem,
-        AmountIsPending, creditPrecond
-<1> QED BY <1>1, <1>2
+<2>1 ~AmountIsPending(self) BY DEF init, AmountIsPending, creditPrecond,
+    isTransKnown, isTransKnownToItem, initPrecond
+<2>2 UNCHANGED {<<t, amount[t]>>: t \in {t \in Transfer : AmountIsPending(t)}}
+    BY <2>1 DEF init, AmountIsPending, creditPrecond,
+    isTransKnown, isTransKnownToItem, initPrecond,
+    NNat, amountAvail, accountCredits, accountDebits,
+    MapThenSumSet, MapThenFoldSet, opAmount
+<2>3 UNCHANGED pendingTransDerived BY <2>2 DEF pendingTransDerived
+<2> QED BY <2>3
+    DEF
+    E!init, init,
+    E!initPrecond, initPrecond,
+    E!isTransKnown, E!isTransKnownToItem,
+    isTransKnown, isTransKnownToItem,
+    AmountIsPending, creditPrecond,
+    E!NNat, NNat,
+    E!amountAvail, amountAvail,
+    E!accountCredits, E!accountDebits,
+    accountCredits, accountDebits,
+    E!MapThenSumSetE, MapThenSumSet,
+    E!MapThenFoldSetE, MapThenFoldSet,
+    E!opAmount, opAmount
 
 
 THEOREM debitEquivalence == ASSUME NEW self \in Transfer, E!debit(self)
