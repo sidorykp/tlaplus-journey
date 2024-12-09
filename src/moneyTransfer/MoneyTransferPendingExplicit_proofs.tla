@@ -64,66 +64,66 @@ THEOREM initProperty == ASSUME Init PROVE IndInv
     DEF PendingTransDerived, PendingTransUniqueness
 
 
-THEOREM crash_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, crash(self)
+THEOREM retryDebit_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, retryDebit(self)
 PROVE AmountPendingTotal' = AmountPendingTotal
-BY DEF crash, AmountPendingTotal
+BY DEF retryDebit, AmountPendingTotal
 
 
-THEOREM crash_IndInv == ASSUME IndInv, NEW self \in Transfer, crash(self)
+THEOREM retryDebit_IndInv == ASSUME IndInv, NEW self \in Transfer, retryDebit(self)
 PROVE IndInv'
 <1> USE DEF IndInv, TypeOK
-<1>1 credits' \in SUBSET (AT \X Nat) BY DEF crash
-<1>2 IsFiniteSet(credits)' BY DEF crash
-<1>3 debits' \in SUBSET (AT \X Nat) BY DEF crash
-<1>4 IsFiniteSet(debits)' BY DEF crash
-<1>5 pendingTrans' \in SUBSET TN BY DEF crash
-<1>6 IsFiniteSet(pendingTrans)' BY DEF crash
-<1>7 amount' \in [Transfer -> Nat] BY DEF crash
-<1>8 accounts' \in [Transfer -> EAccounts] BY DEF crash
+<1>1 credits' \in SUBSET (AT \X Nat) BY DEF retryDebit
+<1>2 IsFiniteSet(credits)' BY DEF retryDebit
+<1>3 debits' \in SUBSET (AT \X Nat) BY DEF retryDebit
+<1>4 IsFiniteSet(debits)' BY DEF retryDebit
+<1>5 pendingTrans' \in SUBSET TN BY DEF retryDebit
+<1>6 IsFiniteSet(pendingTrans)' BY DEF retryDebit
+<1>7 amount' \in [Transfer -> Nat] BY DEF retryDebit
+<1>8 accounts' \in [Transfer -> EAccounts] BY DEF retryDebit
 
-<1>9 pc'[self] \in {"credit", "debit"} BY DEF crash, pcLabels
-<1>10 pcLabels' BY <1>9 DEF crash, pcLabels
+<1>9 pc'[self] \in {"credit", "debit"} BY DEF retryDebit, pcLabels
+<1>10 pcLabels' BY <1>9 DEF retryDebit, pcLabels
 
-<1>11 Imbalance' = Imbalance BY crash_AmountPendingTotal
-    DEF crash, Imbalance, creditPrecond, CreditTotal, DebitTotal
+<1>11 Imbalance' = Imbalance BY retryDebit_AmountPendingTotal
+    DEF retryDebit, Imbalance, creditPrecond, CreditTotal, DebitTotal
 <1>12 Imbalance' = 0 BY <1>11
 
 <1>13 \A t \in Transfer:
     (\/ accounts[t] = EmptyAccounts
      \/ DifferentAccounts(t) /\ NonEmptyAccounts(t))'
-    BY DEF crash, EmptyAccounts, DifferentAccounts, NonEmptyAccounts
+    BY DEF retryDebit, EmptyAccounts, DifferentAccounts, NonEmptyAccounts
 
 <1>14 \A t \in Transfer: pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
     BY DEF IndInv
 <1>15 \A t \in Transfer: NonEmptyAccounts(t)' = NonEmptyAccounts(t)
-    BY DEF crash, NonEmptyAccounts
+    BY DEF retryDebit, NonEmptyAccounts
 <1>16 NonEmptyAccounts(self)' = NonEmptyAccounts(self)
     BY <1>15
 <1>17 pc[self] \notin {"init"} <=> NonEmptyAccounts(self)
     BY <1>14
-<1>18 pc[self] \notin {"init"} BY DEF crash
+<1>18 pc[self] \notin {"init"} BY DEF retryDebit
 <1>19 pc'[self] \notin {"init"} BY <1>9
 <1>20 pc'[self] \notin {"init"} <=> NonEmptyAccounts(self)'
     BY <1>16, <1>17, <1>18, <1>19
 
 <1>21 pc'[self] = "init" => initPrecond(self)' BY <1>9
 <1>22 \A t \in Transfer: pc'[t] = "init" => initPrecond(t)'
-    BY <1>21 DEF crash, pcLabels
+    BY <1>21 DEF retryDebit, pcLabels
 
 <1>23 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> pc[t] \notin {"init"}
-    BY DEF crash, pcLabels
+    BY DEF retryDebit, pcLabels
 <1>24 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
     BY <1>14, <1>15, <1>23
 
 <1>25 \A t \in Transfer: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
     BY <1>20, <1>24
 
-<1>26 TransPendingEquivalence' BY DEF crash, TransPendingEquivalence, TransInPendingTrans,
+<1>26 TransPendingEquivalence' BY DEF retryDebit, TransPendingEquivalence, TransInPendingTrans,
     pcLabels, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
 
-<1>27 PendingTransDerived' BY DEF crash, PendingTransDerived
+<1>27 PendingTransDerived' BY DEF retryDebit, PendingTransDerived
 
-<1>28 PendingTransUniqueness' BY DEF crash, PendingTransUniqueness
+<1>28 PendingTransUniqueness' BY DEF retryDebit, PendingTransUniqueness
 
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>7, <1>8, <1>10, <1>12, <1>13, <1>22, <1>25, <1>26, <1>27, <1>28
 
@@ -231,7 +231,7 @@ PROVE DebitTotal' = DebitTotal + amount[self]
     BY <1>5 DEF DebitTotal, MapThenSumSetE, MapThenFoldSetE, MapThenSumSet, MapThenFoldSet
 <1> QED BY <1>6 DEF opAmount
 
-LEMMA debit_DebitTotal_notDebitPrecond_or_crash == ASSUME IndInv, NEW self \in Transfer, debit(self),
+LEMMA debit_DebitTotal_notDebitPrecond_or_retryDebit == ASSUME IndInv, NEW self \in Transfer, debit(self),
 ~debitPrecond(self) \/ UNCHANGED <<debits, pendingTrans>>
 PROVE DebitTotal' = DebitTotal
 BY DEF debit, DebitTotal
@@ -255,7 +255,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal + amount[self]
     BY <1>5 DEF AmountPendingTotal
 <1> QED BY <1>6 DEF pendingTransAmount
 
-LEMMA debit_AmountPendingTotal_notDebitPrecond_or_crash == ASSUME IndInv, NEW self \in Transfer, debit(self),
+LEMMA debit_AmountPendingTotal_notDebitPrecond_or_retryDebit == ASSUME IndInv, NEW self \in Transfer, debit(self),
 ~debitPrecond(self) \/ UNCHANGED <<debits, pendingTrans>>
 PROVE AmountPendingTotal' = AmountPendingTotal
 BY DEF debit, AmountPendingTotal
@@ -270,8 +270,8 @@ PROVE Imbalance' = Imbalance
     <2> QED BY <1>3, <1>2, debit_DebitTotal_debitPrecond_success,
         debit_AmountPendingTotal_debitPrecond_success DEF debit, Imbalance
 <1>4 CASE ~debitPrecond(self) \/ UNCHANGED <<debits, pendingTrans>>
-    <2> QED BY <1>4, <1>2, debit_DebitTotal_notDebitPrecond_or_crash,
-        debit_AmountPendingTotal_notDebitPrecond_or_crash
+    <2> QED BY <1>4, <1>2, debit_DebitTotal_notDebitPrecond_or_retryDebit,
+        debit_AmountPendingTotal_notDebitPrecond_or_retryDebit
         DEF debit, Imbalance
 <1> QED BY <1>3, <1>4
 
@@ -286,8 +286,8 @@ PROVE (
 <1>2 IsFiniteSet(credits)' BY DEF debit, IndInv, TypeOK
 <1>3 amount' \in [Transfer -> Nat] BY DEF debit, IndInv, TypeOK
 <1>4 accounts' \in [Transfer -> EAccounts] BY DEF debit, IndInv, TypeOK
-<1>5 pc' = [pc EXCEPT ![self] = "crash"] BY DEF debit
-<1>6 pc'[self] = "crash" BY <1>5 DEF pcLabels, IndInv, TypeOK
+<1>5 pc' = [pc EXCEPT ![self] = "retryDebit"] BY DEF debit
+<1>6 pc'[self] = "retryDebit" BY <1>5 DEF pcLabels, IndInv, TypeOK
 <1>7 pcLabels' BY <1>6 DEF debit, pcLabels, ProcSet
 <1>8 \A t \in Transfer:
     \/ accounts'[t] = EmptyAccounts
@@ -552,7 +552,7 @@ PROVE IndInv'
     BY DEF Next, trans
 <1>1 CASE init(self) BY <1>1, init_IndInv
 <1>2 CASE debit(self) BY <1>2, debit_IndInv
-<1>3 CASE crash(self) BY <1>3, crash_IndInv
+<1>3 CASE retryDebit(self) BY <1>3, retryDebit_IndInv
 <1>4 CASE credit(self) BY <1>4, credit_IndInv
 <1> QED BY <1>1, <1>2, <1>3, <1>4 DEF trans
 
