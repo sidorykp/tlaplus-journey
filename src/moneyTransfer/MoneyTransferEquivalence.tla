@@ -25,17 +25,18 @@ BY DEF E!init, init,
     E!MapThenFoldSetE, MapThenFoldSet,
     E!opAmount, opAmount
 
-THEOREM initEquivalenceRev == ASSUME NEW self \in Transfer, init(self)
+THEOREM initEquivalenceRev == ASSUME NEW self \in Transfer, init(self), pcLabels
 PROVE E!init(self)
-<2>1 ~AmountIsPending(self) BY DEF init, AmountIsPending, creditPrecond,
-    isTransKnown, isTransKnownToItem, initPrecond
-<2>2 UNCHANGED {<<t, amount[t]>>: t \in {t \in Transfer : AmountIsPending(t)}}
-    BY <2>1 DEF init, AmountIsPending, creditPrecond,
+<1>1 pc' = [pc EXCEPT ![self] = "debit"] BY DEF init
+<1>2 pc[self]' = "debit" BY <1>1 DEF init, pcLabels
+<1>3 \A t \in Transfer \ {self}: pc[t]' = pc[t] BY <1>1 DEF init, pcLabels
+<1>4 UNCHANGED {<<t, amount[t]>>: t \in {t \in Transfer : AmountIsPending(t)}}
+    BY <1>2, <1>3 DEF init, AmountIsPending, creditPrecond,
     isTransKnown, isTransKnownToItem, initPrecond,
     NNat, amountAvail, accountCredits, accountDebits,
-    MapThenSumSet, MapThenFoldSet, opAmount
-<2>3 UNCHANGED pendingTransDerived BY <2>2 DEF pendingTransDerived
-<2> QED BY <2>3
+    MapThenSumSet, MapThenFoldSet, opAmount, pcLabels
+<1>5 UNCHANGED pendingTransDerived BY <1>4 DEF pendingTransDerived
+<1> QED BY <1>5
     DEF
     E!init, init,
     E!initPrecond, initPrecond,
