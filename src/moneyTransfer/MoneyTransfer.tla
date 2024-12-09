@@ -54,13 +54,11 @@ Transfer -> amount
     process (trans \in Transfer)    
     {
         init:
-            if(initPrecond(self)) {
-                with (account1 \in Account; account2 \in Account \ {account1}; am \in NNat) {
-                    await amountAvail(account1) > 0;
-                    await am <= amountAvail(account1);
-                    accounts[self] := [from |-> account1, to |-> account2];
-                    amount[self] := am;
-                }
+            with (account1 \in Account; account2 \in Account \ {account1}; am \in NNat) {
+                await amountAvail(account1) > 0;
+                await am <= amountAvail(account1);
+                accounts[self] := [from |-> account1, to |-> account2];
+                amount[self] := am;
             };
             
         debit:
@@ -87,7 +85,7 @@ Transfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "6db31177" /\ chksum(tla) = "65b317de")
+\* BEGIN TRANSLATION (chksum(pcal) = "bf2b7a41" /\ chksum(tla) = "c4edc703")
 VARIABLES credits, debits, amount, accounts, pc
 
 (* define statement *)
@@ -129,16 +127,13 @@ Init == (* Global variables *)
         /\ pc = [self \in ProcSet |-> "init"]
 
 init(self) == /\ pc[self] = "init"
-              /\ IF initPrecond(self)
-                    THEN /\ \E account1 \in Account:
-                              \E account2 \in Account \ {account1}:
-                                \E am \in NNat:
-                                  /\ amountAvail(account1) > 0
-                                  /\ am <= amountAvail(account1)
-                                  /\ accounts' = [accounts EXCEPT ![self] = [from |-> account1, to |-> account2]]
-                                  /\ amount' = [amount EXCEPT ![self] = am]
-                    ELSE /\ TRUE
-                         /\ UNCHANGED << amount, accounts >>
+              /\ \E account1 \in Account:
+                   \E account2 \in Account \ {account1}:
+                     \E am \in NNat:
+                       /\ amountAvail(account1) > 0
+                       /\ am <= amountAvail(account1)
+                       /\ accounts' = [accounts EXCEPT ![self] = [from |-> account1, to |-> account2]]
+                       /\ amount' = [amount EXCEPT ![self] = am]
               /\ pc' = [pc EXCEPT ![self] = "debit"]
               /\ UNCHANGED << credits, debits >>
 
