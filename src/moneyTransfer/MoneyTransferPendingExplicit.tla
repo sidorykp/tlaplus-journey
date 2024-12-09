@@ -86,7 +86,7 @@ Transfer -> amount
                 }
             };
             
-        crash:
+        retryDebit:
             if (debitPrecond(self)) {
                 goto debit;
             };
@@ -101,7 +101,7 @@ Transfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "be56d71f" /\ chksum(tla) = "d83e7511")
+\* BEGIN TRANSLATION (chksum(pcal) = "5b1a7a92" /\ chksum(tla) = "f4ad47ad")
 VARIABLES credits, debits, amount, accounts, pendingTrans, pc
 
 (* define statement *)
@@ -166,14 +166,15 @@ debit(self) == /\ pc[self] = "debit"
                                   /\ UNCHANGED <<debits, pendingTrans>>
                        ELSE /\ TRUE
                             /\ UNCHANGED << debits, pendingTrans >>
-               /\ pc' = [pc EXCEPT ![self] = "crash"]
+               /\ pc' = [pc EXCEPT ![self] = "retryDebit"]
                /\ UNCHANGED << credits, amount, accounts >>
 
-crash(self) == /\ pc[self] = "crash"
-               /\ IF debitPrecond(self)
-                     THEN /\ pc' = [pc EXCEPT ![self] = "debit"]
-                     ELSE /\ pc' = [pc EXCEPT ![self] = "credit"]
-               /\ UNCHANGED << credits, debits, amount, accounts, pendingTrans >>
+retryDebit(self) == /\ pc[self] = "retryDebit"
+                    /\ IF debitPrecond(self)
+                          THEN /\ pc' = [pc EXCEPT ![self] = "debit"]
+                          ELSE /\ pc' = [pc EXCEPT ![self] = "credit"]
+                    /\ UNCHANGED << credits, debits, amount, accounts, 
+                                    pendingTrans >>
 
 credit(self) == /\ pc[self] = "credit"
                 /\ LET a == accounts[self].to IN
@@ -185,7 +186,8 @@ credit(self) == /\ pc[self] = "credit"
                 /\ pc' = [pc EXCEPT ![self] = "Done"]
                 /\ UNCHANGED << debits, amount, accounts >>
 
-trans(self) == init(self) \/ debit(self) \/ crash(self) \/ credit(self)
+trans(self) == init(self) \/ debit(self) \/ retryDebit(self)
+                  \/ credit(self)
 
 (* Allow infinite stuttering to prevent deadlock on termination. *)
 Terminating == /\ \A self \in ProcSet: pc[self] = "Done"
@@ -205,7 +207,7 @@ CreditTotal == MapThenSumSetE(opAmount, credits)
 DebitTotal == MapThenSumSetE(opAmount, debits)
 
 AmountIsPending(t) ==
-    /\ pc[t] \in {"credit", "debit", "crash"}
+    /\ pc[t] \in {"credit", "debit", "retryDebit"}
     /\ creditPrecond(t)
 
 AmountPendingTotal == MapThenSumSet(pendingTransAmount, pendingTrans)
@@ -229,7 +231,7 @@ AT == [a: Account, t: Transfer]
 
 TN == Transfer \X Nat
 
-pcLabels == pc \in [Transfer -> {"Done", "init", "debit", "credit", "crash"}]
+pcLabels == pc \in [Transfer -> {"Done", "init", "debit", "credit", "retryDebit"}]
 
 PendingTransDerived == \A pt \in pendingTrans: \E d \in debits: d[1].t = pt[1] /\ d[2] = pt[2]
 
