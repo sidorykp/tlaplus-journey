@@ -340,10 +340,11 @@ PROVE IndInv'
     <2>12 credits' = credits BY DEF debit
     
     <2>13 (AmountIsPending(self) <=> TransInPendingTrans(self))'
-        <3>1 ~AmountIsPending(self) BY <1>1 DEF debit, AmountIsPending, creditPrecond, debitPrecond
+        <3>1 ~AmountIsPending(self) BY <1>1 DEF debit, AmountIsPending, creditPrecond,
+            debitPrecond, pcLabels
         <3>2 AmountIsPending(self)' BY <1>1 DEF debit, AmountIsPending, creditPrecond,
             isTransKnown, isTransKnownToItem
-        <3>3 ~TransInPendingTrans(self) BY <1>1, <3>1, TransPendingEquivalence DEF debit
+        <3>3 ~TransInPendingTrans(self) BY <1>1, <3>1 DEF debit, TransPendingEquivalence
         <3>4 TransInPendingTrans(self)' BY <1>1, <2>8 DEF debit, TransInPendingTrans
         <3> QED BY <3>1, <3>2, <3>3, <3>4
     <2>14 \A t \in Transfer \ {self}: TransInPendingTrans(t) = TransInPendingTrans(t)'
@@ -364,7 +365,7 @@ PROVE IndInv'
     <2>21 PendingTransDerived' BY <2>20 DEF debit, PendingTransDerived
     
     <2>22 PendingTransUniqueness' = PendingTransUniqueness
-        <3>1 pendingTrans' = {ptAdd} BY <1>1, <2>8 DEF debit
+        <3>1 pendingTrans' = pendingTrans \cup {ptAdd} BY <1>1, <2>8 DEF debit
         <3> QED BY <1>1, <3>1 DEF debit, PendingTransUniqueness
 
     <2> QED BY <2>6, <2>7, <2>10, <2>11, <2>17, <2>21, <2>22, debit_IndInv_common, debit_Imbalance DEF IndInv, TypeOK, CommonIndInv
