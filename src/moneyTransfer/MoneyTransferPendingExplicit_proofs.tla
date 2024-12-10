@@ -61,7 +61,7 @@ THEOREM initProperty == ASSUME Init PROVE IndInv
 <1>8 TransPendingEquivalence BY DEF TransPendingEquivalence, AmountIsPending, creditPrecond,
     isTransKnown, isTransKnownToItem, TransInPendingTrans
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>7, <1>8, init_Imbalance
-    DEF PendingTransDerived, PendingTransUniqueness
+    DEF PendingTransDerived
 
 
 THEOREM retryDebit_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, retryDebit(self)
@@ -123,9 +123,7 @@ PROVE IndInv'
 
 <1>27 PendingTransDerived' BY DEF retryDebit, PendingTransDerived
 
-<1>28 PendingTransUniqueness' BY DEF retryDebit, PendingTransUniqueness
-
-<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>7, <1>8, <1>10, <1>12, <1>13, <1>22, <1>25, <1>26, <1>27, <1>28
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>7, <1>8, <1>10, <1>12, <1>13, <1>22, <1>25, <1>26, <1>27
 
 
 THEOREM init_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, init(self)
@@ -190,7 +188,7 @@ PROVE IndInv'
 <1>29 ~AmountIsPending(self) BY DEF init, AmountIsPending, creditPrecond, initPrecond
 <1>30 ~AmountIsPending(self)' BY DEF init, AmountIsPending, creditPrecond, initPrecond
 <1>31 TransInPendingTrans(self)' = TransInPendingTrans(self)
-    BY DEF init, TransInPendingTrans, PendingTransUniqueness
+    BY DEF init, TransInPendingTrans
 <1>32 (AmountIsPending(self) <=> TransInPendingTrans(self))' = (AmountIsPending(self) <=> TransInPendingTrans(self))
     BY <1>29, <1>30, <1>31
 <1>33 \A t \in Transfer \ {self}: (AmountIsPending(t) <=> TransInPendingTrans(t))' = (AmountIsPending(t) <=> TransInPendingTrans(t))
@@ -201,9 +199,7 @@ PROVE IndInv'
 
 <1>35 PendingTransDerived' BY DEF init, PendingTransDerived
 
-<1>36 PendingTransUniqueness' BY DEF init, PendingTransUniqueness
-
-<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>8, <1>10, <1>11, <1>13, <1>19, <1>22, <1>28, <1>34, <1>35, <1>36
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>8, <1>10, <1>11, <1>13, <1>19, <1>22, <1>28, <1>34, <1>35
 
 
 LEMMA debit_DebitTotal_debitPrecond_success == ASSUME IndInv, NEW self \in Transfer, debit(self),
@@ -363,12 +359,8 @@ PROVE IndInv'
     <2>20 \A pt \in pendingTrans': \E d \in debits': d[1].t = pt[1] /\ d[2] = pt[2]
         BY <1>1, <2>18, <2>19
     <2>21 PendingTransDerived' BY <2>20 DEF debit, PendingTransDerived
-    
-    <2>22 PendingTransUniqueness' = PendingTransUniqueness
-        <3>1 pendingTrans' = pendingTrans \cup {ptAdd} BY <1>1, <2>8 DEF debit
-        <3> QED BY <1>1, <3>1 DEF debit, PendingTransUniqueness
 
-    <2> QED BY <2>6, <2>7, <2>10, <2>11, <2>17, <2>21, <2>22, debit_IndInv_common, debit_Imbalance DEF IndInv, TypeOK, CommonIndInv
+    <2> QED BY <2>6, <2>7, <2>10, <2>11, <2>17, <2>21, debit_IndInv_common, debit_Imbalance DEF IndInv, TypeOK, CommonIndInv
 <1>2 CASE ~debitPrecond(self) \/ UNCHANGED <<debits, pendingTrans>>
     <2>1 debits' \in SUBSET (AT \X Nat) BY <1>2 DEF debit
     <2>2 IsFiniteSet(debits)' BY <1>2 DEF debit
@@ -377,8 +369,7 @@ PROVE IndInv'
     <2>5 TransPendingEquivalence' BY <1>2 DEF debit, TransPendingEquivalence, TransInPendingTrans,
         pcLabels, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
     <2>6 PendingTransDerived'  BY <1>2 DEF debit, PendingTransDerived
-    <2>7 PendingTransUniqueness' BY <1>2 DEF debit, PendingTransUniqueness
-    <2> QED BY <1>1, <2>1, <2>2, <2>3, <2>4, <2>5, <2>6, <2>7, debit_IndInv_common, debit_Imbalance
+    <2> QED BY <1>1, <2>1, <2>2, <2>3, <2>4, <2>5, <2>6, debit_IndInv_common, debit_Imbalance
 <1> QED BY <1>1, <1>2
 
 
@@ -446,8 +437,7 @@ PROVE (
     /\ IsFiniteSet(pendingTrans)
     /\ CommonIndInv
     /\ TransPendingEquivalence
-    /\ PendingTransDerived
-    /\ PendingTransUniqueness)'
+    /\ PendingTransDerived)'
 <1> USE DEF CommonIndInv
 <1>1 debits' \in SUBSET (AT \X Nat) BY DEF credit, IndInv, TypeOK
 <1>2 IsFiniteSet(debits)' BY DEF credit
@@ -492,7 +482,7 @@ PROVE (
 <1>23 pendingTrans' \in SUBSET TN  BY DEF credit, IndInv, TypeOK
 <1>24 IsFiniteSet(pendingTrans)' BY DEF credit
 <1> HIDE DEF IndInv, TypeOK, CommonIndInv
-<1>25 AmountIsPending(self)' <=> TransInPendingTrans(self)' /\ PendingTransUniqueness'
+<1>25 AmountIsPending(self)' <=> TransInPendingTrans(self)'
     <2>1 CASE ~creditPrecond(self)
         <3>1 credits' = credits BY <2>1 DEF credit
         <3>2 pendingTrans' = pendingTrans BY <2>1 DEF credit
@@ -558,7 +548,7 @@ THEOREM unchangedVarsProperty == IndInv /\ UNCHANGED vars => IndInv'
 <1> USE DEF vars
 <1>1 TypeOK' = TypeOK BY DEF TypeOK, pcLabels,
     TransPendingEquivalence, TransInPendingTrans, AmountIsPending, creditPrecond,
-    PendingTransDerived, PendingTransUniqueness
+    PendingTransDerived
 <1>2 (/\ \A t \in Transfer:
         \/ accounts[t] = EmptyAccounts
         \/ DifferentAccounts(t) /\ NonEmptyAccounts(t))' =
