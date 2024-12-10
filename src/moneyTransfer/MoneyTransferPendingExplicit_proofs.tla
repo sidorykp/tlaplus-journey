@@ -252,21 +252,22 @@ LEMMA debit_AmountPendingTotal_notDebitPrecond_or_retryDebit == ASSUME IndInv, N
 PROVE AmountPendingTotal' = AmountPendingTotal
 BY DEF debit, AmountPendingTotal
 
-
 LEMMA debit_Imbalance == ASSUME IndInv, NEW self \in Transfer, debit(self)
 PROVE Imbalance' = Imbalance
 <1>1 credits' = credits BY DEF debit
 <1>2 CreditTotal' = CreditTotal
     BY <1>1 DEF CreditTotal
 <1>3 CASE debitPrecond(self) /\ ~(UNCHANGED <<debits, pendingTrans>>)
-    <2> QED BY <1>3, <1>2, debit_DebitTotal_debitPrecond_success,
-        debit_AmountPendingTotal_debitPrecond_success DEF debit, Imbalance
+    <2>1 DebitTotal' = DebitTotal + amount[self] BY <1>3, debit_DebitTotal_debitPrecond_success DEF debit
+    <2>2 AmountPendingTotal' = AmountPendingTotal + amount[self] BY <1>3,
+        debit_AmountPendingTotal_debitPrecond_success DEF debit
+    <2>3 AmountPendingTotal \in Nat BY AmountPendingTotalInNat, NTransferAssumption
+    <2> QED BY <1>3, <2>1, <2>2, <2>3 DEF debit, Imbalance
 <1>4 CASE ~debitPrecond(self) \/ UNCHANGED <<debits, pendingTrans>>
     <2> QED BY <1>4, <1>2, debit_DebitTotal_notDebitPrecond_or_retryDebit,
         debit_AmountPendingTotal_notDebitPrecond_or_retryDebit
         DEF debit, Imbalance
 <1> QED BY <1>3, <1>4
-
 
 THEOREM debit_IndInv_common == ASSUME IndInv, NEW self \in Transfer, debit(self)
 PROVE (
