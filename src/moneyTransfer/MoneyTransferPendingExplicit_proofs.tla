@@ -190,21 +190,13 @@ PROVE IndInv'
 <1>29 ~AmountIsPending(self) BY DEF init, AmountIsPending, creditPrecond, initPrecond
 <1>30 ~AmountIsPending(self)' BY DEF init, AmountIsPending, creditPrecond, initPrecond
 <1>31 TransInPendingTrans(self)' = TransInPendingTrans(self)
-    <2>1 CASE initPrecond(self)
-        <3> QED BY <2>1 DEF init, TransInPendingTrans, PendingTransUniqueness
-    <2>2 CASE ~initPrecond(self)
-        <3> QED BY <2>2 DEF init, TransInPendingTrans
-    <2> QED BY <2>1, <2>2
-<1>32 (AmountIsPending(self) <=> TransInPendingTrans(self)) ' = (AmountIsPending(self) <=> TransInPendingTrans(self))
+    BY DEF init, TransInPendingTrans, PendingTransUniqueness
+<1>32 (AmountIsPending(self) <=> TransInPendingTrans(self))' = (AmountIsPending(self) <=> TransInPendingTrans(self))
     BY <1>29, <1>30, <1>31
 <1>33 \A t \in Transfer \ {self}: (AmountIsPending(t) <=> TransInPendingTrans(t))' = (AmountIsPending(t) <=> TransInPendingTrans(t))
-    <2>1 CASE initPrecond(self)
-        <3>1 pendingTrans' = pendingTrans BY DEF init
-        <3> QED BY <2>1, <3>1 DEF init, AmountIsPending, TransInPendingTrans,
-            creditPrecond, isTransKnown, isTransKnownToItem
-    <2>2 CASE ~initPrecond(self)
-        <3> QED BY <2>2 DEF init, AmountIsPending, TransInPendingTrans
-    <2> QED BY <2>1, <2>2
+    <2>1 pendingTrans' = pendingTrans BY DEF init
+    <2> QED BY <2>1 DEF init, AmountIsPending, TransInPendingTrans,
+        creditPrecond, isTransKnown, isTransKnownToItem, pcLabels
 <1>34 TransPendingEquivalence'  = TransPendingEquivalence BY <1>32, <1>33 DEF TransPendingEquivalence
 
 <1>35 PendingTransDerived' BY DEF init, PendingTransDerived
