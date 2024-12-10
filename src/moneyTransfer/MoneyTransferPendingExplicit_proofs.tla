@@ -281,7 +281,7 @@ PROVE (
 <1>4 accounts' \in [Transfer -> EAccounts] BY DEF debit, IndInv, TypeOK
 <1>5 pc' = [pc EXCEPT ![self] = "retryDebit"] BY DEF debit
 <1>6 pc'[self] = "retryDebit" BY <1>5 DEF pcLabels, IndInv, TypeOK
-<1>7 pcLabels' BY <1>6 DEF debit, pcLabels, ProcSet
+<1>7 pcLabels' BY <1>6 DEF debit, pcLabels, ProcSet, IndInv, TypeOK
 <1>8 \A t \in Transfer:
     \/ accounts'[t] = EmptyAccounts
     \/ DifferentAccounts(t)' /\ NonEmptyAccounts(t)'
