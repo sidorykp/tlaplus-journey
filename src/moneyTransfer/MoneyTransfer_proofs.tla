@@ -25,6 +25,14 @@ PROVE IsFiniteSet(Transfer)
 <1>2 \A t \in Transfer: t <= NTransfer BY TransferAssumption
 <1> QED BY <1>1, <1>2, FS_BoundedSetOfNaturals DEF NNat
 
+LEMMA AmountPendingTotalInNat == ASSUME NTransferAssumption, IndInv
+PROVE AmountPendingTotal \in Nat
+<1>1 IsFiniteSet(Transfer) BY transSetIsFinite, NTransferAssumption
+<1>2 IsFiniteSet({t \in Transfer : AmountIsPending(t)}) BY <1>1, FS_Subset
+<1>3 IsFiniteSet(transPending) BY <1>2, FS_Image DEF IndInv, TypeOK, transPending
+<1>4 \A t \in transPending: transAmount(t) \in Nat BY DEF transPending, transAmount, IndInv, TypeOK
+<1> QED BY <1>3, <1>4, MapThenSumSetType DEF AmountPendingTotal
+
 
 LEMMA transPendingIsFinite == IsFiniteSet(transPending)
 BY transSetIsFinite, FS_Subset, NTransferAssumption DEF transPending
@@ -155,7 +163,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal
 <1> USE DEF IndInv, TypeOK
 <1>1 self \notin transPending BY DEF init, transPending, AmountIsPending
 <1>2 ~AmountIsPending(self)' BY DEF init, AmountIsPending, creditPrecond, initPrecond
-<1>3 transPending \in SUBSET Transfer BY DEF transPending \* very non-obvious
+<1>3 transPending \in SUBSET Transfer BY DEF transPending \* very non-obvious necessity to use it
 <1>4 self \notin transPending' BY <1>2 DEF transPending
 <1>5 transPending' = transPending BY <1>1, <1>4 DEF init, pcLabels,
     transPending, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
@@ -179,6 +187,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal
     BY <1>5 DEF transAmount
 <1>8 \A t \in transPending: accounts[t] = accounts[t]' BY <1>1, <1>5 DEF init, pcLabels,
     transPending, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+\* it works with amount, does not work with transAmount which is surprising
 <1>9 (CHOOSE iter :
           iter
           = [s \in SUBSET transPending |->
@@ -390,8 +399,11 @@ PROVE Imbalance' = Imbalance
 <1>2 CreditTotal' = CreditTotal
     BY <1>1 DEF CreditTotal
 <1>3 CASE debitPrecond(self) /\ ~(UNCHANGED debits)
-    <2> QED BY <1>3, <1>2, debit_DebitTotal_debitPrecond_success,
-        debit_AmountPendingTotal_debitPrecond DEF Imbalance, debit
+    <2>1 DebitTotal' = DebitTotal + amount[self] BY <1>3, debit_DebitTotal_debitPrecond_success
+    <2>2 AmountPendingTotal' = AmountPendingTotal + amount[self] BY <1>3,
+        debit_AmountPendingTotal_debitPrecond
+    <2>3 AmountPendingTotal \in Nat BY AmountPendingTotalInNat, NTransferAssumption
+    <2> QED BY <1>2, <2>1, <2>2, <2>3 DEF Imbalance, debit
 <1>4 CASE ~debitPrecond(self) \/ UNCHANGED debits
     <2> QED BY <1>4, <1>2, debit_DebitTotal_notDebitPrecond_or_retryDebit,
         debit_AmountPendingTotal_notDebitPrecond_or_retryDebit DEF debit, Imbalance
