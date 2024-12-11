@@ -152,7 +152,6 @@ PROVE AmountPendingTotal' = AmountPendingTotal
 THEOREM init_AmountPendingTotal_initPrecond == ASSUME IndInv, NEW self \in Transfer, init(self),
 initPrecond(self)
 PROVE AmountPendingTotal' = AmountPendingTotal
-<1> DEFINE am == amount'[self]
 <1> USE DEF IndInv, TypeOK
 <1>1 self \notin transPending BY DEF init, transPending, AmountIsPending
 <1>2 ~AmountIsPending(self)' BY DEF init, AmountIsPending, creditPrecond, initPrecond
@@ -300,7 +299,7 @@ LEMMA debit_AmountPendingTotal_debitPrecond == ASSUME IndInv, NEW self \in Trans
 debitPrecond(self), ~(UNCHANGED debits)
 PROVE AmountPendingTotal' = AmountPendingTotal + amount[self]
 <1>1 transPending' = transPending \cup {self}
-    BY DEF transPending, debit, AmountIsPending, creditPrecond, isTransKnown
+    BY DEF transPending, debit, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
 <1> USE DEF IndInv, TypeOK
 <1>2 self \notin transPending
     BY DEF transPending, AmountIsPending, isTransKnown, isTransKnownToItem, debitPrecond, creditPrecond, AT
