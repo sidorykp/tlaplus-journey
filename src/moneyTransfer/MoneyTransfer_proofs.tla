@@ -529,11 +529,9 @@ PROVE AmountPendingTotal' = AmountPendingTotal
     transPending, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
 <1>5 \A t \in Transfer: transAmount(t)' = transAmount(t) BY DEF credit, transAmount, IndInv, TypeOK,
     creditPrecond, isTransKnown, isTransKnownToItem
-<1>6 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) BY <1>1, <1>4, <1>5
-<1>7 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
-<1>8 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') BY <1>1, <1>4, <1>5
-    DEF credit, transPending, transAmount, AmountIsPending
-<1> QED BY <1>6, <1>7, <1>8 DEF AmountPendingTotal
+<1>6 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) BY <1>4, <1>5
+<1>7 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') BY <1>4, <1>5 DEF credit
+<1> QED BY <1>6, <1>7 DEF AmountPendingTotal
 
 
 \* practically a copy of debit_DebitTotal_debitPrecond
