@@ -323,7 +323,7 @@ LEMMA debit_AmountPendingTotal_notDebitPrecond_or_retryDebit == ASSUME IndInv, N
 ~debitPrecond(self) \/ UNCHANGED debits
 PROVE AmountPendingTotal' = AmountPendingTotal
 <1>1 self \notin transPending
-    BY DEF debit, transPending, AmountIsPending, debitPrecond, creditPrecond
+    BY DEF debit, transPending, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
 <1>2 self \notin transPending'
     BY <1>1 DEF debit, transPending, AmountIsPending, debitPrecond, creditPrecond, IndInv, TypeOK, pcLabels,
         isTransKnown, isTransKnownToItem
