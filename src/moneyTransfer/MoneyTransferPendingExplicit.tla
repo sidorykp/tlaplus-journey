@@ -65,13 +65,11 @@ Transfer -> amount
     process (trans \in Transfer)    
     {
         init:
-            if (initPrecond(self)) {
-                with (account1 \in Account; account2 \in Account \ {account1}; am \in NNat) {
-                    await amountAvail(account1) > 0;
-                    await am <= amountAvail(account1);
-                    accounts[self] := [from |-> account1, to |-> account2];
-                    amount[self] := am;
-                }
+            with (account1 \in Account; account2 \in Account \ {account1}; am \in NNat) {
+                await amountAvail(account1) > 0;
+                await am <= amountAvail(account1);
+                accounts[self] := [from |-> account1, to |-> account2];
+                amount[self] := am;
             };
             
         debit:
@@ -86,7 +84,7 @@ Transfer -> amount
                 }
             };
             
-        crash:
+        retryDebit:
             if (debitPrecond(self)) {
                 goto debit;
             };
@@ -101,7 +99,7 @@ Transfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "be56d71f" /\ chksum(tla) = "d83e7511")
+\* BEGIN TRANSLATION (chksum(pcal) = "8f00cbd9" /\ chksum(tla) = "b3570181")
 VARIABLES credits, debits, amount, accounts, pendingTrans, pc
 
 (* define statement *)
@@ -144,16 +142,13 @@ Init == (* Global variables *)
         /\ pc = [self \in ProcSet |-> "init"]
 
 init(self) == /\ pc[self] = "init"
-              /\ IF initPrecond(self)
-                    THEN /\ \E account1 \in Account:
-                              \E account2 \in Account \ {account1}:
-                                \E am \in NNat:
-                                  /\ amountAvail(account1) > 0
-                                  /\ am <= amountAvail(account1)
-                                  /\ accounts' = [accounts EXCEPT ![self] = [from |-> account1, to |-> account2]]
-                                  /\ amount' = [amount EXCEPT ![self] = am]
-                    ELSE /\ TRUE
-                         /\ UNCHANGED << amount, accounts >>
+              /\ \E account1 \in Account:
+                   \E account2 \in Account \ {account1}:
+                     \E am \in NNat:
+                       /\ amountAvail(account1) > 0
+                       /\ am <= amountAvail(account1)
+                       /\ accounts' = [accounts EXCEPT ![self] = [from |-> account1, to |-> account2]]
+                       /\ amount' = [amount EXCEPT ![self] = am]
               /\ pc' = [pc EXCEPT ![self] = "debit"]
               /\ UNCHANGED << credits, debits, pendingTrans >>
 
@@ -166,14 +161,15 @@ debit(self) == /\ pc[self] = "debit"
                                   /\ UNCHANGED <<debits, pendingTrans>>
                        ELSE /\ TRUE
                             /\ UNCHANGED << debits, pendingTrans >>
-               /\ pc' = [pc EXCEPT ![self] = "crash"]
+               /\ pc' = [pc EXCEPT ![self] = "retryDebit"]
                /\ UNCHANGED << credits, amount, accounts >>
 
-crash(self) == /\ pc[self] = "crash"
-               /\ IF debitPrecond(self)
-                     THEN /\ pc' = [pc EXCEPT ![self] = "debit"]
-                     ELSE /\ pc' = [pc EXCEPT ![self] = "credit"]
-               /\ UNCHANGED << credits, debits, amount, accounts, pendingTrans >>
+retryDebit(self) == /\ pc[self] = "retryDebit"
+                    /\ IF debitPrecond(self)
+                          THEN /\ pc' = [pc EXCEPT ![self] = "debit"]
+                          ELSE /\ pc' = [pc EXCEPT ![self] = "credit"]
+                    /\ UNCHANGED << credits, debits, amount, accounts, 
+                                    pendingTrans >>
 
 credit(self) == /\ pc[self] = "credit"
                 /\ LET a == accounts[self].to IN
@@ -185,7 +181,8 @@ credit(self) == /\ pc[self] = "credit"
                 /\ pc' = [pc EXCEPT ![self] = "Done"]
                 /\ UNCHANGED << debits, amount, accounts >>
 
-trans(self) == init(self) \/ debit(self) \/ crash(self) \/ credit(self)
+trans(self) == init(self) \/ debit(self) \/ retryDebit(self)
+                  \/ credit(self)
 
 (* Allow infinite stuttering to prevent deadlock on termination. *)
 Terminating == /\ \A self \in ProcSet: pc[self] = "Done"
@@ -205,7 +202,7 @@ CreditTotal == MapThenSumSetE(opAmount, credits)
 DebitTotal == MapThenSumSetE(opAmount, debits)
 
 AmountIsPending(t) ==
-    /\ pc[t] \in {"credit", "debit", "crash"}
+    /\ pc[t] \in {"debit", "retryDebit", "credit"}
     /\ creditPrecond(t)
 
 AmountPendingTotal == MapThenSumSet(pendingTransAmount, pendingTrans)
@@ -229,11 +226,9 @@ AT == [a: Account, t: Transfer]
 
 TN == Transfer \X Nat
 
-pcLabels == pc \in [Transfer -> {"Done", "init", "debit", "credit", "crash"}]
+pcLabels == pc \in [Transfer -> {"init", "debit", "retryDebit", "credit", "Done"}]
 
 PendingTransDerived == \A pt \in pendingTrans: \E d \in debits: d[1].t = pt[1] /\ d[2] = pt[2]
-
-PendingTransUniqueness == ~\E pt1, pt2 \in pendingTrans: pt1 # pt2 /\ pt1[1] = pt2[1]
 
 TypeOK ==
     /\ credits \in SUBSET (AT \X Nat)
@@ -247,7 +242,6 @@ TypeOK ==
     /\ pcLabels
     /\ TransPendingEquivalence
     /\ PendingTransDerived
-    /\ PendingTransUniqueness
 
 Inv ==
     /\ TypeOK
