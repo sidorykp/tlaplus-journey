@@ -522,7 +522,7 @@ PROVE (
 <1>26 TransPendingEquivalence'
     BY <1>25 DEF credit, TransPendingEquivalence, TransInPendingTrans
 
-<1>27 PendingTransDerived' BY <1>20, <1>25 DEF credit, PendingTransDerived
+<1>27 PendingTransDerived' BY DEF credit, PendingTransDerived
 
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>6, <1>7, <1>11, <1>21, <1>23, <1>24, <1>26, <1>27, credit_Imbalance
     DEF IndInv, TypeOK, CommonIndInv
