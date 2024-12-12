@@ -210,7 +210,7 @@ AmountPendingTotal == MapThenSumSet(pendingTransAmount, pendingTrans)
 TransInPendingTrans(t) == \E tp \in pendingTrans: tp[1] = t /\ tp[2] = amount[t]
 
 TransPendingEquivalence == \A t \in Dransfer: AmountIsPending(t)
-    <=> pendingTrans # {} /\ TransInPendingTrans(t)
+    <=> TransInPendingTrans(t)
 
 Imbalance == CreditTotal - DebitTotal + AmountPendingTotal
 
