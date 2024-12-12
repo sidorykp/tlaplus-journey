@@ -343,12 +343,13 @@ PROVE IndInv'
     
     <2>13 (AmountIsPending(self) <=> TransInPendingTrans(self))'
         <3>1 ~AmountIsPending(self) BY <1>1 DEF debit, AmountIsPending, creditPrecond,
-            debitPrecond, pcLabels
-        <3>2 AmountIsPending(self)' BY <1>1 DEF debit, AmountIsPending, creditPrecond,
-            isTransKnown, isTransKnownToItem, debitPrecond
-        <3>3 ~TransInPendingTrans(self) BY <1>1, <3>1 DEF debit, TransPendingEquivalence
-        <3>4 TransInPendingTrans(self)' BY <1>1, <2>8 DEF debit, TransInPendingTrans
-        <3> QED BY <3>1, <3>2, <3>3, <3>4
+            debitPrecond, pcLabels, isTransKnown, isTransKnownToItem
+        <3>2 debits' = debits \cup {nadd} BY <1>1 DEF debit
+        <3>3 AmountIsPending(self)' BY <1>1, <3>2 DEF debit, AmountIsPending, creditPrecond,
+            pcLabels, isTransKnown, isTransKnownToItem
+        <3>4 ~TransInPendingTrans(self) BY <1>1, <3>1 DEF debit, TransPendingEquivalence
+        <3>5 TransInPendingTrans(self)' BY <1>1, <2>8 DEF debit, TransInPendingTrans
+        <3> QED BY <3>1, <3>3, <3>4, <3>5
     <2>14 \A t \in Dransfer \ {self}: TransInPendingTrans(t) = TransInPendingTrans(t)'
         BY <1>1, <2>1, <2>8, <2>12
         DEF TransInPendingTrans, debit
