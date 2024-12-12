@@ -38,11 +38,11 @@ Dransfer -> amount
     define {
         opAmount(dc) == dc[2]
 
-        accountkreditsSum(a) == MapThenSumSetE(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, kredits)
+        accountCredits(a) == MapThenSumSetE(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, kredits)
 
-        accountDebitsSum(a) == MapThenSumSetE(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 0, debits)
+        accountDebits(a) == MapThenSumSetE(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 0, debits)
 
-        amountAvail(a) == Evail + accountkreditsSum(a) - accountDebitsSum(a)
+        amountAvail(a) == Evail + accountCredits(a) - accountDebits(a)
 
         isTransKnownToItem(t, a, dc) == dc[1].a = a /\ dc[1].t = t
 
@@ -99,17 +99,17 @@ Dransfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "99769b92" /\ chksum(tla) = "8f9cf4a0")
+\* BEGIN TRANSLATION (chksum(pcal) = "7d9585ec" /\ chksum(tla) = "ee80dfb2")
 VARIABLES kredits, debits, amount, accounts, pendingTrans, pc
 
 (* define statement *)
 opAmount(dc) == dc[2]
 
-accountkreditsSum(a) == MapThenSumSetE(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, kredits)
+accountCredits(a) == MapThenSumSetE(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, kredits)
 
-accountDebitsSum(a) == MapThenSumSetE(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 0, debits)
+accountDebits(a) == MapThenSumSetE(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 0, debits)
 
-amountAvail(a) == Evail + accountkreditsSum(a) - accountDebitsSum(a)
+amountAvail(a) == Evail + accountCredits(a) - accountDebits(a)
 
 isTransKnownToItem(t, a, dc) == dc[1].a = a /\ dc[1].t = t
 
