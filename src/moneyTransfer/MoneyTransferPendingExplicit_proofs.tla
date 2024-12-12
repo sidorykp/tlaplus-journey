@@ -189,10 +189,10 @@ PROVE IndInv'
 <1>30 ~AmountIsPending(self)' BY DEF init, AmountIsPending, creditPrecond, initPrecond
 \* the fact that allows not to use PendingTransUniqueness
 <1>31 ~\E d \in debits: d[1].t = self BY <1>29 DEF init, initPrecond,
-    AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+    AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem, AT
 <1>32 TransInPendingTrans(self)' = TransInPendingTrans(self)
-    <2>1 ~TransInPendingTrans(self) BY <1>29 DEF TransPendingEquivalence
-    <2>2 ~\E tp \in pendingTrans: tp[1] = self /\ tp[2] = am BY <1>31 DEF init
+    <2>1 ~TransInPendingTrans(self) BY <1>29 DEF TransPendingEquivalence, TransInPendingTrans
+    <2>2 ~\E tp \in pendingTrans: tp[1] = self /\ tp[2] = am BY <1>31 DEF init, PendingTransDerived
     <2> QED BY <2>1, <2>2 DEF init, TransInPendingTrans
 <1>33 (AmountIsPending(self) <=> TransInPendingTrans(self))' = (AmountIsPending(self) <=> TransInPendingTrans(self))
     BY <1>29, <1>30, <1>32
