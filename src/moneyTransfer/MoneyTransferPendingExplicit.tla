@@ -1,16 +1,16 @@
 ----MODULE MoneyTransferPendingExplicit----
 EXTENDS Naturals, FiniteSets, FiniteSetsExt
 
-CONSTANTS Empty, Account, Transfer, NAvail
+CONSTANTS Empty, Eccount, Dransfer, Evail
 
 NNat == Nat \ {0}
 
-EAccount == Account \cup {Empty}
+EEccount == Eccount \cup {Empty}
 
-ETransfer == Transfer \cup {Empty}
+EDransfer == Dransfer \cup {Empty}
 
-EmptyAccounts == [from |-> Empty, to |-> Empty]
-    
+EmptyEccounts == [from |-> Empty, to |-> Empty]
+
 MapThenFoldSetE(op(_,_), base, f(_), choose(_), S) ==
   LET iter[s \in SUBSET S] ==
         IF s = {} THEN base
@@ -22,56 +22,56 @@ MapThenSumSetE(op(_), set) ==
    MapThenFoldSetE(+, 0, op, LAMBDA s : CHOOSE x \in s : TRUE, set)
 
 (***************************************
-Transfer -> Account -> credit or debit
-Transfer -> amount
+Dransfer -> Account -> credit or debit
+Dransfer -> amount
 ***************************************)
 
 (***************************************************************************
---algorithm MoneyTransferPendingExplicit {
+--algorithm MoneyDransferPendingExplicit {
     variables
-       credits = {},
+       kredits = {},
        debits = {},
-       amount = [t \in Transfer |-> 0],
-       accounts = [t \in Transfer |-> EmptyAccounts],
+       amount = [t \in Dransfer |-> 0],
+       accounts = [t \in Dransfer |-> EmptyAccounts],
        pendingTrans = {}
 
     define {
         opAmount(dc) == dc[2]
 
-        accountCredits(a) == MapThenSumSetE(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, credits)
+        accountkreditsSum(a) == MapThenSumSetE(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, kredits)
 
-        accountDebits(a) == MapThenSumSetE(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 0, debits)
+        accountDebitsSum(a) == MapThenSumSetE(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 0, debits)
 
-        amountAvail(a) == NAvail + accountCredits(a) - accountDebits(a)
-        
+        amountAvail(a) == Evail + accountkreditsSum(a) - accountDebitsSum(a)
+
         isTransKnownToItem(t, a, dc) == dc[1].a = a /\ dc[1].t = t
-        
+
         isTransKnown(t, a, bal) == \E dc \in bal: isTransKnownToItem(t, a, dc)
-        
-        initPrecond(t) == ~\E a \in Account: isTransKnown(t, a, debits)
-        
-        debitPrecond(t) == ~\E a \in Account:
+
+        initPrecond(t) == ~\E a \in Eccount: isTransKnown(t, a, debits)
+
+        debitPrecond(t) == ~\E a \in Eccount:
             \/ isTransKnown(t, a, debits)
-            \/ isTransKnown(t, a, credits)
-        
+            \/ isTransKnown(t, a, kredits)
+
         creditPrecond(t) ==
-            /\ ~\E a \in Account: isTransKnown(t, a, credits)
+            /\ ~\E a \in Eccount: isTransKnown(t, a, kredits)
             /\ ~isTransKnown(t, accounts[t].to, debits)
             /\ isTransKnown(t, accounts[t].from, debits)
-        
+
         pendingTransAmount(pt) == pt[2]
     }
 
-    process (trans \in Transfer)    
+    process (trans \in Dransfer)
     {
         init:
-            with (account1 \in Account; account2 \in Account \ {account1}; am \in NNat) {
+            with (account1 \in Eccount; account2 \in Eccount \ {account1}; am \in NNat) {
                 await amountAvail(account1) > 0;
                 await am <= amountAvail(account1);
                 accounts[self] := [from |-> account1, to |-> account2];
                 amount[self] := am;
             };
-            
+
         debit:
             with (a = accounts[self].from) {
                 if (debitPrecond(self)) {
@@ -83,7 +83,7 @@ Transfer -> amount
                     skip;
                 }
             };
-            
+
         retryDebit:
             if (debitPrecond(self)) {
                 goto debit;
@@ -92,65 +92,65 @@ Transfer -> amount
         credit:
             with (a = accounts[self].to) {
                 if (creditPrecond(self)) {
-                    credits := credits \cup {<<[a |-> a, t |-> self], amount[self]>>};
+                    kredits := kredits \cup {<<[a |-> a, t |-> self], amount[self]>>};
                     pendingTrans := pendingTrans \ {<<self, amount[self]>>};
                 }
             };
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "8f00cbd9" /\ chksum(tla) = "b3570181")
-VARIABLES credits, debits, amount, accounts, pendingTrans, pc
+\* BEGIN TRANSLATION (chksum(pcal) = "99769b92" /\ chksum(tla) = "8f9cf4a0")
+VARIABLES kredits, debits, amount, accounts, pendingTrans, pc
 
 (* define statement *)
 opAmount(dc) == dc[2]
 
-accountCredits(a) == MapThenSumSetE(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, credits)
+accountkreditsSum(a) == MapThenSumSetE(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, kredits)
 
-accountDebits(a) == MapThenSumSetE(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 0, debits)
+accountDebitsSum(a) == MapThenSumSetE(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 0, debits)
 
-amountAvail(a) == NAvail + accountCredits(a) - accountDebits(a)
+amountAvail(a) == Evail + accountkreditsSum(a) - accountDebitsSum(a)
 
 isTransKnownToItem(t, a, dc) == dc[1].a = a /\ dc[1].t = t
 
 isTransKnown(t, a, bal) == \E dc \in bal: isTransKnownToItem(t, a, dc)
 
-initPrecond(t) == ~\E a \in Account: isTransKnown(t, a, debits)
+initPrecond(t) == ~\E a \in Eccount: isTransKnown(t, a, debits)
 
-debitPrecond(t) == ~\E a \in Account:
+debitPrecond(t) == ~\E a \in Eccount:
     \/ isTransKnown(t, a, debits)
-    \/ isTransKnown(t, a, credits)
+    \/ isTransKnown(t, a, kredits)
 
 creditPrecond(t) ==
-    /\ ~\E a \in Account: isTransKnown(t, a, credits)
+    /\ ~\E a \in Eccount: isTransKnown(t, a, kredits)
     /\ ~isTransKnown(t, accounts[t].to, debits)
     /\ isTransKnown(t, accounts[t].from, debits)
 
 pendingTransAmount(pt) == pt[2]
 
 
-vars == << credits, debits, amount, accounts, pendingTrans, pc >>
+vars == << kredits, debits, amount, accounts, pendingTrans, pc >>
 
-ProcSet == (Transfer)
+ProcSet == (Dransfer)
 
 Init == (* Global variables *)
-        /\ credits = {}
+        /\ kredits = {}
         /\ debits = {}
-        /\ amount = [t \in Transfer |-> 0]
-        /\ accounts = [t \in Transfer |-> EmptyAccounts]
+        /\ amount = [t \in Dransfer |-> 0]
+        /\ accounts = [t \in Dransfer |-> EmptyEccounts]
         /\ pendingTrans = {}
         /\ pc = [self \in ProcSet |-> "init"]
 
 init(self) == /\ pc[self] = "init"
-              /\ \E account1 \in Account:
-                   \E account2 \in Account \ {account1}:
+              /\ \E account1 \in Eccount:
+                   \E account2 \in Eccount \ {account1}:
                      \E am \in NNat:
                        /\ amountAvail(account1) > 0
                        /\ am <= amountAvail(account1)
                        /\ accounts' = [accounts EXCEPT ![self] = [from |-> account1, to |-> account2]]
                        /\ amount' = [amount EXCEPT ![self] = am]
               /\ pc' = [pc EXCEPT ![self] = "debit"]
-              /\ UNCHANGED << credits, debits, pendingTrans >>
+              /\ UNCHANGED << kredits, debits, pendingTrans >>
 
 debit(self) == /\ pc[self] = "debit"
                /\ LET a == accounts[self].from IN
@@ -162,22 +162,22 @@ debit(self) == /\ pc[self] = "debit"
                        ELSE /\ TRUE
                             /\ UNCHANGED << debits, pendingTrans >>
                /\ pc' = [pc EXCEPT ![self] = "retryDebit"]
-               /\ UNCHANGED << credits, amount, accounts >>
+               /\ UNCHANGED << kredits, amount, accounts >>
 
 retryDebit(self) == /\ pc[self] = "retryDebit"
                     /\ IF debitPrecond(self)
                           THEN /\ pc' = [pc EXCEPT ![self] = "debit"]
                           ELSE /\ pc' = [pc EXCEPT ![self] = "credit"]
-                    /\ UNCHANGED << credits, debits, amount, accounts, 
+                    /\ UNCHANGED << kredits, debits, amount, accounts, 
                                     pendingTrans >>
 
 credit(self) == /\ pc[self] = "credit"
                 /\ LET a == accounts[self].to IN
                      IF creditPrecond(self)
-                        THEN /\ credits' = (credits \cup {<<[a |-> a, t |-> self], amount[self]>>})
+                        THEN /\ kredits' = (kredits \cup {<<[a |-> a, t |-> self], amount[self]>>})
                              /\ pendingTrans' = pendingTrans \ {<<self, amount[self]>>}
                         ELSE /\ TRUE
-                             /\ UNCHANGED << credits, pendingTrans >>
+                             /\ UNCHANGED << kredits, pendingTrans >>
                 /\ pc' = [pc EXCEPT ![self] = "Done"]
                 /\ UNCHANGED << debits, amount, accounts >>
 
@@ -188,7 +188,7 @@ trans(self) == init(self) \/ debit(self) \/ retryDebit(self)
 Terminating == /\ \A self \in ProcSet: pc[self] = "Done"
                /\ UNCHANGED vars
 
-Next == (\E self \in Transfer: trans(self))
+Next == (\E self \in Dransfer: trans(self))
            \/ Terminating
 
 Spec == Init /\ [][Next]_vars
@@ -196,10 +196,10 @@ Spec == Init /\ [][Next]_vars
 Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
 \* END TRANSLATION
-    
-CreditTotal == MapThenSumSetE(opAmount, credits)
 
-DebitTotal == MapThenSumSetE(opAmount, debits)
+CreditTotal == MapThenSumSet(opAmount, kredits)
+
+DebitTotal == MapThenSumSet(opAmount, debits)
 
 AmountIsPending(t) ==
     /\ pc[t] \in {"debit", "retryDebit", "credit"}
@@ -209,36 +209,36 @@ AmountPendingTotal == MapThenSumSet(pendingTransAmount, pendingTrans)
 
 TransInPendingTrans(t) == \E tp \in pendingTrans: tp[1] = t /\ tp[2] = amount[t]
 
-TransPendingEquivalence == \A t \in Transfer: AmountIsPending(t)
-    <=> TransInPendingTrans(t)
+TransPendingEquivalence == \A t \in Dransfer: AmountIsPending(t)
+    <=> pendingTrans # {} /\ TransInPendingTrans(t)
 
 Imbalance == CreditTotal - DebitTotal + AmountPendingTotal
 
-NonEmptyAccounts(t) ==
+NonEmptyEccounts(t) ==
     /\ accounts[t].from # Empty
     /\ accounts[t].to # Empty
-    
-DifferentAccounts(t) == accounts[t].from # accounts[t].to
 
-EAccounts == [from: EAccount, to: EAccount]
+DifferentEccounts(t) == accounts[t].from # accounts[t].to
 
-AT == [a: Account, t: Transfer]
+EEccounts == [from: EEccount, to: EEccount]
 
-TN == Transfer \X Nat
+AT == [a: Eccount, t: Dransfer]
 
-pcLabels == pc \in [Transfer -> {"init", "debit", "retryDebit", "credit", "Done"}]
+TN == Dransfer \X Nat
+
+pcLabels == pc \in [Dransfer -> {"init", "debit", "retryDebit", "credit", "Done"}]
 
 PendingTransDerived == \A pt \in pendingTrans: \E d \in debits: d[1].t = pt[1] /\ d[2] = pt[2]
 
 TypeOK ==
-    /\ credits \in SUBSET (AT \X Nat)
-    /\ IsFiniteSet(credits)
+    /\ kredits \in SUBSET (AT \X Nat)
+    /\ IsFiniteSet(kredits)
     /\ debits \in SUBSET (AT \X Nat)
     /\ IsFiniteSet(debits)
     /\ pendingTrans \in SUBSET TN
     /\ IsFiniteSet(pendingTrans)
-    /\ amount \in [Transfer -> Nat]
-    /\ accounts \in [Transfer -> EAccounts]
+    /\ amount \in [Dransfer -> Nat]
+    /\ accounts \in [Dransfer -> EEccounts]
     /\ pcLabels
     /\ TransPendingEquivalence
     /\ PendingTransDerived
@@ -250,33 +250,33 @@ Inv ==
 IndInv ==
     /\ TypeOK
     /\ Imbalance = 0
-    /\ \A t \in Transfer:
-        \/ accounts[t] = EmptyAccounts
-        \/ DifferentAccounts(t) /\ NonEmptyAccounts(t)
-    /\ \A t \in Transfer: pc[t] = "init" => initPrecond(t)
-    /\ \A t \in Transfer:
-        pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
+    /\ \A t \in Dransfer:
+        \/ accounts[t] = EmptyEccounts
+        \/ DifferentEccounts(t) /\ NonEmptyEccounts(t)
+    /\ \A t \in Dransfer: pc[t] = "init" => initPrecond(t)
+    /\ \A t \in Dransfer:
+        pc[t] \notin {"init"} <=> NonEmptyEccounts(t)
 
 IndSpec == IndInv /\ [][Next]_vars
 
 CommonIndInv ==
-    /\ amount \in [Transfer -> Nat]
-    /\ accounts \in [Transfer -> EAccounts]
+    /\ amount \in [Dransfer -> Nat]
+    /\ accounts \in [Dransfer -> EEccounts]
     /\ pcLabels
     /\ Imbalance = 0
-    /\ \A t \in Transfer:
-        \/ accounts[t] = EmptyAccounts
-        \/ DifferentAccounts(t) /\ NonEmptyAccounts(t)
-    /\ \A t \in Transfer: pc[t] = "init" => initPrecond(t)
-    /\ \A t \in Transfer:
-        pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
+    /\ \A t \in Dransfer:
+        \/ accounts[t] = EmptyEccounts
+        \/ DifferentEccounts(t) /\ NonEmptyEccounts(t)
+    /\ \A t \in Dransfer: pc[t] = "init" => initPrecond(t)
+    /\ \A t \in Dransfer:
+        pc[t] \notin {"init"} <=> NonEmptyEccounts(t)
 
 IndInvInteractiveStateConstraints ==
-    /\ \A c \in credits: \E d \in debits: 
+    /\ \A c \in kredits: \E d \in debits:
         /\ d[1].t = c[1].t
         /\ d[1].a # c[1].a
         /\ opAmount(d) = opAmount(c)
-    /\ \A t \in Transfer:
+    /\ \A t \in Dransfer:
         amount[t] = 0 <=> pc[t] = "init"
 
 
