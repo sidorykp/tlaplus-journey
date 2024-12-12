@@ -438,12 +438,13 @@ PROVE Imbalance' = Imbalance
     <2>4 \A c \in kredits: opAmount(c) \in Nat BY DEF opAmount, IndInv, TypeOK
     <2>5 CreditTotal \in Nat BY <2>4, MapThenSumSetType DEF CreditTotal, IndInv, TypeOK,
         MapThenSumSetE, MapThenFoldSetE, MapThenSumSet, MapThenFoldSet
-    <2>6 IsFiniteSet(pendingTrans) BY DEF IndInv, TypeOK
-    <2>7 \A pt \in pendingTrans: pendingTransAmount(pt) \in Nat BY pendingTransAmountInNat, <1>3 DEF credit, IndInv
-    <2>8 AmountPendingTotal \in Nat BY <2>6, <2>7, MapThenSumSetType DEF AmountPendingTotal
+    <2>6 \A d \in debits: opAmount(d) \in Nat BY DEF opAmount, IndInv, TypeOK
+    <2>7 DebitTotal \in Nat BY <2>6, MapThenSumSetType DEF DebitTotal, IndInv, TypeOK,
+        MapThenSumSetE, MapThenFoldSetE, MapThenSumSet, MapThenFoldSet
+    <2>8 AmountPendingTotal \in Nat BY AmountPendingTotalInNat, NDransferAssumption
     <2>9 CreditTotal' + AmountPendingTotal' = CreditTotal + AmountPendingTotal BY <2>1, <2>2, <2>3, <2>5, <2>8
     <2>10 (CreditTotal' + AmountPendingTotal') - DebitTotal' = (CreditTotal + AmountPendingTotal) - DebitTotal BY <1>2, <2>9
-    <2> QED BY <2>8, <2>10, <1>2 DEF Imbalance, credit
+    <2> QED BY <2>7, <2>8, <2>10, <1>2 DEF Imbalance, credit
 <1>4 CASE ~creditPrecond(self)
     <2>1 AmountPendingTotal' = AmountPendingTotal BY <1>4, credit_AmountPendingTotal_notCreditPrecond
     <2> QED BY <1>2, <2>1 DEF credit, Imbalance
@@ -463,8 +464,8 @@ PROVE (
 <1>1 debits' \in SUBSET (AT \X Nat) BY DEF credit, IndInv, TypeOK
 <1>2 IsFiniteSet(debits)' BY DEF credit
 <1>3 amount' \in [Dransfer -> Nat] BY DEF credit, IndInv, TypeOK
-<1>4 accounts' \in [Dransfer -> EEccounts] BY DEF credit
-<1>5 pc[self]' = "Done" BY DEF credit
+<1>4 accounts' \in [Dransfer -> EEccounts] BY DEF credit, IndInv, TypeOK
+<1>5 pc[self]' = "Done" BY DEF credit, pcLabels
 <1>6 pcLabels' BY <1>5 DEF credit, pcLabels, ProcSet
 <1>7 \A t \in Dransfer:
     \/ accounts'[t] = EmptyEccounts
