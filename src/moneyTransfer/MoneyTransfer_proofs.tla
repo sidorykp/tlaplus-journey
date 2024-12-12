@@ -72,7 +72,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal
 <1>1 transPending' = transPending
     <2>1 self \in transPending BY DEF transPending, AmountIsPending, creditPrecond,
         isTransKnown, isTransKnownToItem, pcLabels
-    <2>2 self \in transPending' BY DEF transPending, AmountIsPending, creditPrecond,
+    <2>2 self \in transPending' BY <2>1 DEF transPending, AmountIsPending, creditPrecond,
     isTransKnown, isTransKnownToItem, pcLabels
     <2> QED BY <2>1, <2>2 DEF pcLabels,
             transPending, AmountIsPending, creditPrecond
