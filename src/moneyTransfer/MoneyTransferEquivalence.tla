@@ -3,10 +3,16 @@ EXTENDS MoneyTransfer, TLAPS, FiniteSetsExt_theorems, FiniteSetTheorems
 
 pendingTransDerived == {<<t, amount[t]>>: t \in {t \in Transfer: AmountIsPending(t)}}
 
-E == INSTANCE MoneyTransferPendingExplicit WITH pendingTrans <- pendingTransDerived
+E == INSTANCE MoneyTransferPendingExplicit
+    WITH
+        pendingTrans <- pendingTransDerived,
+        kredits <- credits,
+        Dransfer <- Transfer,
+        Eccount <- Account,
+        Evail <- NAvail
 
 ASSUME EquivalentSymbolsAssumption ==
-    /\ E!EmptyAccounts = EmptyAccounts
+    /\ E!EmptyEccounts = EmptyAccounts
 
 THEOREM InitEquivalence == E!Init <=> Init
 BY EquivalentSymbolsAssumption DEF E!Init, Init, pendingTransDerived,
