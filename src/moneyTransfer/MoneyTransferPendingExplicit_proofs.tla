@@ -49,7 +49,7 @@ PROVE Imbalance = 0
 THEOREM initProperty == ASSUME Init PROVE IndInv
 <1> USE DEF Init, IndInv, TypeOK
 <1>1 IsFiniteSet(kredits) BY FS_EmptySet
-<1>2 IsFiniteSet(debits) BY FS_EmptySet
+<1>2 IsFiniteSet(bebits) BY FS_EmptySet
 <1>3 IsFiniteSet(pendingTrans) BY FS_EmptySet
 <1>4 accounts \in [Dransfer -> EEccounts] BY DEF EEccount, EmptyEccounts, EEccounts
 <1>5 pcLabels BY DEF pcLabels, ProcSet
@@ -74,8 +74,8 @@ PROVE IndInv'
 <1> USE DEF IndInv, TypeOK
 <1>1 kredits' \in SUBSET (AT \X Nat) BY DEF retryDebit
 <1>2 IsFiniteSet(kredits)' BY DEF retryDebit
-<1>3 debits' \in SUBSET (AT \X Nat) BY DEF retryDebit
-<1>4 IsFiniteSet(debits)' BY DEF retryDebit
+<1>3 bebits' \in SUBSET (AT \X Nat) BY DEF retryDebit
+<1>4 IsFiniteSet(bebits)' BY DEF retryDebit
 <1>5 pendingTrans' \in SUBSET TN BY DEF retryDebit
 <1>6 IsFiniteSet(pendingTrans)' BY DEF retryDebit
 <1>7 amount' \in [Dransfer -> Nat] BY DEF retryDebit
@@ -140,8 +140,8 @@ PROVE IndInv'
 <1> USE DEF IndInv, TypeOK
 <1>1 kredits' \in SUBSET (AT \X Nat) BY DEF init
 <1>2 IsFiniteSet(kredits)' BY DEF init
-<1>3 debits' \in SUBSET (AT \X Nat) BY DEF init
-<1>4 IsFiniteSet(debits)' BY DEF init
+<1>3 bebits' \in SUBSET (AT \X Nat) BY DEF init
+<1>4 IsFiniteSet(bebits)' BY DEF init
 <1>5 pendingTrans' \in SUBSET TN BY DEF init
 <1>6 IsFiniteSet(pendingTrans)' BY DEF init
 
@@ -188,7 +188,7 @@ PROVE IndInv'
 <1>29 ~AmountIsPending(self) BY DEF init, AmountIsPending, creditPrecond, initPrecond
 <1>30 ~AmountIsPending(self)' BY DEF init, AmountIsPending, creditPrecond, initPrecond
 \* the fact that allows not to use PendingTransUniqueness
-<1>31 ~\E d \in debits: d[1].t = self BY <1>29 DEF init, initPrecond,
+<1>31 ~\E d \in bebits: d[1].t = self BY <1>29 DEF init, initPrecond,
     AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem, AT
 <1>32 TransInPendingTrans(self)' = TransInPendingTrans(self)
     <2>1 ~TransInPendingTrans(self) BY <1>29 DEF TransPendingEquivalence, TransInPendingTrans
@@ -209,30 +209,30 @@ PROVE IndInv'
 
 
 LEMMA debit_DebitTotal_debitPrecond_success == ASSUME IndInv, NEW self \in Dransfer, debit(self),
-debitPrecond(self), ~(UNCHANGED <<debits, pendingTrans>>)
+debitPrecond(self), ~(UNCHANGED <<bebits, pendingTrans>>)
 PROVE DebitTotal' = DebitTotal + amount[self]
 <1> DEFINE a == accounts[self].from
 <1> DEFINE nadd == <<[a |-> a, t |-> self], amount[self]>>
 <1> USE DEF IndInv, TypeOK, debitPrecond
-<1>1 nadd \notin debits BY DEF isTransKnown, isTransKnownToItem, AT
-<1>2 debits' = debits \cup {nadd} BY DEF debit
-<1>3 \A nb \in debits: opAmount(nb) \in Nat BY DEF opAmount
+<1>1 nadd \notin bebits BY DEF isTransKnown, isTransKnownToItem, AT
+<1>2 bebits' = bebits \cup {nadd} BY DEF debit
+<1>3 \A nb \in bebits: opAmount(nb) \in Nat BY DEF opAmount
 <1>4 opAmount(nadd) \in Nat BY DEF opAmount
-<1>5 MapThenSumSet(opAmount, debits') =
-    MapThenSumSet(opAmount, debits) + opAmount(nadd)
+<1>5 MapThenSumSet(opAmount, bebits') =
+    MapThenSumSet(opAmount, bebits) + opAmount(nadd)
     BY <1>1, <1>2, <1>3, <1>4, MapThenSumSetAddElem
 <1>6 DebitTotal' = DebitTotal + opAmount(nadd)
     BY <1>5 DEF DebitTotal, MapThenSumSetE, MapThenFoldSetE, MapThenSumSet, MapThenFoldSet
 <1> QED BY <1>6 DEF opAmount
 
 LEMMA debit_DebitTotal_notDebitPrecond_or_retryDebit == ASSUME IndInv, NEW self \in Dransfer, debit(self),
-~debitPrecond(self) \/ UNCHANGED <<debits, pendingTrans>>
+~debitPrecond(self) \/ UNCHANGED <<bebits, pendingTrans>>
 PROVE DebitTotal' = DebitTotal
 BY DEF debit, DebitTotal
 
 
 LEMMA debit_AmountPendingTotal_debitPrecond_success == ASSUME IndInv, NEW self \in Dransfer, debit(self),
-debitPrecond(self), ~(UNCHANGED <<debits, pendingTrans>>)
+debitPrecond(self), ~(UNCHANGED <<bebits, pendingTrans>>)
 PROVE AmountPendingTotal' = AmountPendingTotal + amount[self]
 <1> DEFINE nadd == <<self, amount[self]>>
 <1>1 pendingTrans' = pendingTrans \cup {nadd}
@@ -250,7 +250,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal + amount[self]
 <1> QED BY <1>6 DEF pendingTransAmount
 
 LEMMA debit_AmountPendingTotal_notDebitPrecond_or_retryDebit == ASSUME IndInv, NEW self \in Dransfer, debit(self),
-~debitPrecond(self) \/ UNCHANGED <<debits, pendingTrans>>
+~debitPrecond(self) \/ UNCHANGED <<bebits, pendingTrans>>
 PROVE AmountPendingTotal' = AmountPendingTotal
 BY DEF debit, AmountPendingTotal
 
@@ -259,13 +259,13 @@ PROVE Imbalance' = Imbalance
 <1>1 kredits' = kredits BY DEF debit
 <1>2 CreditTotal' = CreditTotal
     BY <1>1 DEF CreditTotal
-<1>3 CASE debitPrecond(self) /\ ~(UNCHANGED <<debits, pendingTrans>>)
+<1>3 CASE debitPrecond(self) /\ ~(UNCHANGED <<bebits, pendingTrans>>)
     <2>1 DebitTotal' = DebitTotal + amount[self] BY <1>3, debit_DebitTotal_debitPrecond_success DEF debit
     <2>2 AmountPendingTotal' = AmountPendingTotal + amount[self] BY <1>3,
         debit_AmountPendingTotal_debitPrecond_success DEF debit
     <2>3 AmountPendingTotal \in Nat BY AmountPendingTotalInNat, NDransferAssumption
     <2> QED BY <1>2, <1>3, <2>1, <2>2, <2>3 DEF debit, Imbalance
-<1>4 CASE ~debitPrecond(self) \/ UNCHANGED <<debits, pendingTrans>>
+<1>4 CASE ~debitPrecond(self) \/ UNCHANGED <<bebits, pendingTrans>>
     <2> QED BY <1>4, <1>2, debit_DebitTotal_notDebitPrecond_or_retryDebit,
         debit_AmountPendingTotal_notDebitPrecond_or_retryDebit
         DEF debit, Imbalance
@@ -325,15 +325,15 @@ PROVE IndInv'
 <1> DEFINE nadd == <<[a |-> a, t |-> self], amount[self]>>
 <1> DEFINE ptAdd == <<self, amount[self]>>
 <1> USE DEF IndInv, TypeOK, CommonIndInv
-<1>1 CASE debitPrecond(self) /\ ~(UNCHANGED <<debits, pendingTrans>>)
-    <2>1 debits' = debits \cup {nadd} BY <1>1 DEF debit
+<1>1 CASE debitPrecond(self) /\ ~(UNCHANGED <<bebits, pendingTrans>>)
+    <2>1 bebits' = bebits \cup {nadd} BY <1>1 DEF debit
     <2>2 a \in EEccount BY DEF EEccounts
     <2>3 a # Empty BY DEF debit, NonEmptyEccounts
     <2>4 a \in Eccount BY <2>2, <2>3 DEF EEccount
     <2>5 nadd \in AT \X Nat BY <2>4 DEF AT
-    <2>6 debits' \in SUBSET (AT \X Nat)
+    <2>6 bebits' \in SUBSET (AT \X Nat)
         BY <2>1, <2>5
-    <2>7 IsFiniteSet(debits)' BY <1>1, FS_AddElement DEF debit
+    <2>7 IsFiniteSet(bebits)' BY <1>1, FS_AddElement DEF debit
     <2>8 pendingTrans' = pendingTrans \cup {ptAdd} BY <1>1 DEF debit
     <2>9 ptAdd \in TN BY DEF TN
     <2>10 pendingTrans' \in SUBSET TN BY <2>8, <2>9
@@ -344,7 +344,7 @@ PROVE IndInv'
     <2>13 (AmountIsPending(self) <=> TransInPendingTrans(self))'
         <3>1 ~AmountIsPending(self) BY <1>1 DEF debit, AmountIsPending, creditPrecond,
             debitPrecond, pcLabels, isTransKnown, isTransKnownToItem
-        <3>2 debits' = debits \cup {nadd} BY <1>1 DEF debit
+        <3>2 bebits' = bebits \cup {nadd} BY <1>1 DEF debit
         <3>3 AmountIsPending(self)' BY <1>1, <3>2 DEF debit, AmountIsPending, creditPrecond,
             pcLabels, isTransKnown, isTransKnownToItem
         <3>4 ~TransInPendingTrans(self) BY <1>1, <3>1 DEF debit, TransPendingEquivalence
@@ -359,18 +359,18 @@ PROVE IndInv'
     <2>17 TransPendingEquivalence' = TransPendingEquivalence
         BY <2>13, <2>14, <2>16 DEF TransPendingEquivalence
 
-    <2>18 \E d \in debits': d[1].t = ptAdd[1] /\ d[2] = ptAdd[2] BY <1>1, <2>1
+    <2>18 \E d \in bebits': d[1].t = ptAdd[1] /\ d[2] = ptAdd[2] BY <1>1, <2>1
     <2> HIDE DEF IndInv, TypeOK, CommonIndInv
-    <2>19 \A pt \in pendingTrans' \ {ptAdd}: \E d \in debits': d[1].t = pt[1] /\ d[2] = pt[2]
+    <2>19 \A pt \in pendingTrans' \ {ptAdd}: \E d \in bebits': d[1].t = pt[1] /\ d[2] = pt[2]
         BY <1>1, <2>1, <2>8 DEF debit, IndInv, TypeOK, PendingTransDerived
-    <2>20 \A pt \in pendingTrans': \E d \in debits': d[1].t = pt[1] /\ d[2] = pt[2]
+    <2>20 \A pt \in pendingTrans': \E d \in bebits': d[1].t = pt[1] /\ d[2] = pt[2]
         BY <1>1, <2>18, <2>19
     <2>21 PendingTransDerived' BY <2>20 DEF debit, PendingTransDerived
 
     <2> QED BY <2>6, <2>7, <2>10, <2>11, <2>17, <2>21, debit_IndInv_common, debit_Imbalance DEF IndInv, TypeOK, CommonIndInv
-<1>2 CASE ~debitPrecond(self) \/ UNCHANGED <<debits, pendingTrans>>
-    <2>1 debits' \in SUBSET (AT \X Nat) BY <1>2 DEF debit
-    <2>2 IsFiniteSet(debits)' BY <1>2 DEF debit
+<1>2 CASE ~debitPrecond(self) \/ UNCHANGED <<bebits, pendingTrans>>
+    <2>1 bebits' \in SUBSET (AT \X Nat) BY <1>2 DEF debit
+    <2>2 IsFiniteSet(bebits)' BY <1>2 DEF debit
     <2>3 pendingTrans' \in SUBSET TN BY <1>2 DEF debit
     <2>4 IsFiniteSet(pendingTrans)' BY <1>2 DEF debit
     <2>5 TransPendingEquivalence' BY <1>2 DEF debit, TransPendingEquivalence, TransInPendingTrans,
@@ -428,7 +428,7 @@ PROVE CreditTotal' = CreditTotal + amount[self]
 
 LEMMA credit_Imbalance == ASSUME IndInv, NEW self \in Dransfer, credit(self)
 PROVE Imbalance' = Imbalance
-<1>1 debits' = debits BY DEF credit
+<1>1 bebits' = bebits BY DEF credit
 <1>2 DebitTotal' = DebitTotal
     BY <1>1 DEF DebitTotal
 <1>3 CASE creditPrecond(self)
@@ -438,7 +438,7 @@ PROVE Imbalance' = Imbalance
     <2>4 \A c \in kredits: opAmount(c) \in Nat BY DEF opAmount, IndInv, TypeOK
     <2>5 CreditTotal \in Nat BY <2>4, MapThenSumSetType DEF CreditTotal, IndInv, TypeOK,
         MapThenSumSetE, MapThenFoldSetE, MapThenSumSet, MapThenFoldSet
-    <2>6 \A d \in debits: opAmount(d) \in Nat BY DEF opAmount, IndInv, TypeOK
+    <2>6 \A d \in bebits: opAmount(d) \in Nat BY DEF opAmount, IndInv, TypeOK
     <2>7 DebitTotal \in Nat BY <2>6, MapThenSumSetType DEF DebitTotal, IndInv, TypeOK,
         MapThenSumSetE, MapThenFoldSetE, MapThenSumSet, MapThenFoldSet
     <2>8 AmountPendingTotal \in Nat BY AmountPendingTotalInNat, NDransferAssumption
@@ -453,16 +453,16 @@ PROVE Imbalance' = Imbalance
 
 THEOREM credit_IndInv_common == ASSUME IndInv, NEW self \in Dransfer, credit(self)
 PROVE (
-    /\ debits \in SUBSET (AT \X Nat)
-    /\ IsFiniteSet(debits)
+    /\ bebits \in SUBSET (AT \X Nat)
+    /\ IsFiniteSet(bebits)
     /\ pendingTrans \in SUBSET TN
     /\ IsFiniteSet(pendingTrans)
     /\ CommonIndInv
     /\ TransPendingEquivalence
     /\ PendingTransDerived)'
 <1> USE DEF CommonIndInv
-<1>1 debits' \in SUBSET (AT \X Nat) BY DEF credit, IndInv, TypeOK
-<1>2 IsFiniteSet(debits)' BY DEF credit
+<1>1 bebits' \in SUBSET (AT \X Nat) BY DEF credit, IndInv, TypeOK
+<1>2 IsFiniteSet(bebits)' BY DEF credit
 <1>3 amount' \in [Dransfer -> Nat] BY DEF credit, IndInv, TypeOK
 <1>4 accounts' \in [Dransfer -> EEccounts] BY DEF credit, IndInv, TypeOK
 <1>5 pc[self]' = "Done" BY DEF credit, pcLabels
@@ -500,7 +500,7 @@ PROVE (
 <1>21 \A t \in Dransfer: pc'[t] \notin {"init"} <=> NonEmptyEccounts(t)'
     BY <1>18, <1>20
 
-<1>22 debits' = debits BY DEF credit
+<1>22 bebits' = bebits BY DEF credit
 <1>23 pendingTrans' \in SUBSET TN  BY DEF credit, IndInv, TypeOK
 <1>24 IsFiniteSet(pendingTrans)' BY DEF credit
 <1> HIDE DEF IndInv, TypeOK, CommonIndInv
