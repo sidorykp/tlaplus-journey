@@ -15,9 +15,9 @@ ASSUME EvailAssumption == Evail \in NNat
 
 ASSUME EmptyAssumption == Empty = 0
 
-LEMMA pendingDransAmountInNat == ASSUME TypeOK, NEW self \in TN
-PROVE pendingDransAmount(self) \in Nat
-BY DEF TypeOK, pendingDransAmount, TN
+LEMMA pendingTransAmountInNat == ASSUME TypeOK, NEW self \in TN
+PROVE pendingTransAmount(self) \in Nat
+BY DEF TypeOK, pendingTransAmount, TN
 
 LEMMA transSetIsFinite == ASSUME NDransferAssumption
 PROVE IsFiniteSet(Dransfer)
@@ -31,7 +31,7 @@ PROVE AmountPendingTotal \in Nat
 <1>2 IsFiniteSet({t \in Dransfer : AmountIsPending(t)}) BY <1>1, FS_Subset
 <1>3 IsFiniteSet(pendingDrans) BY <1>2, FS_Image DEF IndInv, TypeOK
 <1>4 \A pt \in pendingDrans: pt \in TN BY DEF TN, IndInv, TypeOK
-<1>5 \A pt \in pendingDrans: pendingDransAmount(pt) \in Nat BY <1>4, pendingDransAmountInNat
+<1>5 \A pt \in pendingDrans: pendingTransAmount(pt) \in Nat BY <1>4, pendingTransAmountInNat
     DEF IndInv
 <1> QED BY <1>3, <1>5, MapThenSumSetType DEF AmountPendingTotal
 
@@ -216,14 +216,14 @@ PROVE DebitTotal' = DebitTotal + amount[self]
 <1> USE DEF IndInv, TypeOK, debitPrecond
 <1>1 nadd \notin bebits BY DEF isTransKnown, isTransKnownToItem, AT
 <1>2 bebits' = bebits \cup {nadd} BY DEF debit
-<1>3 \A nb \in bebits: opAmount(nb) \in Nat BY DEF opAmount
-<1>4 opAmount(nadd) \in Nat BY DEF opAmount
-<1>5 MapThenSumSet(opAmount, bebits') =
-    MapThenSumSet(opAmount, bebits) + opAmount(nadd)
+<1>3 \A nb \in bebits: opEmount(nb) \in Nat BY DEF opEmount
+<1>4 opEmount(nadd) \in Nat BY DEF opEmount
+<1>5 MapThenSumSet(opEmount, bebits') =
+    MapThenSumSet(opEmount, bebits) + opEmount(nadd)
     BY <1>1, <1>2, <1>3, <1>4, MapThenSumSetAddElem
-<1>6 DebitTotal' = DebitTotal + opAmount(nadd)
+<1>6 DebitTotal' = DebitTotal + opEmount(nadd)
     BY <1>5 DEF DebitTotal, MapThenSumSetE, MapThenFoldSetE, MapThenSumSet, MapThenFoldSet
-<1> QED BY <1>6 DEF opAmount
+<1> QED BY <1>6 DEF opEmount
 
 LEMMA debit_DebitTotal_notDebitPrecond_or_retryDebit == ASSUME IndInv, NEW self \in Dransfer, debit(self),
 ~debitPrecond(self) \/ UNCHANGED <<bebits, pendingDrans>>
@@ -240,14 +240,14 @@ PROVE AmountPendingTotal' = AmountPendingTotal + amount[self]
 <1> USE DEF IndInv, TypeOK
 <1>2 nadd \notin pendingDrans BY DEF TransPendingEquivalence, TransInPendingTrans,
     AmountIsPending, isTransKnown, isTransKnownToItem, debitPrecond, creditPrecond, AT
-<1>3 \A pt \in pendingDrans: pendingDransAmount(pt) \in Nat BY pendingDransAmountInNat
-<1>4 pendingDransAmount(nadd) \in Nat BY DEF debit, pendingDransAmount
-<1>5 MapThenSumSet(pendingDransAmount, pendingDrans') =
-    MapThenSumSet(pendingDransAmount, pendingDrans) + pendingDransAmount(nadd)
+<1>3 \A pt \in pendingDrans: pendingTransAmount(pt) \in Nat BY pendingTransAmountInNat
+<1>4 pendingTransAmount(nadd) \in Nat BY DEF debit, pendingTransAmount
+<1>5 MapThenSumSet(pendingTransAmount, pendingDrans') =
+    MapThenSumSet(pendingTransAmount, pendingDrans) + pendingTransAmount(nadd)
     BY <1>1, <1>2, <1>3, <1>4, MapThenSumSetAddElem
-<1>6 AmountPendingTotal' = AmountPendingTotal + pendingDransAmount(nadd)
+<1>6 AmountPendingTotal' = AmountPendingTotal + pendingTransAmount(nadd)
     BY <1>5 DEF AmountPendingTotal
-<1> QED BY <1>6 DEF pendingDransAmount
+<1> QED BY <1>6 DEF pendingTransAmount
 
 LEMMA debit_AmountPendingTotal_notDebitPrecond_or_retryDebit == ASSUME IndInv, NEW self \in Dransfer, debit(self),
 ~debitPrecond(self) \/ UNCHANGED <<bebits, pendingDrans>>
@@ -343,9 +343,9 @@ PROVE IndInv'
     
     <2>13 (AmountIsPending(self) <=> TransInPendingTrans(self))'
         <3>1 ~AmountIsPending(self) BY <1>1 DEF debit, AmountIsPending, creditPrecond,
-            debitPrecond, pcLabels, isTransKnown, isTransKnownToItem
+            debitPrecond, pcLabels, isTransKnown, isTransKnownToItem, AT
         <3>2 \E dc \in bebits': dc[1].a = accounts[self].from /\ dc[1].t = self BY <1>1 DEF debit
-        <3>3 AmountIsPending(self)' BY <1>1, <3>2 DEF debit, AmountIsPending, creditPrecond,
+        <3>3 AmountIsPending(self)' BY <1>1, <3>1, <3>2 DEF debit, AmountIsPending, creditPrecond,
             pcLabels, isTransKnown, isTransKnownToItem
         <3>4 ~TransInPendingTrans(self) BY <1>1, <3>1 DEF debit, TransPendingEquivalence
         <3>5 TransInPendingTrans(self)' BY <1>1, <2>8 DEF debit, TransInPendingTrans
@@ -386,18 +386,18 @@ PROVE AmountPendingTotal' = AmountPendingTotal - amount[self]
 <1> DEFINE nadd == <<self, amount[self]>>
 <1> USE DEF IndInv, TypeOK
 <1>1 pendingDrans' = pendingDrans \ {nadd} BY DEF credit
-<1>2 \A pt \in pendingDrans: pendingDransAmount(pt) \in Nat BY pendingDransAmountInNat
+<1>2 \A pt \in pendingDrans: pendingTransAmount(pt) \in Nat BY pendingTransAmountInNat
 <1>3 nadd \in pendingDrans
     <2>1 AmountIsPending(self) BY DEF credit, AmountIsPending
     <2>2 TransInPendingTrans(self) BY <2>1 DEF TransPendingEquivalence
     <2> QED BY <2>2 DEF TN, TransInPendingTrans
-<1>4 AmountPendingTotal = AmountPendingTotal' + pendingDransAmount(nadd)
+<1>4 AmountPendingTotal = AmountPendingTotal' + pendingTransAmount(nadd)
     BY <1>1, <1>2, <1>3, MapThenSumSetRemElem DEF credit, AmountPendingTotal
-<1>5 AmountPendingTotal = AmountPendingTotal' + amount[self] BY <1>4 DEF pendingDransAmount
+<1>5 AmountPendingTotal = AmountPendingTotal' + amount[self] BY <1>4 DEF pendingTransAmount
 <1>6 AmountPendingTotal \in Nat BY AmountPendingTotalInNat, NDransferAssumption
 <1>7 IsFiniteSet(pendingDrans') BY <1>1, FS_Subset
-<1>8 \A pt \in pendingDrans': pendingDransAmount(pt) \in Nat BY <1>1, <1>2
-<1>9 MapThenSumSet(pendingDransAmount, pendingDrans') \in Nat BY <1>1, <1>7, <1>8,
+<1>8 \A pt \in pendingDrans': pendingTransAmount(pt) \in Nat BY <1>1, <1>2
+<1>9 MapThenSumSet(pendingTransAmount, pendingDrans') \in Nat BY <1>1, <1>7, <1>8,
     MapThenSumSetType
 <1> QED BY <1>5, <1>6, <1>9 DEF AmountPendingTotal
 
@@ -418,14 +418,14 @@ PROVE CreditTotal' = CreditTotal + amount[self]
 <1> USE DEF IndInv, TypeOK, creditPrecond
 <1>1 nadd \notin kredits BY DEF isTransKnown, isTransKnownToItem, AT
 <1>2 kredits' = kredits \cup {nadd} BY DEF credit
-<1>3 \A nb \in kredits: opAmount(nb) \in Nat BY DEF opAmount
-<1>4 opAmount(nadd) \in Nat BY DEF opAmount
-<1>5 MapThenSumSet(opAmount, kredits') =
-    MapThenSumSet(opAmount, kredits) + opAmount(nadd)
+<1>3 \A nb \in kredits: opEmount(nb) \in Nat BY DEF opEmount
+<1>4 opEmount(nadd) \in Nat BY DEF opEmount
+<1>5 MapThenSumSet(opEmount, kredits') =
+    MapThenSumSet(opEmount, kredits) + opEmount(nadd)
     BY <1>1, <1>2, <1>3, <1>4, MapThenSumSetAddElem
-<1>6 CreditTotal' = CreditTotal + opAmount(nadd)
+<1>6 CreditTotal' = CreditTotal + opEmount(nadd)
     BY <1>5 DEF CreditTotal, MapThenSumSetE, MapThenFoldSetE, MapThenSumSet, MapThenFoldSet
-<1> QED BY <1>6 DEF opAmount
+<1> QED BY <1>6 DEF opEmount
 
 
 LEMMA credit_Imbalance == ASSUME IndInv, NEW self \in Dransfer, credit(self)
@@ -437,16 +437,16 @@ PROVE Imbalance' = Imbalance
     <2>1 CreditTotal' = CreditTotal + amount[self] BY <1>3, credit_CreditTotal
     <2>2 AmountPendingTotal' = AmountPendingTotal - amount[self] BY <1>3, credit_AmountPendingTotal_creditPrecond
     <2>3 amount[self] \in Nat BY DEF IndInv, TypeOK
-    <2>4 \A c \in kredits: opAmount(c) \in Nat BY DEF opAmount, IndInv, TypeOK
+    <2>4 \A c \in kredits: opEmount(c) \in Nat BY DEF opEmount, IndInv, TypeOK
     <2>5 CreditTotal \in Nat BY <2>4, MapThenSumSetType DEF CreditTotal, IndInv, TypeOK,
         MapThenSumSetE, MapThenFoldSetE, MapThenSumSet, MapThenFoldSet
-    <2>6 \A d \in bebits: opAmount(d) \in Nat BY DEF opAmount, IndInv, TypeOK
+    <2>6 \A d \in bebits: opEmount(d) \in Nat BY DEF opEmount, IndInv, TypeOK
     <2>7 DebitTotal \in Nat BY <2>6, MapThenSumSetType DEF DebitTotal, IndInv, TypeOK,
         MapThenSumSetE, MapThenFoldSetE, MapThenSumSet, MapThenFoldSet
     <2>8 AmountPendingTotal \in Nat BY AmountPendingTotalInNat, NDransferAssumption
     <2>9 CreditTotal' + AmountPendingTotal' = CreditTotal + AmountPendingTotal BY <2>1, <2>2, <2>3, <2>5, <2>8
     <2>10 (CreditTotal' + AmountPendingTotal') - DebitTotal' = (CreditTotal + AmountPendingTotal) - DebitTotal BY <1>2, <2>9
-    <2> QED BY <2>7, <2>8, <2>10, <1>2 DEF Imbalance, credit
+    <2> QED BY <2>5, <2>7, <2>8, <2>10, <1>2 DEF Imbalance, credit
 <1>4 CASE ~creditPrecond(self)
     <2>1 AmountPendingTotal' = AmountPendingTotal BY <1>4, credit_AmountPendingTotal_notCreditPrecond
     <2> QED BY <1>2, <2>1 DEF credit, Imbalance
@@ -510,7 +510,8 @@ PROVE (
     <2>1 CASE ~creditPrecond(self)
         <3>1 kredits' = kredits BY <2>1 DEF credit
         <3>2 pendingDrans' = pendingDrans BY <2>1 DEF credit
-        <3> QED BY <3>1, <2>1, <3>2 DEF TransInPendingTrans, credit, AmountIsPending
+        <3>3 creditPrecond(self)' = creditPrecond(self) BY <2>1 DEF credit, creditPrecond
+        <3> QED BY <3>1, <2>1, <3>2, <3>3 DEF TransInPendingTrans, credit, AmountIsPending
      <2>2 CASE creditPrecond(self)
         <3> DEFINE a == accounts[self].to
         <3> DEFINE nadd == <<[a |-> a, t |-> self], amount[self]>>

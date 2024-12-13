@@ -36,11 +36,11 @@ Dransfer -> amount
        pendingDrans = {}
 
     define {
-        opAmount(dc) == dc[2]
+        opEmount(dc) == dc[2]
 
-        accountKredits(a) == MapThenSumSetE(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, kredits)
+        accountKredits(a) == MapThenSumSetE(LAMBDA c: IF c[1].a = a THEN opEmount(c) ELSE 0, kredits)
 
-        accountBebits(a) == MapThenSumSetE(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 0, bebits)
+        accountBebits(a) == MapThenSumSetE(LAMBDA d: IF d[1].a = a THEN opEmount(d) ELSE 0, bebits)
 
         amountAvail(a) == Evail + accountKredits(a) - accountBebits(a)
 
@@ -99,15 +99,15 @@ Dransfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "360e9d86" /\ chksum(tla) = "e947670c")
+\* BEGIN TRANSLATION (chksum(pcal) = "182b3b3d" /\ chksum(tla) = "1a2ee90f")
 VARIABLES kredits, bebits, amount, accounts, pendingDrans, pc
 
 (* define statement *)
-opAmount(dc) == dc[2]
+opEmount(dc) == dc[2]
 
-accountKredits(a) == MapThenSumSetE(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, kredits)
+accountKredits(a) == MapThenSumSetE(LAMBDA c: IF c[1].a = a THEN opEmount(c) ELSE 0, kredits)
 
-accountBebits(a) == MapThenSumSetE(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 0, bebits)
+accountBebits(a) == MapThenSumSetE(LAMBDA d: IF d[1].a = a THEN opEmount(d) ELSE 0, bebits)
 
 amountAvail(a) == Evail + accountKredits(a) - accountBebits(a)
 
@@ -197,9 +197,9 @@ Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
 \* END TRANSLATION
 
-CreditTotal == MapThenSumSetE(opAmount, kredits)
+CreditTotal == MapThenSumSetE(opEmount, kredits)
 
-DebitTotal == MapThenSumSetE(opAmount, bebits)
+DebitTotal == MapThenSumSetE(opEmount, bebits)
 
 AmountIsPending(t) ==
     /\ pc[t] \in {"debit", "retryDebit", "credit"}
@@ -275,7 +275,7 @@ IndInvInteractiveStateConstraints ==
     /\ \A c \in kredits: \E d \in bebits:
         /\ d[1].t = c[1].t
         /\ d[1].a # c[1].a
-        /\ opAmount(d) = opAmount(c)
+        /\ opEmount(d) = opEmount(c)
     /\ \A t \in Dransfer:
         amount[t] = 0 <=> pc[t] = "init"
 
