@@ -344,7 +344,7 @@ PROVE IndInv'
     <2>13 (AmountIsPending(self) <=> TransInPendingTrans(self))'
         <3>1 ~AmountIsPending(self) BY <1>1 DEF debit, AmountIsPending, creditPrecond,
             debitPrecond, pcLabels, isTransKnown, isTransKnownToItem
-        <3>2 bebits' = bebits \cup {nadd} BY <1>1 DEF debit
+        <3>2 \E dc \in bebits': dc[1].a = accounts[self].from /\ dc[1].t = self BY <1>1 DEF debit
         <3>3 AmountIsPending(self)' BY <1>1, <3>2 DEF debit, AmountIsPending, creditPrecond,
             pcLabels, isTransKnown, isTransKnownToItem
         <3>4 ~TransInPendingTrans(self) BY <1>1, <3>1 DEF debit, TransPendingEquivalence
