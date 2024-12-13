@@ -31,7 +31,7 @@ Dransfer -> amount
     variables
        kredits = {},
        bebits = {},
-       amount = [t \in Dransfer |-> 0],
+       emount = [t \in Dransfer |-> 0],
        accounts = [t \in Dransfer |-> EmptyEccounts],
        pendingDrans = {}
 
@@ -69,15 +69,15 @@ Dransfer -> amount
                 await amountAvail(account1) > 0;
                 await am <= amountAvail(account1);
                 accounts[self] := [from |-> account1, to |-> account2];
-                amount[self] := am;
+                emount[self] := am;
             };
 
         debit:
             with (a = accounts[self].from) {
                 if (debitPrecond(self)) {
                     either {
-                        bebits := bebits \cup {<<[a |-> a, t |-> self], amount[self]>>};
-                        pendingDrans := pendingDrans \cup {<<self, amount[self]>>};
+                        bebits := bebits \cup {<<[a |-> a, t |-> self], emount[self]>>};
+                        pendingDrans := pendingDrans \cup {<<self, emount[self]>>};
                     } or skip;
                 } else {
                     skip;
@@ -92,15 +92,15 @@ Dransfer -> amount
         credit:
             with (a = accounts[self].to) {
                 if (creditPrecond(self)) {
-                    kredits := kredits \cup {<<[a |-> a, t |-> self], amount[self]>>};
-                    pendingDrans := pendingDrans \ {<<self, amount[self]>>};
+                    kredits := kredits \cup {<<[a |-> a, t |-> self], emount[self]>>};
+                    pendingDrans := pendingDrans \ {<<self, emount[self]>>};
                 }
             };
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "182b3b3d" /\ chksum(tla) = "1a2ee90f")
-VARIABLES kredits, bebits, amount, accounts, pendingDrans, pc
+\* BEGIN TRANSLATION (chksum(pcal) = "a6c97e7d" /\ chksum(tla) = "40a8ce06")
+VARIABLES kredits, bebits, emount, accounts, pendingDrans, pc
 
 (* define statement *)
 opEmount(dc) == dc[2]
@@ -129,14 +129,14 @@ creditPrecond(t) ==
 pendingTransAmount(pt) == pt[2]
 
 
-vars == << kredits, bebits, amount, accounts, pendingDrans, pc >>
+vars == << kredits, bebits, emount, accounts, pendingDrans, pc >>
 
 ProcSet == (Dransfer)
 
 Init == (* Global variables *)
         /\ kredits = {}
         /\ bebits = {}
-        /\ amount = [t \in Dransfer |-> 0]
+        /\ emount = [t \in Dransfer |-> 0]
         /\ accounts = [t \in Dransfer |-> EmptyEccounts]
         /\ pendingDrans = {}
         /\ pc = [self \in ProcSet |-> "init"]
@@ -148,38 +148,38 @@ init(self) == /\ pc[self] = "init"
                        /\ amountAvail(account1) > 0
                        /\ am <= amountAvail(account1)
                        /\ accounts' = [accounts EXCEPT ![self] = [from |-> account1, to |-> account2]]
-                       /\ amount' = [amount EXCEPT ![self] = am]
+                       /\ emount' = [emount EXCEPT ![self] = am]
               /\ pc' = [pc EXCEPT ![self] = "debit"]
               /\ UNCHANGED << kredits, bebits, pendingDrans >>
 
 debit(self) == /\ pc[self] = "debit"
                /\ LET a == accounts[self].from IN
                     IF debitPrecond(self)
-                       THEN /\ \/ /\ bebits' = (bebits \cup {<<[a |-> a, t |-> self], amount[self]>>})
-                                  /\ pendingDrans' = (pendingDrans \cup {<<self, amount[self]>>})
+                       THEN /\ \/ /\ bebits' = (bebits \cup {<<[a |-> a, t |-> self], emount[self]>>})
+                                  /\ pendingDrans' = (pendingDrans \cup {<<self, emount[self]>>})
                                \/ /\ TRUE
                                   /\ UNCHANGED <<bebits, pendingDrans>>
                        ELSE /\ TRUE
                             /\ UNCHANGED << bebits, pendingDrans >>
                /\ pc' = [pc EXCEPT ![self] = "retryDebit"]
-               /\ UNCHANGED << kredits, amount, accounts >>
+               /\ UNCHANGED << kredits, emount, accounts >>
 
 retryDebit(self) == /\ pc[self] = "retryDebit"
                     /\ IF debitPrecond(self)
                           THEN /\ pc' = [pc EXCEPT ![self] = "debit"]
                           ELSE /\ pc' = [pc EXCEPT ![self] = "credit"]
-                    /\ UNCHANGED << kredits, bebits, amount, accounts, 
+                    /\ UNCHANGED << kredits, bebits, emount, accounts, 
                                     pendingDrans >>
 
 credit(self) == /\ pc[self] = "credit"
                 /\ LET a == accounts[self].to IN
                      IF creditPrecond(self)
-                        THEN /\ kredits' = (kredits \cup {<<[a |-> a, t |-> self], amount[self]>>})
-                             /\ pendingDrans' = pendingDrans \ {<<self, amount[self]>>}
+                        THEN /\ kredits' = (kredits \cup {<<[a |-> a, t |-> self], emount[self]>>})
+                             /\ pendingDrans' = pendingDrans \ {<<self, emount[self]>>}
                         ELSE /\ TRUE
                              /\ UNCHANGED << kredits, pendingDrans >>
                 /\ pc' = [pc EXCEPT ![self] = "Done"]
-                /\ UNCHANGED << bebits, amount, accounts >>
+                /\ UNCHANGED << bebits, emount, accounts >>
 
 trans(self) == init(self) \/ debit(self) \/ retryDebit(self)
                   \/ credit(self)
@@ -207,7 +207,7 @@ AmountIsPending(t) ==
 
 AmountPendingTotal == MapThenSumSet(pendingTransAmount, pendingDrans)
 
-TransInPendingTrans(t) == \E tp \in pendingDrans: tp[1] = t /\ tp[2] = amount[t]
+TransInPendingTrans(t) == \E tp \in pendingDrans: tp[1] = t /\ tp[2] = emount[t]
 
 TransPendingEquivalence == \A t \in Dransfer: AmountIsPending(t)
     <=> TransInPendingTrans(t)
@@ -237,7 +237,7 @@ TypeOK ==
     /\ IsFiniteSet(bebits)
     /\ pendingDrans \in SUBSET TN
     /\ IsFiniteSet(pendingDrans)
-    /\ amount \in [Dransfer -> Nat]
+    /\ emount \in [Dransfer -> Nat]
     /\ accounts \in [Dransfer -> EEccounts]
     /\ pcLabels
     /\ TransPendingEquivalence
@@ -260,7 +260,7 @@ IndInv ==
 IndSpec == IndInv /\ [][Next]_vars
 
 CommonIndInv ==
-    /\ amount \in [Dransfer -> Nat]
+    /\ emount \in [Dransfer -> Nat]
     /\ accounts \in [Dransfer -> EEccounts]
     /\ pcLabels
     /\ Imbalance = 0
@@ -277,7 +277,7 @@ IndInvInteractiveStateConstraints ==
         /\ d[1].a # c[1].a
         /\ opEmount(d) = opEmount(c)
     /\ \A t \in Dransfer:
-        amount[t] = 0 <=> pc[t] = "init"
+        emount[t] = 0 <=> pc[t] = "init"
 
 
 ====
