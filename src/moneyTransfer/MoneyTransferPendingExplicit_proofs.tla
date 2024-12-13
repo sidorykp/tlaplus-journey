@@ -391,13 +391,15 @@ PROVE AmountPendingTotal' = AmountPendingTotal - amount[self]
     <2>1 AmountIsPending(self) BY DEF credit, AmountIsPending
     <2>2 TransInPendingTrans(self) BY <2>1 DEF TransPendingEquivalence
     <2> QED BY <2>2 DEF TN, TransInPendingTrans
-<1>4 AmountPendingTotal = AmountPendingTotal' + amount[self]
+<1>4 AmountPendingTotal = AmountPendingTotal' + pendingTransAmount(nadd)
     BY <1>1, <1>2, <1>3, MapThenSumSetRemElem DEF credit, AmountPendingTotal
-<1>5 AmountPendingTotal \in Nat BY AmountPendingTotalInNat, NDransferAssumption
-<1>6 IsFiniteSet(pendingTrans') BY <1>1, FS_Subset
-<1>7 \A pt \in pendingTrans': pendingTransAmount(pt) \in Nat BY <1>1, <1>2
-<1>8 MapThenSumSet(pendingTransAmount, pendingTrans') \in Nat BY <1>1, <1>6, <1>7, MapThenSumSetType
-<1> QED BY <1>4, <1>5, <1>8 DEF AmountPendingTotal
+<1>5 AmountPendingTotal = AmountPendingTotal' + amount[self] BY <1>4 DEF pendingTransAmount
+<1>6 AmountPendingTotal \in Nat BY AmountPendingTotalInNat, NDransferAssumption
+<1>7 IsFiniteSet(pendingTrans') BY <1>1, FS_Subset
+<1>8 \A pt \in pendingTrans': pendingTransAmount(pt) \in Nat BY <1>1, <1>2
+<1>9 MapThenSumSet(pendingTransAmount, pendingTrans') \in Nat BY <1>1, <1>7, <1>8,
+    MapThenSumSetType
+<1> QED BY <1>5, <1>6, <1>9 DEF AmountPendingTotal
 
 
 \* practically a copy of init_AmountPendingTotal
