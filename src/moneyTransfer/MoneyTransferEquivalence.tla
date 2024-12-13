@@ -8,6 +8,7 @@ E == INSTANCE MoneyTransferPendingExplicit
         pendingDrans <- pendingTransDerived,
         bebits <- debits,
         kredits <- credits,
+        emount <- amount,
         Dransfer <- Transfer,
         Eccount <- Account,
         Evail <- Avail
