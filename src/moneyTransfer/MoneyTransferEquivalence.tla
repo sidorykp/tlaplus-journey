@@ -30,7 +30,7 @@ PROVE init(self)
     accountCredits, accountDebits,
     E!MapThenSumSetE, MapThenSumSet,
     E!MapThenFoldSetE, MapThenFoldSet,
-    E!opAmount, opAmount,
+    E!opEmount, opAmount,
     E!isTransKnown, E!isTransKnownToItem,
     isTransKnown, isTransKnownToItem,
     AmountIsPending, creditPrecond
@@ -52,7 +52,7 @@ PROVE E!init(self)
     accountCredits, accountDebits,
     E!MapThenSumSetE, MapThenSumSet,
     E!MapThenFoldSetE, MapThenFoldSet,
-    E!opAmount, opAmount,
+    E!opEmount, opAmount,
     E!isTransKnown, E!isTransKnownToItem,
     isTransKnown, isTransKnownToItem,
     AmountIsPending, creditPrecond
@@ -189,12 +189,12 @@ PROVE E!AmountPendingTotal \in Nat OMITTED
 THEOREM DebitTotalEquivalence == E!DebitTotal = DebitTotal
 BY DEF E!DebitTotal, DebitTotal,
     E!MapThenSumSetE, E!MapThenFoldSetE, MapThenSumSet, MapThenFoldSet,
-    E!opAmount, opAmount
+    E!opEmount, opAmount
 
 THEOREM CreditTotalEquivalence == E!CreditTotal = CreditTotal
 BY DEF E!CreditTotal, CreditTotal,
     E!MapThenSumSetE, E!MapThenFoldSetE, MapThenSumSet, MapThenFoldSet,
-    E!opAmount, opAmount
+    E!opEmount, opAmount
     
 LEMMA transPendingAmountNat == ASSUME IndInv
 PROVE \A am \in transPending: transAmount(am) \in Nat
