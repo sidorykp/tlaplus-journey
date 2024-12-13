@@ -5,7 +5,7 @@ pendingTransDerived == {<<t, amount[t]>>: t \in {t \in Transfer: AmountIsPending
 
 E == INSTANCE MoneyTransferPendingExplicit
     WITH
-        pendingTrans <- pendingTransDerived,
+        pendingDrans <- pendingTransDerived,
         bebits <- debits,
         kredits <- credits,
         Dransfer <- Transfer,

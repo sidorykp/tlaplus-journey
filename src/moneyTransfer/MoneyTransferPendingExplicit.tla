@@ -22,7 +22,7 @@ MapThenSumSetE(op(_), set) ==
    MapThenFoldSetE(+, 0, op, LAMBDA s : CHOOSE x \in s : TRUE, set)
 
 (***************************************
-Dransfer -> Account -> credit or debit
+Dransfer -> Account -> kredit or bebit
 Dransfer -> amount
 ***************************************)
 
@@ -33,7 +33,7 @@ Dransfer -> amount
        bebits = {},
        amount = [t \in Dransfer |-> 0],
        accounts = [t \in Dransfer |-> EmptyEccounts],
-       pendingTrans = {}
+       pendingDrans = {}
 
     define {
         opAmount(dc) == dc[2]
@@ -77,7 +77,7 @@ Dransfer -> amount
                 if (debitPrecond(self)) {
                     either {
                         bebits := bebits \cup {<<[a |-> a, t |-> self], amount[self]>>};
-                        pendingTrans := pendingTrans \cup {<<self, amount[self]>>};
+                        pendingDrans := pendingDrans \cup {<<self, amount[self]>>};
                     } or skip;
                 } else {
                     skip;
@@ -93,14 +93,14 @@ Dransfer -> amount
             with (a = accounts[self].to) {
                 if (creditPrecond(self)) {
                     kredits := kredits \cup {<<[a |-> a, t |-> self], amount[self]>>};
-                    pendingTrans := pendingTrans \ {<<self, amount[self]>>};
+                    pendingDrans := pendingDrans \ {<<self, amount[self]>>};
                 }
             };
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "38355714" /\ chksum(tla) = "bb79c1f6")
-VARIABLES kredits, bebits, amount, accounts, pendingTrans, pc
+\* BEGIN TRANSLATION (chksum(pcal) = "145273aa" /\ chksum(tla) = "32303b44")
+VARIABLES kredits, bebits, amount, accounts, pendingDrans, pc
 
 (* define statement *)
 opAmount(dc) == dc[2]
@@ -129,7 +129,7 @@ creditPrecond(t) ==
 pendingTransAmount(pt) == pt[2]
 
 
-vars == << kredits, bebits, amount, accounts, pendingTrans, pc >>
+vars == << kredits, bebits, amount, accounts, pendingDrans, pc >>
 
 ProcSet == (Dransfer)
 
@@ -138,7 +138,7 @@ Init == (* Global variables *)
         /\ bebits = {}
         /\ amount = [t \in Dransfer |-> 0]
         /\ accounts = [t \in Dransfer |-> EmptyEccounts]
-        /\ pendingTrans = {}
+        /\ pendingDrans = {}
         /\ pc = [self \in ProcSet |-> "init"]
 
 init(self) == /\ pc[self] = "init"
@@ -150,17 +150,17 @@ init(self) == /\ pc[self] = "init"
                        /\ accounts' = [accounts EXCEPT ![self] = [from |-> account1, to |-> account2]]
                        /\ amount' = [amount EXCEPT ![self] = am]
               /\ pc' = [pc EXCEPT ![self] = "debit"]
-              /\ UNCHANGED << kredits, bebits, pendingTrans >>
+              /\ UNCHANGED << kredits, bebits, pendingDrans >>
 
 debit(self) == /\ pc[self] = "debit"
                /\ LET a == accounts[self].from IN
                     IF debitPrecond(self)
                        THEN /\ \/ /\ bebits' = (bebits \cup {<<[a |-> a, t |-> self], amount[self]>>})
-                                  /\ pendingTrans' = (pendingTrans \cup {<<self, amount[self]>>})
+                                  /\ pendingDrans' = (pendingDrans \cup {<<self, amount[self]>>})
                                \/ /\ TRUE
-                                  /\ UNCHANGED <<bebits, pendingTrans>>
+                                  /\ UNCHANGED <<bebits, pendingDrans>>
                        ELSE /\ TRUE
-                            /\ UNCHANGED << bebits, pendingTrans >>
+                            /\ UNCHANGED << bebits, pendingDrans >>
                /\ pc' = [pc EXCEPT ![self] = "retryDebit"]
                /\ UNCHANGED << kredits, amount, accounts >>
 
@@ -169,15 +169,15 @@ retryDebit(self) == /\ pc[self] = "retryDebit"
                           THEN /\ pc' = [pc EXCEPT ![self] = "debit"]
                           ELSE /\ pc' = [pc EXCEPT ![self] = "credit"]
                     /\ UNCHANGED << kredits, bebits, amount, accounts, 
-                                    pendingTrans >>
+                                    pendingDrans >>
 
 credit(self) == /\ pc[self] = "credit"
                 /\ LET a == accounts[self].to IN
                      IF creditPrecond(self)
                         THEN /\ kredits' = (kredits \cup {<<[a |-> a, t |-> self], amount[self]>>})
-                             /\ pendingTrans' = pendingTrans \ {<<self, amount[self]>>}
+                             /\ pendingDrans' = pendingDrans \ {<<self, amount[self]>>}
                         ELSE /\ TRUE
-                             /\ UNCHANGED << kredits, pendingTrans >>
+                             /\ UNCHANGED << kredits, pendingDrans >>
                 /\ pc' = [pc EXCEPT ![self] = "Done"]
                 /\ UNCHANGED << bebits, amount, accounts >>
 
@@ -205,9 +205,9 @@ AmountIsPending(t) ==
     /\ pc[t] \in {"debit", "retryDebit", "credit"}
     /\ creditPrecond(t)
 
-AmountPendingTotal == MapThenSumSet(pendingTransAmount, pendingTrans)
+AmountPendingTotal == MapThenSumSet(pendingTransAmount, pendingDrans)
 
-TransInPendingTrans(t) == \E tp \in pendingTrans: tp[1] = t /\ tp[2] = amount[t]
+TransInPendingTrans(t) == \E tp \in pendingDrans: tp[1] = t /\ tp[2] = amount[t]
 
 TransPendingEquivalence == \A t \in Dransfer: AmountIsPending(t)
     <=> TransInPendingTrans(t)
@@ -228,15 +228,15 @@ TN == Dransfer \X Nat
 
 pcLabels == pc \in [Dransfer -> {"init", "debit", "retryDebit", "credit", "Done"}]
 
-PendingTransDerived == \A pt \in pendingTrans: \E d \in bebits: d[1].t = pt[1] /\ d[2] = pt[2]
+PendingTransDerived == \A pt \in pendingDrans: \E d \in bebits: d[1].t = pt[1] /\ d[2] = pt[2]
 
 TypeOK ==
     /\ kredits \in SUBSET (AT \X Nat)
     /\ IsFiniteSet(kredits)
     /\ bebits \in SUBSET (AT \X Nat)
     /\ IsFiniteSet(bebits)
-    /\ pendingTrans \in SUBSET TN
-    /\ IsFiniteSet(pendingTrans)
+    /\ pendingDrans \in SUBSET TN
+    /\ IsFiniteSet(pendingDrans)
     /\ amount \in [Dransfer -> Nat]
     /\ accounts \in [Dransfer -> EEccounts]
     /\ pcLabels
