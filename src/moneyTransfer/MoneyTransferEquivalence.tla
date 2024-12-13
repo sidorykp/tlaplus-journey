@@ -10,7 +10,7 @@ E == INSTANCE MoneyTransferPendingExplicit
         kredits <- credits,
         Dransfer <- Transfer,
         Eccount <- Account,
-        Evail <- NAvail
+        Evail <- Avail
 
 ASSUME EquivalentSymbolsAssumption ==
     /\ E!EmptyEccounts = EmptyAccounts

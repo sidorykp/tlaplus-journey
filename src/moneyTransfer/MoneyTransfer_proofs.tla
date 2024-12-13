@@ -11,7 +11,7 @@ ASSUME NTransferAssumption == NTransfer \in NNat
 
 ASSUME NAccountAssumption == NAccount \in NNat
 
-ASSUME NAvailAssumption == NAvail \in NNat
+ASSUME AvailAssumption == Avail \in NNat
 
 ASSUME EmptyAssumption == Empty = 0
 
