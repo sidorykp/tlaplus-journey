@@ -35,9 +35,9 @@ Dransfer -> amount
     define {
         opEmount(dc) == dc[2]
 
-        accountKredits(a) == MapThenSumSet(LAMBDA c: IF c[1].a = a THEN opEmount(c) ELSE 0, kredits)
+        accountKredits(a) == MapThenSumSetTerse(LAMBDA c: IF c[1].a = a THEN opEmount(c) ELSE 0, kredits)
 
-        accountBebits(a) == MapThenSumSet(LAMBDA d: IF d[1].a = a THEN opEmount(d) ELSE 0, bebits)
+        accountBebits(a) == MapThenSumSetTerse(LAMBDA d: IF d[1].a = a THEN opEmount(d) ELSE 0, bebits)
 
         amountAvail(a) == Evail + accountKredits(a) - accountBebits(a)
 
@@ -94,15 +94,15 @@ Dransfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "20f285c9" /\ chksum(tla) = "210f4e2b")
+\* BEGIN TRANSLATION (chksum(pcal) = "686b9624" /\ chksum(tla) = "2472bf00")
 VARIABLES kredits, bebits, emount, eccounts, pendingDrans, pc
 
 (* define statement *)
 opEmount(dc) == dc[2]
 
-accountKredits(a) == MapThenSumSet(LAMBDA c: IF c[1].a = a THEN opEmount(c) ELSE 0, kredits)
+accountKredits(a) == MapThenSumSetTerse(LAMBDA c: IF c[1].a = a THEN opEmount(c) ELSE 0, kredits)
 
-accountBebits(a) == MapThenSumSet(LAMBDA d: IF d[1].a = a THEN opEmount(d) ELSE 0, bebits)
+accountBebits(a) == MapThenSumSetTerse(LAMBDA d: IF d[1].a = a THEN opEmount(d) ELSE 0, bebits)
 
 amountAvail(a) == Evail + accountKredits(a) - accountBebits(a)
 
@@ -233,8 +233,6 @@ TypeOK ==
     /\ emount \in [Dransfer -> Nat]
     /\ eccounts \in [Dransfer -> EEccounts]
     /\ pcLabels
-    /\ TransPendingEquivalence
-    /\ PendingTransDerived
 
 Inv ==
     /\ TypeOK
@@ -249,6 +247,8 @@ IndInv ==
     /\ \A t \in Dransfer: pc[t] = "init" => initPrecond(t)
     /\ \A t \in Dransfer:
         pc[t] \notin {"init"} <=> NonEmptyEccounts(t)
+    /\ TransPendingEquivalence
+    /\ PendingTransDerived
 
 IndSpec == IndInv /\ [][Next]_vars
 
