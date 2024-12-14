@@ -30,8 +30,7 @@ PROVE init(self)
     E!amountAvail, amountAvail,
     E!accountKredits, E!accountBebits,
     accountCredits, accountDebits,
-    E!MapThenSumSetE, MapThenSumSet,
-    E!MapThenFoldSetE, MapThenFoldSet,
+    E!MapThenSumSetTerse, MapThenSumSet, MapThenFoldSet,
     E!opEmount, opAmount,
     E!isTransKnown, E!isTransKnownToItem,
     isTransKnown, isTransKnownToItem,
@@ -52,8 +51,7 @@ PROVE E!init(self)
     E!amountAvail, amountAvail,
     E!accountKredits, E!accountBebits,
     accountCredits, accountDebits,
-    E!MapThenSumSetE, MapThenSumSet,
-    E!MapThenFoldSetE, MapThenFoldSet,
+    E!MapThenSumSetTerse, MapThenSumSet, MapThenFoldSet,
     E!opEmount, opAmount,
     E!isTransKnown, E!isTransKnownToItem,
     isTransKnown, isTransKnownToItem,
@@ -190,12 +188,12 @@ PROVE E!AmountPendingTotal \in Nat OMITTED
 
 THEOREM DebitTotalEquivalence == E!DebitTotal = DebitTotal
 BY DEF E!DebitTotal, DebitTotal,
-    E!MapThenSumSetE, E!MapThenFoldSetE, MapThenSumSet, MapThenFoldSet,
+    E!MapThenSumSetTerse, MapThenSumSet, MapThenFoldSet,
     E!opEmount, opAmount
 
 THEOREM CreditTotalEquivalence == E!CreditTotal = CreditTotal
 BY DEF E!CreditTotal, CreditTotal,
-    E!MapThenSumSetE, E!MapThenFoldSetE, MapThenSumSet, MapThenFoldSet,
+    E!MapThenSumSetTerse, MapThenSumSet, MapThenFoldSet,
     E!opEmount, opAmount
     
 LEMMA transPendingAmountNat == ASSUME IndInv

@@ -11,15 +11,12 @@ EDransfer == Dransfer \cup {Empty}
 
 EmptyEccounts == [from |-> Empty, to |-> Empty]
 
-MapThenFoldSetE(op(_,_), base, f(_), choose(_), S) ==
+MapThenSumSetTerse(op(_), S) ==
   LET iter[s \in SUBSET S] ==
-        IF s = {} THEN base
-        ELSE LET x == choose(s)
-             IN  op(f(x), iter[s \ {x}])
+        IF s = {} THEN 0
+        ELSE LET x == CHOOSE x \in s : TRUE
+             IN  op(x) + iter[s \ {x}]
   IN  iter[S]
-
-MapThenSumSetE(op(_), set) ==
-   MapThenFoldSetE(+, 0, op, LAMBDA s : CHOOSE x \in s : TRUE, set)
 
 (***************************************
 Dransfer -> Account -> kredit or bebit
@@ -38,9 +35,9 @@ Dransfer -> amount
     define {
         opEmount(dc) == dc[2]
 
-        accountKredits(a) == MapThenSumSetE(LAMBDA c: IF c[1].a = a THEN opEmount(c) ELSE 0, kredits)
+        accountKredits(a) == MapThenSumSet(LAMBDA c: IF c[1].a = a THEN opEmount(c) ELSE 0, kredits)
 
-        accountBebits(a) == MapThenSumSetE(LAMBDA d: IF d[1].a = a THEN opEmount(d) ELSE 0, bebits)
+        accountBebits(a) == MapThenSumSet(LAMBDA d: IF d[1].a = a THEN opEmount(d) ELSE 0, bebits)
 
         amountAvail(a) == Evail + accountKredits(a) - accountBebits(a)
 
@@ -99,15 +96,15 @@ Dransfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "e35dfe32" /\ chksum(tla) = "693f4077")
+\* BEGIN TRANSLATION (chksum(pcal) = "3fdd44df" /\ chksum(tla) = "e2777884")
 VARIABLES kredits, bebits, emount, eccounts, pendingDrans, pc
 
 (* define statement *)
 opEmount(dc) == dc[2]
 
-accountKredits(a) == MapThenSumSetE(LAMBDA c: IF c[1].a = a THEN opEmount(c) ELSE 0, kredits)
+accountKredits(a) == MapThenSumSet(LAMBDA c: IF c[1].a = a THEN opEmount(c) ELSE 0, kredits)
 
-accountBebits(a) == MapThenSumSetE(LAMBDA d: IF d[1].a = a THEN opEmount(d) ELSE 0, bebits)
+accountBebits(a) == MapThenSumSet(LAMBDA d: IF d[1].a = a THEN opEmount(d) ELSE 0, bebits)
 
 amountAvail(a) == Evail + accountKredits(a) - accountBebits(a)
 
@@ -197,9 +194,9 @@ Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
 \* END TRANSLATION
 
-CreditTotal == MapThenSumSetE(opEmount, kredits)
+CreditTotal == MapThenSumSetTerse(opEmount, kredits)
 
-DebitTotal == MapThenSumSetE(opEmount, bebits)
+DebitTotal == MapThenSumSetTerse(opEmount, bebits)
 
 AmountIsPending(t) ==
     /\ pc[t] \in {"debit", "retryDebit", "credit"}

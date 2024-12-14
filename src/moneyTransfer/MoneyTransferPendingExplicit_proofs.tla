@@ -39,8 +39,8 @@ PROVE AmountPendingTotal \in Nat
 LEMMA init_Imbalance == ASSUME Init
 PROVE Imbalance = 0
 <1> USE DEF Init
-<1>1 CreditTotal = 0 BY MapThenSumSetEmpty DEF CreditTotal, MapThenSumSetE, MapThenFoldSetE
-<1>2 DebitTotal = 0 BY MapThenSumSetEmpty DEF DebitTotal, MapThenSumSetE, MapThenFoldSetE
+<1>1 CreditTotal = 0 BY MapThenSumSetEmpty DEF CreditTotal, MapThenSumSetTerse
+<1>2 DebitTotal = 0 BY MapThenSumSetEmpty DEF DebitTotal, MapThenSumSetTerse
 <1>3 AmountPendingTotal = 0
     BY MapThenSumSetEmpty DEF AmountPendingTotal, AmountIsPending, creditPrecond, isTransKnown
 <1> QED BY <1>1, <1>2, <1>3 DEF Imbalance
@@ -222,7 +222,7 @@ PROVE DebitTotal' = DebitTotal + emount[self]
     MapThenSumSet(opEmount, bebits) + opEmount(nadd)
     BY <1>1, <1>2, <1>3, <1>4, MapThenSumSetAddElem
 <1>6 DebitTotal' = DebitTotal + opEmount(nadd)
-    BY <1>5 DEF DebitTotal, MapThenSumSetE, MapThenFoldSetE, MapThenSumSet, MapThenFoldSet
+    BY <1>5 DEF DebitTotal, MapThenSumSetTerse, MapThenSumSet, MapThenFoldSet
 <1> QED BY <1>6 DEF opEmount
 
 LEMMA debit_DebitTotal_notDebitPrecond_or_retryDebit == ASSUME IndInv, NEW self \in Dransfer, debit(self),
@@ -425,7 +425,7 @@ PROVE CreditTotal' = CreditTotal + emount[self]
     MapThenSumSet(opEmount, kredits) + opEmount(nadd)
     BY <1>1, <1>2, <1>3, <1>4, MapThenSumSetAddElem
 <1>6 CreditTotal' = CreditTotal + opEmount(nadd)
-    BY <1>5 DEF CreditTotal, MapThenSumSetE, MapThenFoldSetE, MapThenSumSet, MapThenFoldSet
+    BY <1>5 DEF CreditTotal, MapThenSumSetTerse, MapThenSumSet, MapThenFoldSet
 <1> QED BY <1>6 DEF opEmount
 
 
@@ -440,10 +440,10 @@ PROVE Imbalance' = Imbalance
     <2>3 emount[self] \in Nat BY DEF IndInv, TypeOK
     <2>4 \A c \in kredits: opEmount(c) \in Nat BY DEF opEmount, IndInv, TypeOK
     <2>5 CreditTotal \in Nat BY <2>4, MapThenSumSetType DEF CreditTotal, IndInv, TypeOK,
-        MapThenSumSetE, MapThenFoldSetE, MapThenSumSet, MapThenFoldSet
+        MapThenSumSetTerse, MapThenSumSet, MapThenFoldSet
     <2>6 \A d \in bebits: opEmount(d) \in Nat BY DEF opEmount, IndInv, TypeOK
     <2>7 DebitTotal \in Nat BY <2>6, MapThenSumSetType DEF DebitTotal, IndInv, TypeOK,
-        MapThenSumSetE, MapThenFoldSetE, MapThenSumSet, MapThenFoldSet
+        MapThenSumSetTerse, MapThenSumSet, MapThenFoldSet
     <2>8 AmountPendingTotal \in Nat BY AmountPendingTotalInNat, NDransferAssumption
     <2>9 CreditTotal' + AmountPendingTotal' = CreditTotal + AmountPendingTotal BY <2>1, <2>2, <2>3, <2>5, <2>8
     <2>10 (CreditTotal' + AmountPendingTotal') - DebitTotal' = (CreditTotal + AmountPendingTotal) - DebitTotal BY <1>2, <2>9
