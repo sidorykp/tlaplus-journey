@@ -117,7 +117,7 @@ PROVE IndInv'
     BY <1>7 DEF EmptyEccounts, DifferentEccounts, NonEmptyEccounts
 <1>9 initPrecond(self)' BY DEF initPrecond, isTransKnown
 <1>10 \A t \in Dransfer: pc'[t] = "init" => initPrecond(t)' BY <1>9 DEF pcLabels
-<1>11 NonEmptyEccounts(self)' BY DEF NonEmptyEccounts
+<1>11 NonEmptyEccounts(self)' BY EmptyAssumption DEF NonEmptyEccounts
 <1>12 pc'[self] \notin {"init"} <=> NonEmptyEccounts(self)' BY <1>11 DEF pcLabels
 <1>13 \A t \in Dransfer: pc'[t] \notin {"init"} <=> NonEmptyEccounts(t)'
     BY <1>12 DEF NonEmptyEccounts, pcLabels
