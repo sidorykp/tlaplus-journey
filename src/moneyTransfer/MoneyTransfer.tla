@@ -33,9 +33,7 @@ Transfer -> amount
         
         amountAvail(a) == Avail + accountCredits(a) - accountDebits(a)
         
-        isTransKnownToItem(t, a, dc) == dc[1].a = a /\ dc[1].t = t
-        
-        isTransKnown(t, a, bal) == \E dc \in bal: isTransKnownToItem(t, a, dc)
+        isTransKnown(t, a, bal) == \E dc \in bal: dc[1].a = a /\ dc[1].t = t
         
         initPrecond(t) == ~\E a \in Account: isTransKnown(t, a, debits)
         
@@ -85,7 +83,7 @@ Transfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "27f16785" /\ chksum(tla) = "f799dcc6")
+\* BEGIN TRANSLATION (chksum(pcal) = "ac562" /\ chksum(tla) = "9b214983")
 VARIABLES credits, debits, amount, accounts, pc
 
 (* define statement *)
@@ -97,9 +95,7 @@ accountDebits(a) == MapThenSumSet(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 
 
 amountAvail(a) == Avail + accountCredits(a) - accountDebits(a)
 
-isTransKnownToItem(t, a, dc) == dc[1].a = a /\ dc[1].t = t
-
-isTransKnown(t, a, bal) == \E dc \in bal: isTransKnownToItem(t, a, dc)
+isTransKnown(t, a, bal) == \E dc \in bal: dc[1].a = a /\ dc[1].t = t
 
 initPrecond(t) == ~\E a \in Account: isTransKnown(t, a, debits)
 

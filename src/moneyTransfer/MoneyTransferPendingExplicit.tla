@@ -41,9 +41,7 @@ Dransfer -> amount
 
         amountAvail(a) == Evail + accountKredits(a) - accountBebits(a)
 
-        isTransKnownToItem(t, a, dc) == dc[1].a = a /\ dc[1].t = t
-
-        isTransKnown(t, a, bal) == \E dc \in bal: isTransKnownToItem(t, a, dc)
+        isTransKnown(t, a, bal) == \E dc \in bal: dc[1].a = a /\ dc[1].t = t
 
         initPrecond(t) == ~\E a \in Eccount: isTransKnown(t, a, bebits)
 
@@ -96,7 +94,7 @@ Dransfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "3fdd44df" /\ chksum(tla) = "e2777884")
+\* BEGIN TRANSLATION (chksum(pcal) = "20f285c9" /\ chksum(tla) = "210f4e2b")
 VARIABLES kredits, bebits, emount, eccounts, pendingDrans, pc
 
 (* define statement *)
@@ -108,9 +106,7 @@ accountBebits(a) == MapThenSumSet(LAMBDA d: IF d[1].a = a THEN opEmount(d) ELSE 
 
 amountAvail(a) == Evail + accountKredits(a) - accountBebits(a)
 
-isTransKnownToItem(t, a, dc) == dc[1].a = a /\ dc[1].t = t
-
-isTransKnown(t, a, bal) == \E dc \in bal: isTransKnownToItem(t, a, dc)
+isTransKnown(t, a, bal) == \E dc \in bal: dc[1].a = a /\ dc[1].t = t
 
 initPrecond(t) == ~\E a \in Eccount: isTransKnown(t, a, bebits)
 

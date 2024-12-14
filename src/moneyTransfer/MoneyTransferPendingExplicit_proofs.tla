@@ -54,12 +54,12 @@ THEOREM initProperty == ASSUME Init PROVE IndInv
 <1>4 eccounts \in [Dransfer -> EEccounts] BY DEF EEccount, EmptyEccounts, EEccounts
 <1>5 pcLabels BY DEF pcLabels, ProcSet
 <1>6 \A t \in Dransfer: pc[t] = "init" => initPrecond(t)
-    BY DEF initPrecond, isTransKnown, isTransKnownToItem
+    BY DEF initPrecond, isTransKnown
 <1>7 \A t \in Dransfer:
         pc[t] \notin {"init"} <=> NonEmptyEccounts(t)
     BY DEF ProcSet, NonEmptyEccounts, EmptyEccounts
 <1>8 TransPendingEquivalence BY DEF TransPendingEquivalence, AmountIsPending, creditPrecond,
-    isTransKnown, isTransKnownToItem, TransInPendingTrans
+    isTransKnown, TransInPendingTrans
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>7, <1>8, init_Imbalance
     DEF PendingTransDerived
 
@@ -93,7 +93,7 @@ PROVE IndInv'
 <1>14 \A t \in Dransfer: pc'[t] \notin {"init"} <=> NonEmptyEccounts(t)'
     BY DEF retryDebit, NonEmptyEccounts, pcLabels
 <1>15 TransPendingEquivalence' BY DEF retryDebit, TransPendingEquivalence, TransInPendingTrans,
-    pcLabels, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+    pcLabels, AmountIsPending, creditPrecond, isTransKnown
 <1>16 PendingTransDerived' BY DEF retryDebit, PendingTransDerived
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>7, <1>8, <1>9, <1>11, <1>12, <1>13, <1>14, <1>15, <1>16
 
@@ -116,7 +116,7 @@ PROVE IndInv'
 <1>4 IsFiniteSet(bebits)' BY DEF init
 <1>5 pendingDrans' \in SUBSET TN BY DEF init
 <1>6 IsFiniteSet(pendingDrans)' BY DEF init
-<1>7 emount' \in [Dransfer -> Nat] BY DEF init
+<1>7 emount' \in [Dransfer -> Nat] BY DEF init, NNat
 <1>8 selfEccounts \in EEccounts BY DEF init, EEccounts, EEccount
 <1>9 eccounts' \in [Dransfer -> EEccounts] BY <1>8 DEF init
 <1>10 pcLabels' BY DEF init, ProcSet, pcLabels
@@ -130,7 +130,7 @@ PROVE IndInv'
     (\/ eccounts[t] = EmptyEccounts
      \/ DifferentEccounts(t) /\ NonEmptyEccounts(t))'
     BY <1>14 DEF init, EmptyEccounts, DifferentEccounts, NonEmptyEccounts
-<1>16 initPrecond(self)' BY DEF init, initPrecond, isTransKnown, isTransKnownToItem
+<1>16 initPrecond(self)' BY DEF init, initPrecond, isTransKnown
 <1>17 \A t \in Dransfer: pc'[t] = "init" => initPrecond(t)' BY <1>16 DEF init, pcLabels
 <1>18 NonEmptyEccounts(self)' BY <1>13 DEF init, NonEmptyEccounts
 <1>19 pc'[self] \notin {"init"} <=> NonEmptyEccounts(self)' BY <1>18 DEF init, pcLabels
@@ -140,7 +140,7 @@ PROVE IndInv'
 <1>22 ~AmountIsPending(self)' BY DEF init, AmountIsPending, creditPrecond, initPrecond
 \* the fact that allows not to use PendingTransUniqueness
 <1>23 ~\E d \in bebits: d[1].t = self BY <1>21 DEF init, initPrecond,
-    AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem, AT
+    AmountIsPending, creditPrecond, isTransKnown, AT
 <1>24 TransInPendingTrans(self)' = TransInPendingTrans(self)
     <2>1 ~TransInPendingTrans(self) BY <1>21 DEF TransPendingEquivalence, TransInPendingTrans
     <2>2 ~\E tp \in pendingDrans: tp[1] = self /\ tp[2] = am BY <1>23 DEF init, PendingTransDerived
@@ -151,7 +151,7 @@ PROVE IndInv'
     = (AmountIsPending(t) <=> TransInPendingTrans(t))
     <2>1 pendingDrans' = pendingDrans BY DEF init
     <2> QED BY <2>1 DEF init, AmountIsPending, TransInPendingTrans,
-        creditPrecond, isTransKnown, isTransKnownToItem, pcLabels
+        creditPrecond, isTransKnown, pcLabels
 <1>27 TransPendingEquivalence'  = TransPendingEquivalence BY <1>25, <1>26 DEF TransPendingEquivalence
 
 <1>28 PendingTransDerived' BY DEF init, PendingTransDerived
@@ -165,7 +165,7 @@ PROVE DebitTotal' = DebitTotal + emount[self]
 <1> DEFINE a == eccounts[self].from
 <1> DEFINE nadd == <<[a |-> a, t |-> self], emount[self]>>
 <1> USE DEF IndInv, TypeOK, debitPrecond
-<1>1 nadd \notin bebits BY DEF isTransKnown, isTransKnownToItem, AT
+<1>1 nadd \notin bebits BY DEF isTransKnown, AT
 <1>2 bebits' = bebits \cup {nadd} BY DEF debit
 <1>3 \A nb \in bebits: opEmount(nb) \in Nat BY DEF opEmount
 <1>4 opEmount(nadd) \in Nat BY DEF opEmount
@@ -190,7 +190,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal + emount[self]
     BY DEF debit
 <1> USE DEF IndInv, TypeOK
 <1>2 nadd \notin pendingDrans BY DEF TransPendingEquivalence, TransInPendingTrans,
-    AmountIsPending, isTransKnown, isTransKnownToItem, debitPrecond, creditPrecond, AT
+    AmountIsPending, isTransKnown, debitPrecond, creditPrecond, AT
 <1>3 \A pt \in pendingDrans: pendingTransAmount(pt) \in Nat BY pendingTransAmountInNat
 <1>4 pendingTransAmount(nadd) \in Nat BY DEF debit, pendingTransAmount
 <1>5 MapThenSumSet(pendingTransAmount, pendingDrans') =
@@ -244,7 +244,7 @@ PROVE (
 <1>9 NonEmptyEccounts(self)' = NonEmptyEccounts(self)
     BY <1>8
 <1>10 pc'[self] \notin {"init"} <=> NonEmptyEccounts(self)'
-    BY <1>8 DEF debit
+    BY <1>8 DEF debit, pcLabels
 <1>11 \A t \in Dransfer \ {self}: pc'[t] \notin {"init"} <=> pc[t] \notin {"init"}
     BY DEF debit, pcLabels
 <1>12 \A t \in Dransfer \ {self}: pc'[t] \notin {"init"} <=> NonEmptyEccounts(t)'
@@ -278,10 +278,10 @@ PROVE IndInv'
     
     <2>13 (AmountIsPending(self) <=> TransInPendingTrans(self))'
         <3>1 ~AmountIsPending(self) BY <1>1 DEF debit, AmountIsPending, creditPrecond,
-            debitPrecond, pcLabels, isTransKnown, isTransKnownToItem, AT
+            debitPrecond, pcLabels, isTransKnown, AT
         <3>2 \E dc \in bebits': dc[1].a = eccounts[self].from /\ dc[1].t = self BY <1>1 DEF debit
         <3>3 AmountIsPending(self)' BY <1>1, <3>2 DEF debit, AmountIsPending, creditPrecond,
-            pcLabels, isTransKnown, isTransKnownToItem, AT, EEccounts, EEccount,
+            pcLabels, isTransKnown, AT, EEccounts, EEccount,
             NonEmptyEccounts, DifferentEccounts
         <3>4 ~TransInPendingTrans(self) BY <1>1, <3>1 DEF debit, TransPendingEquivalence
         <3>5 TransInPendingTrans(self)' BY <1>1, <2>8 DEF debit, TransInPendingTrans
@@ -291,7 +291,7 @@ PROVE IndInv'
         DEF TransInPendingTrans, debit
     <2>16 \A t \in Dransfer \ {self}: AmountIsPending(t) = AmountIsPending(t)'
         BY <1>1, <2>1, <2>8, <2>12
-        DEF debit, AmountIsPending, pcLabels, creditPrecond, isTransKnown, isTransKnownToItem
+        DEF debit, AmountIsPending, pcLabels, creditPrecond, isTransKnown
     <2>17 TransPendingEquivalence' = TransPendingEquivalence
         BY <2>13, <2>14, <2>16 DEF TransPendingEquivalence
 
@@ -310,7 +310,7 @@ PROVE IndInv'
     <2>3 pendingDrans' \in SUBSET TN BY <1>2 DEF debit
     <2>4 IsFiniteSet(pendingDrans)' BY <1>2 DEF debit
     <2>5 TransPendingEquivalence' BY <1>2 DEF debit, TransPendingEquivalence, TransInPendingTrans,
-        pcLabels, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+        pcLabels, AmountIsPending, creditPrecond, isTransKnown
     <2>6 PendingTransDerived'  BY <1>2 DEF debit, PendingTransDerived
     <2> QED BY <1>1, <2>1, <2>2, <2>3, <2>4, <2>5, <2>6, debit_IndInv_common, debit_Imbalance
 <1> QED BY <1>1, <1>2
@@ -352,7 +352,7 @@ PROVE CreditTotal' = CreditTotal + emount[self]
 <1> DEFINE a == eccounts[self].to
 <1> DEFINE nadd == <<[a |-> a, t |-> self], emount[self]>>
 <1> USE DEF IndInv, TypeOK, creditPrecond
-<1>1 nadd \notin kredits BY DEF isTransKnown, isTransKnownToItem, AT
+<1>1 nadd \notin kredits BY DEF isTransKnown, AT
 <1>2 kredits' = kredits \cup {nadd} BY DEF credit
 <1>3 \A nb \in kredits: opEmount(nb) \in Nat BY DEF opEmount
 <1>4 opEmount(nadd) \in Nat BY DEF opEmount
@@ -418,13 +418,17 @@ PROVE (
     BY <1>8, <1>9 DEF credit, pcLabels
 <1>11 bebits' = bebits BY DEF credit
 <1>12 pendingDrans' \in SUBSET TN  BY DEF credit
-<1>13 IsFiniteSet(pendingDrans)' BY DEF credit, TN, AT, FS_RemoveElement
+<1>13 IsFiniteSet(pendingDrans)'
+    <2>1 CASE ~creditPrecond(self) BY <2>1 DEF credit
+    <2>2 CASE creditPrecond(self) BY <2>2 DEF credit, TN, AT, FS_RemoveElement
+    <2> QED BY <2>1, <2>2
 <1>14 AmountIsPending(self)' <=> TransInPendingTrans(self)'
     <2>1 CASE ~creditPrecond(self)
-        <3>1 kredits' = kredits BY <2>1 DEF credit
-        <3>2 pendingDrans' = pendingDrans BY <2>1 DEF credit
-        <3>3 creditPrecond(self)' = creditPrecond(self) BY <2>1 DEF credit, creditPrecond
-        <3> QED BY <3>1, <2>1, <3>2, <3>3 DEF TransInPendingTrans, credit, AmountIsPending
+        <3>1 AmountIsPending(self)' = AmountIsPending(self) BY <2>1 DEF credit, AmountIsPending
+        <3>2 TransInPendingTrans(self)' = TransInPendingTrans(self) BY <2>1
+            DEF credit, TransInPendingTrans
+        <3> QED BY <2>1, <3>2, <3>2
+            DEF credit, TransInPendingTrans
      <2>2 CASE creditPrecond(self)
         <3> DEFINE a == eccounts[self].to
         <3> DEFINE nadd == <<[a |-> a, t |-> self], emount[self]>>
@@ -435,11 +439,14 @@ PROVE (
             DEF TransInPendingTrans, credit, AmountIsPending, pcLabels
      <2> QED BY <2>1, <2>2
 <1>15 TransPendingEquivalence'
-    <2>1 CASE ~creditPrecond(self) BY <2>1, <1>14 DEF credit, TransPendingEquivalence,
-        TransInPendingTrans, AmountIsPending, pcLabels
+    <2>1 CASE ~creditPrecond(self)
+        <3>1 AmountIsPending(self)' = AmountIsPending(self) BY <2>1 DEF credit, AmountIsPending
+        <3>2 TransInPendingTrans(self)' = TransInPendingTrans(self) BY <2>1
+            DEF credit, TransInPendingTrans
+        <3> QED BY <2>1, <3>1, <3>2 DEF credit, TransPendingEquivalence
     <2>2 CASE creditPrecond(self) BY <2>2, <1>14 DEF credit, TransPendingEquivalence,
         TransInPendingTrans, AmountIsPending, pcLabels, creditPrecond,
-        isTransKnown, isTransKnownToItem
+        isTransKnown
     <2> QED BY <2>1, <2>2
 <1>16 PendingTransDerived' BY DEF credit, PendingTransDerived
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>7, <1>10, <1>12, <1>13, <1>15, <1>16,
