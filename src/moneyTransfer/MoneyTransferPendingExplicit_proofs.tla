@@ -80,50 +80,22 @@ PROVE IndInv'
 <1>6 IsFiniteSet(pendingDrans)' BY DEF retryDebit
 <1>7 emount' \in [Dransfer -> Nat] BY DEF retryDebit
 <1>8 eccounts' \in [Dransfer -> EEccounts] BY DEF retryDebit
-
-<1>9 pc'[self] \in {"credit", "debit"} BY DEF retryDebit, pcLabels
-<1>10 pcLabels' BY <1>9 DEF retryDebit, pcLabels
-
-<1>11 Imbalance' = Imbalance BY retryDebit_AmountPendingTotal
+<1>9 pcLabels' BY DEF retryDebit, pcLabels
+<1>10 Imbalance' = Imbalance BY retryDebit_AmountPendingTotal
     DEF retryDebit, Imbalance, creditPrecond, CreditTotal, DebitTotal
-<1>12 Imbalance' = 0 BY <1>11
-
-<1>13 \A t \in Dransfer:
+<1>11 Imbalance' = 0 BY <1>10
+<1>12 \A t \in Dransfer:
     (\/ eccounts[t] = EmptyEccounts
      \/ DifferentEccounts(t) /\ NonEmptyEccounts(t))'
     BY DEF retryDebit, EmptyEccounts, DifferentEccounts, NonEmptyEccounts
-
-<1>14 \A t \in Dransfer: pc[t] \notin {"init"} <=> NonEmptyEccounts(t)
-    BY DEF IndInv
-<1>15 \A t \in Dransfer: NonEmptyEccounts(t)' = NonEmptyEccounts(t)
-    BY DEF retryDebit, NonEmptyEccounts
-<1>16 NonEmptyEccounts(self)' = NonEmptyEccounts(self)
-    BY <1>15
-<1>17 pc[self] \notin {"init"} <=> NonEmptyEccounts(self)
-    BY <1>14
-<1>18 pc[self] \notin {"init"} BY DEF retryDebit
-<1>19 pc'[self] \notin {"init"} BY <1>9
-<1>20 pc'[self] \notin {"init"} <=> NonEmptyEccounts(self)'
-    BY <1>16, <1>17, <1>18, <1>19
-
-<1>21 pc'[self] = "init" => initPrecond(self)' BY <1>9
-<1>22 \A t \in Dransfer: pc'[t] = "init" => initPrecond(t)'
-    BY <1>21 DEF retryDebit, pcLabels
-
-<1>23 \A t \in Dransfer \ {self}: pc'[t] \notin {"init"} <=> pc[t] \notin {"init"}
+<1>13 \A t \in Dransfer: pc'[t] = "init" => initPrecond(t)'
     BY DEF retryDebit, pcLabels
-<1>24 \A t \in Dransfer \ {self}: pc'[t] \notin {"init"} <=> NonEmptyEccounts(t)'
-    BY <1>14, <1>15, <1>23
-
-<1>25 \A t \in Dransfer: pc'[t] \notin {"init"} <=> NonEmptyEccounts(t)'
-    BY <1>20, <1>24
-
-<1>26 TransPendingEquivalence' BY DEF retryDebit, TransPendingEquivalence, TransInPendingTrans,
+<1>14 \A t \in Dransfer: pc'[t] \notin {"init"} <=> NonEmptyEccounts(t)'
+    BY DEF retryDebit, NonEmptyEccounts, pcLabels
+<1>15 TransPendingEquivalence' BY DEF retryDebit, TransPendingEquivalence, TransInPendingTrans,
     pcLabels, AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
-
-<1>27 PendingTransDerived' BY DEF retryDebit, PendingTransDerived
-
-<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>7, <1>8, <1>10, <1>12, <1>13, <1>22, <1>25, <1>26, <1>27
+<1>16 PendingTransDerived' BY DEF retryDebit, PendingTransDerived
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>7, <1>8, <1>9, <1>11, <1>12, <1>13, <1>14, <1>15, <1>16
 
 
 THEOREM init_AmountPendingTotal == ASSUME IndInv, NEW self \in Dransfer, init(self)
