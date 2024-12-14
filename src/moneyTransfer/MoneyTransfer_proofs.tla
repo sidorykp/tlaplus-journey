@@ -148,8 +148,9 @@ PROVE AmountPendingTotal' = AmountPendingTotal
                  THEN 0
                  ELSE amount[CHOOSE x \in s : TRUE]
                       + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending']
-    BY <1>5 DEF transAmount
+    BY <1>5
 \* it works with amount, does not work with transAmount which is surprising
+\* it did not work when initPrecond(self) was not assumed
 <1>9 (CHOOSE iter :
           iter
           = [s \in SUBSET transPending |->
@@ -165,7 +166,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal
                  ELSE amount[CHOOSE x \in s : TRUE]'
                       + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending]
     BY <1>6, <1>7, <1>3 DEF pcLabels, transPending,
-    AmountIsPending, creditPrecond, isTransKnown
+    AmountIsPending, creditPrecond, isTransKnown, initPrecond
 <1>10 (CHOOSE iter :
           iter
           = [s \in SUBSET transPending' |->
