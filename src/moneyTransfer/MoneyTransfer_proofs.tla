@@ -350,47 +350,24 @@ PROVE (
     /\ credits \in SUBSET (AT \X Nat)
     /\ IsFiniteSet(credits)
     /\ CommonIndInv)'
-<1> USE DEF CommonIndInv
-<1>1 credits' \in SUBSET (AT \X Nat) BY DEF debit, IndInv, TypeOK
-<1>2 IsFiniteSet(credits)' BY DEF debit, IndInv, TypeOK
-<1>3 amount' \in [Transfer -> Nat] BY DEF debit, IndInv, TypeOK
-<1>4 accounts' \in [Transfer -> EAccounts] BY DEF debit, IndInv, TypeOK
-<1>5 pcLabels' BY DEF debit, pcLabels, ProcSet
-<1>6 \A t \in Transfer:
+<1> USE DEF IndInv, TypeOK, CommonIndInv, debit
+<1>1 pcLabels' BY DEF pcLabels
+<1>2 \A t \in Transfer:
     \/ accounts'[t] = EmptyAccounts
     \/ DifferentAccounts(t)' /\ NonEmptyAccounts(t)'
-    BY DEF debit, EmptyAccounts, DifferentAccounts, NonEmptyAccounts, IndInv, TypeOK
-
-<1>7 pc' = [pc EXCEPT ![self] = "retryDebit"] BY DEF debit
-<1>8 pc'[self] = "retryDebit" BY <1>7 DEF pcLabels, IndInv, TypeOK
-<1>9 pc'[self] = "init" => initPrecond(self)' BY <1>8
-<1>10 \A t \in Transfer \ {self}: pc[t]' = pc[t]
-    BY <1>7 DEF pcLabels, IndInv, TypeOK
-<1>11 \A t \in Transfer: pc'[t] = "init" => initPrecond(t)'
-    BY <1>9, <1>10 DEF IndInv
-
-<1>12 \A t \in Transfer: pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
-    BY DEF IndInv
-<1>13 \A t \in Transfer: NonEmptyAccounts(t)' = NonEmptyAccounts(t)
-    BY DEF debit, NonEmptyAccounts
-<1>14 NonEmptyAccounts(self)' = NonEmptyAccounts(self)
-    BY <1>13
-<1>15 pc[self] \notin {"init"} <=> NonEmptyAccounts(self)
-    BY <1>12
-<1>16 pc[self] \notin {"init"} BY DEF debit
-<1>17 pc'[self] \notin {"init"} BY <1>8
-<1>18 pc'[self] \notin {"init"} <=> NonEmptyAccounts(self)'
-    BY <1>14, <1>15, <1>16, <1>17
-
-<1>19 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> pc[t] \notin {"init"}
-    BY <1>10
-<1>20 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
-    BY <1>12, <1>13, <1>19
-
-<1>21 \A t \in Transfer: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
-    BY <1>18, <1>20
-
-<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>11, <1>21, debit_Imbalance DEF IndInv
+    BY DEF EmptyAccounts, DifferentAccounts, NonEmptyAccounts
+<1>3 \A t \in Transfer \ {self}: pc[t]' = pc[t]
+    BY DEF pcLabels
+<1>4 \A t \in Transfer: pc'[t] = "init" => initPrecond(t)'
+    BY <1>3 DEF pcLabels
+<1>5 \A t \in Transfer: NonEmptyAccounts(t)' = NonEmptyAccounts(t)
+    BY DEF NonEmptyAccounts
+<1>6 pc'[self] \notin {"init"} BY DEF pcLabels
+<1>7 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
+    BY <1>5, <1>3
+<1>8 \A t \in Transfer: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
+    BY <1>5, <1>6, <1>7
+<1> QED BY <1>1, <1>2, <1>4, <1>8, debit_Imbalance
 
 
 THEOREM debit_IndInv == ASSUME IndInv, NEW self \in Transfer, debit(self)
