@@ -107,16 +107,16 @@ PROVE IndInv'
 THEOREM init_AmountPendingTotal_notInitPrecond == ASSUME IndInv, NEW self \in Transfer, init(self),
 ~initPrecond(self)
 PROVE AmountPendingTotal' = AmountPendingTotal
-<1> USE DEF IndInv, TypeOK
-<1>1 self \notin transPending BY DEF init, transPending, AmountIsPending
-<1>2 ~AmountIsPending(self)' BY DEF init, AmountIsPending, creditPrecond
+<1> USE DEF IndInv, TypeOK, init
+<1>1 self \notin transPending BY DEF transPending, AmountIsPending
+<1>2 ~AmountIsPending(self)' BY DEF AmountIsPending, creditPrecond
 <1>3 self \notin transPending' BY <1>2 DEF transPending
-<1>4 transPending' = transPending BY <1>1, <1>3 DEF init, pcLabels,
+<1>4 transPending' = transPending BY <1>1, <1>3 DEF pcLabels,
     transPending, AmountIsPending, creditPrecond, isTransKnown
 <1>5 \A t \in Transfer: transAmount(t)' = transAmount(t) BY
-    DEF init, transAmount, creditPrecond
+    DEF transAmount, creditPrecond
 <1>6 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) BY <1>4, <1>5
-<1>7 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') BY <1>4, <1>5 DEF init
+<1>7 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') BY <1>4, <1>5
 <1> QED BY <1>6, <1>7 DEF AmountPendingTotal
 
 THEOREM init_AmountPendingTotal_initPrecond == ASSUME IndInv, NEW self \in Transfer, init(self),
