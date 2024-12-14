@@ -275,7 +275,9 @@ PROVE AmountPendingTotal' = AmountPendingTotal
 <1>3 transPending' = transPending BY <1>1, <1>2 DEF debit
 <1>4 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) 
     BY <1>3 DEF debit, transAmount
-<1>5 (CHOOSE iter :
+<1>5 \A t \in transPending: accounts[t] = accounts[t]' BY <1>3 DEF debit, pcLabels,
+    transPending, AmountIsPending, creditPrecond, isTransKnown
+<1>6 (CHOOSE iter :
           iter
           = [s \in SUBSET transPending |->
                IF s = {}
@@ -284,32 +286,15 @@ PROVE AmountPendingTotal' = AmountPendingTotal
                       + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending]
     = (CHOOSE iter :
           iter
-          = [s \in SUBSET transPending' |->
+          = [s \in SUBSET transPending |->
                IF s = {}
                  THEN 0
-                 ELSE amount[CHOOSE x \in s : TRUE]
-                      + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending']
-    BY <1>3
-<1>6 \A t \in transPending: accounts[t] = accounts[t]' BY <1>3 DEF debit, pcLabels,
-    transPending, AmountIsPending, creditPrecond, isTransKnown
+                 ELSE amount[CHOOSE x \in s : TRUE]'
+                      + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending]
+    BY <1>5 DEF debit, pcLabels, transPending, AmountIsPending, creditPrecond,
+    isTransKnown
 <1>7 (CHOOSE iter :
           iter
-          = [s \in SUBSET transPending |->
-               IF s = {}
-                 THEN 0
-                 ELSE amount[CHOOSE x \in s : TRUE]
-                      + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending]
-    = (CHOOSE iter :
-          iter
-          = [s \in SUBSET transPending |->
-               IF s = {}
-                 THEN 0
-                 ELSE amount[CHOOSE x \in s : TRUE]'
-                      + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending]
-    BY <1>6 DEF debit, pcLabels, transPending, AmountIsPending, creditPrecond,
-    isTransKnown
-<1>8 (CHOOSE iter :
-          iter
           = [s \in SUBSET transPending' |->
                IF s = {}
                  THEN 0
@@ -322,10 +307,10 @@ PROVE AmountPendingTotal' = AmountPendingTotal
                  THEN 0
                  ELSE amount[CHOOSE x \in s : TRUE]'
                       + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending']
-    BY <1>7, <1>3
-<1>9 MapThenSumSet(transAmount, transPending)' = MapThenSumSet(transAmount, transPending)
-    BY <1>4, <1>8 DEF debit, transAmount, MapThenSumSet, MapThenFoldSet
-<1> QED BY <1>9 DEF AmountPendingTotal
+    BY <1>6, <1>3
+<1>8 MapThenSumSet(transAmount, transPending)' = MapThenSumSet(transAmount, transPending)
+    BY <1>4, <1>7 DEF debit, transAmount, MapThenSumSet, MapThenFoldSet
+<1> QED BY <1>8 DEF AmountPendingTotal
 
 
 LEMMA debit_Imbalance == ASSUME IndInv, NEW self \in Transfer, debit(self)
