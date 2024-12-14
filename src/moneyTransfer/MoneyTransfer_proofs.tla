@@ -84,52 +84,24 @@ PROVE AmountPendingTotal' = AmountPendingTotal
 
 THEOREM retryDebit_IndInv == ASSUME IndInv, NEW self \in Transfer, retryDebit(self)
 PROVE IndInv'
-<1> USE DEF IndInv, TypeOK
-<1>1 credits' \in SUBSET (AT \X Nat) BY DEF retryDebit
-<1>2 IsFiniteSet(credits)' BY DEF retryDebit
-<1>3 debits' \in SUBSET (AT \X Nat) BY DEF retryDebit
-<1>4 IsFiniteSet(debits)' BY DEF retryDebit
-<1>5 amount' \in [Transfer -> Nat] BY DEF retryDebit
-<1>6 accounts' \in [Transfer -> EAccounts] BY DEF retryDebit
-
-<1>7 pc'[self] \in {"credit", "debit"} BY DEF retryDebit, pcLabels
-<1>8 pcLabels' BY <1>7 DEF retryDebit, pcLabels
-
-<1>9 Imbalance' = Imbalance BY retryDebit_AmountPendingTotal
+<1> USE DEF IndInv, TypeOK, retryDebit
+<1>1 pcLabels' BY DEF retryDebit, pcLabels
+<1>2 Imbalance' = Imbalance BY retryDebit_AmountPendingTotal
     DEF retryDebit, Imbalance, creditPrecond, CreditTotal, DebitTotal
-<1>10 Imbalance' = 0 BY <1>9
-
-<1>11 \A t \in Transfer:
+<1>3 Imbalance' = 0 BY <1>2
+<1>4 \A t \in Transfer:
     (\/ accounts[t] = EmptyAccounts
      \/ DifferentAccounts(t) /\ NonEmptyAccounts(t))'
     BY DEF retryDebit, EmptyAccounts, DifferentAccounts, NonEmptyAccounts
-
-<1>12 \A t \in Transfer: pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
-    BY DEF IndInv
-<1>13 \A t \in Transfer: NonEmptyAccounts(t)' = NonEmptyAccounts(t)
+<1>5 \A t \in Transfer: NonEmptyAccounts(t)' = NonEmptyAccounts(t)
     BY DEF retryDebit, NonEmptyAccounts
-<1>14 NonEmptyAccounts(self)' = NonEmptyAccounts(self)
-    BY <1>13
-<1>15 pc[self] \notin {"init"} <=> NonEmptyAccounts(self)
-    BY <1>12
-<1>16 pc[self] \notin {"init"} BY DEF retryDebit
-<1>17 pc'[self] \notin {"init"} BY <1>7
-<1>18 pc'[self] \notin {"init"} <=> NonEmptyAccounts(self)'
-    BY <1>14, <1>15, <1>16, <1>17
-
-<1>19 pc'[self] = "init" => initPrecond(self)' BY <1>7
-<1>20 \A t \in Transfer: pc'[t] = "init" => initPrecond(t)'
-    BY <1>19 DEF retryDebit, pcLabels
-
-<1>21 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> pc[t] \notin {"init"}
+<1>6 \A t \in Transfer: pc'[t] = "init" => initPrecond(t)'
     BY DEF retryDebit, pcLabels
-<1>22 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
-    BY <1>12, <1>13, <1>21
-
-<1>23 \A t \in Transfer: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
-    BY <1>18, <1>22
-
-<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>8, <1>10, <1>11, <1>20, <1>23
+<1>7 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> pc[t] \notin {"init"}
+    BY DEF retryDebit, pcLabels
+<1>8 \A t \in Transfer: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
+    BY <1>5, <1>7 DEF retryDebit, pcLabels
+<1> QED BY <1>1, <1>3, <1>4, <1>6, <1>8 DEF retryDebit
 
 
 THEOREM init_AmountPendingTotal_notInitPrecond == ASSUME IndInv, NEW self \in Transfer, init(self),
