@@ -346,7 +346,8 @@ PROVE IndInv'
             debitPrecond, pcLabels, isTransKnown, isTransKnownToItem, AT
         <3>2 \E dc \in bebits': dc[1].a = eccounts[self].from /\ dc[1].t = self BY <1>1 DEF debit
         <3>3 AmountIsPending(self)' BY <1>1, <3>2 DEF debit, AmountIsPending, creditPrecond,
-            pcLabels, isTransKnown, isTransKnownToItem, AT
+            pcLabels, isTransKnown, isTransKnownToItem, AT, EEccounts, EEccount,
+            NonEmptyEccounts, DifferentEccounts
         <3>4 ~TransInPendingTrans(self) BY <1>1, <3>1 DEF debit, TransPendingEquivalence
         <3>5 TransInPendingTrans(self)' BY <1>1, <2>8 DEF debit, TransInPendingTrans
         <3> QED BY <3>1, <3>3, <3>4, <3>5
