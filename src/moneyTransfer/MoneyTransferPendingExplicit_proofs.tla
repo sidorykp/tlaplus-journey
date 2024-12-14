@@ -396,26 +396,39 @@ PROVE (
 <1>5 \A t \in Dransfer: pc'[t] \notin {"init"} <=> NonEmptyEccounts(t)'
     BY <1>4 DEF pcLabels
 <1>6 IsFiniteSet(pendingDrans)'
-    <2>1 CASE ~creditPrecond(self) BY <2>1
-    <2>2 CASE creditPrecond(self) BY <2>2 DEF TN, AT, FS_RemoveElement
+    <2>1 CASE ~creditPrecond(self) \/ UNCHANGED <<kredits, pendingDrans>> BY <2>1
+    <2>2 CASE creditPrecond(self) /\ ~(UNCHANGED <<kredits, pendingDrans>>)
+        <3>1 pendingDrans' = pendingDrans \ {<<self, emount[self]>>} BY <2>2
+        <3> QED BY <2>2, <3>1 DEF TN, FS_RemoveElement
     <2> QED BY <2>1, <2>2
 <1>7 AmountIsPending(self)' <=> TransInPendingTrans(self)'
-    <2>1 CASE ~creditPrecond(self)
-        <3>1 AmountIsPending(self)' = AmountIsPending(self) BY <2>1 DEF AmountIsPending
+    <2>1 CASE ~creditPrecond(self) \/ UNCHANGED <<kredits, pendingDrans>>
+        <3>1 AmountIsPending(self)' = AmountIsPending(self) BY <2>1 DEF AmountIsPending,
+            creditPrecond, pcLabels, isTransKnown
         <3>2 TransInPendingTrans(self)' = TransInPendingTrans(self) BY <2>1
             DEF TransInPendingTrans
-        <3> QED BY <2>1, <3>2, <3>2
+        <3> QED BY <3>1, <3>2
             DEF TransInPendingTrans
-     <2>2 CASE creditPrecond(self) BY <2>2 DEF TransInPendingTrans, credit, AmountIsPending, pcLabels
+     <2>2 CASE creditPrecond(self) /\ ~(UNCHANGED <<kredits, pendingDrans>>)
+        <3>1 pendingDrans' = pendingDrans \ {<<self, emount[self]>>} BY <2>2
+        <3>2 AmountIsPending(self) BY <2>2 DEF AmountIsPending,
+            creditPrecond, pcLabels, isTransKnown
+        <3>3 ~AmountIsPending(self)' BY <2>2 DEF AmountIsPending,
+            creditPrecond, pcLabels, isTransKnown
+        <3>4 TransInPendingTrans(self) BY <2>2 DEF TransInPendingTrans
+        <3>5 ~TransInPendingTrans(self)' BY <2>2, <3>4, <3>1 DEF TransInPendingTrans
+        <3> QED BY <2>2, <3>1, <3>2, <3>3, <3>4, <3>5
      <2> QED BY <2>1, <2>2
 <1>8 TransPendingEquivalence'
-    <2>1 CASE ~creditPrecond(self)
-        <3>1 AmountIsPending(self)' = AmountIsPending(self) BY <2>1 DEF AmountIsPending
+    <2>1 CASE ~creditPrecond(self) \/ UNCHANGED <<kredits, pendingDrans>>
+        <3>1 AmountIsPending(self)' = AmountIsPending(self) BY <2>1 DEF AmountIsPending,
+            creditPrecond, pcLabels, isTransKnown
         <3>2 TransInPendingTrans(self)' = TransInPendingTrans(self) BY <2>1
             DEF TransInPendingTrans
         <3> QED BY <2>1, <3>1, <3>2 DEF TransPendingEquivalence,
             AmountIsPending, TransInPendingTrans, pcLabels, creditPrecond
-    <2>2 CASE creditPrecond(self) BY <2>2, <1>7 DEF TransPendingEquivalence,
+    <2>2 CASE creditPrecond(self) /\ ~(UNCHANGED <<kredits, pendingDrans>>) BY <2>2, <1>7
+        DEF TransPendingEquivalence,
         TransInPendingTrans, AmountIsPending, pcLabels, creditPrecond,
         isTransKnown
     <2> QED BY <2>1, <2>2
