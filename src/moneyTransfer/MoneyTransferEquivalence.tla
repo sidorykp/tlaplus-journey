@@ -9,6 +9,7 @@ E == INSTANCE MoneyTransferPendingExplicit
         bebits <- debits,
         kredits <- credits,
         emount <- amount,
+        eccounts <- accounts,
         Dransfer <- Transfer,
         Eccount <- Account,
         Evail <- Avail

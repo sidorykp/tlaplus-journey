@@ -32,7 +32,7 @@ Dransfer -> amount
        kredits = {},
        bebits = {},
        emount = [t \in Dransfer |-> 0],
-       accounts = [t \in Dransfer |-> EmptyEccounts],
+       eccounts = [t \in Dransfer |-> EmptyEccounts],
        pendingDrans = {}
 
     define {
@@ -56,8 +56,8 @@ Dransfer -> amount
 
         creditPrecond(t) ==
             /\ ~\E a \in Eccount: isTransKnown(t, a, kredits)
-            /\ ~isTransKnown(t, accounts[t].to, bebits)
-            /\ isTransKnown(t, accounts[t].from, bebits)
+            /\ ~isTransKnown(t, eccounts[t].to, bebits)
+            /\ isTransKnown(t, eccounts[t].from, bebits)
 
         pendingTransAmount(pt) == pt[2]
     }
@@ -68,12 +68,12 @@ Dransfer -> amount
             with (account1 \in Eccount; account2 \in Eccount \ {account1}; am \in NNat) {
                 await amountAvail(account1) > 0;
                 await am <= amountAvail(account1);
-                accounts[self] := [from |-> account1, to |-> account2];
+                eccounts[self] := [from |-> account1, to |-> account2];
                 emount[self] := am;
             };
 
         debit:
-            with (a = accounts[self].from) {
+            with (a = eccounts[self].from) {
                 if (debitPrecond(self)) {
                     either {
                         bebits := bebits \cup {<<[a |-> a, t |-> self], emount[self]>>};
@@ -90,7 +90,7 @@ Dransfer -> amount
             };
 
         credit:
-            with (a = accounts[self].to) {
+            with (a = eccounts[self].to) {
                 if (creditPrecond(self)) {
                     kredits := kredits \cup {<<[a |-> a, t |-> self], emount[self]>>};
                     pendingDrans := pendingDrans \ {<<self, emount[self]>>};
@@ -99,8 +99,8 @@ Dransfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "a6c97e7d" /\ chksum(tla) = "40a8ce06")
-VARIABLES kredits, bebits, emount, accounts, pendingDrans, pc
+\* BEGIN TRANSLATION (chksum(pcal) = "e35dfe32" /\ chksum(tla) = "693f4077")
+VARIABLES kredits, bebits, emount, eccounts, pendingDrans, pc
 
 (* define statement *)
 opEmount(dc) == dc[2]
@@ -123,13 +123,13 @@ debitPrecond(t) == ~\E a \in Eccount:
 
 creditPrecond(t) ==
     /\ ~\E a \in Eccount: isTransKnown(t, a, kredits)
-    /\ ~isTransKnown(t, accounts[t].to, bebits)
-    /\ isTransKnown(t, accounts[t].from, bebits)
+    /\ ~isTransKnown(t, eccounts[t].to, bebits)
+    /\ isTransKnown(t, eccounts[t].from, bebits)
 
 pendingTransAmount(pt) == pt[2]
 
 
-vars == << kredits, bebits, emount, accounts, pendingDrans, pc >>
+vars == << kredits, bebits, emount, eccounts, pendingDrans, pc >>
 
 ProcSet == (Dransfer)
 
@@ -137,7 +137,7 @@ Init == (* Global variables *)
         /\ kredits = {}
         /\ bebits = {}
         /\ emount = [t \in Dransfer |-> 0]
-        /\ accounts = [t \in Dransfer |-> EmptyEccounts]
+        /\ eccounts = [t \in Dransfer |-> EmptyEccounts]
         /\ pendingDrans = {}
         /\ pc = [self \in ProcSet |-> "init"]
 
@@ -147,13 +147,13 @@ init(self) == /\ pc[self] = "init"
                      \E am \in NNat:
                        /\ amountAvail(account1) > 0
                        /\ am <= amountAvail(account1)
-                       /\ accounts' = [accounts EXCEPT ![self] = [from |-> account1, to |-> account2]]
+                       /\ eccounts' = [eccounts EXCEPT ![self] = [from |-> account1, to |-> account2]]
                        /\ emount' = [emount EXCEPT ![self] = am]
               /\ pc' = [pc EXCEPT ![self] = "debit"]
               /\ UNCHANGED << kredits, bebits, pendingDrans >>
 
 debit(self) == /\ pc[self] = "debit"
-               /\ LET a == accounts[self].from IN
+               /\ LET a == eccounts[self].from IN
                     IF debitPrecond(self)
                        THEN /\ \/ /\ bebits' = (bebits \cup {<<[a |-> a, t |-> self], emount[self]>>})
                                   /\ pendingDrans' = (pendingDrans \cup {<<self, emount[self]>>})
@@ -162,24 +162,24 @@ debit(self) == /\ pc[self] = "debit"
                        ELSE /\ TRUE
                             /\ UNCHANGED << bebits, pendingDrans >>
                /\ pc' = [pc EXCEPT ![self] = "retryDebit"]
-               /\ UNCHANGED << kredits, emount, accounts >>
+               /\ UNCHANGED << kredits, emount, eccounts >>
 
 retryDebit(self) == /\ pc[self] = "retryDebit"
                     /\ IF debitPrecond(self)
                           THEN /\ pc' = [pc EXCEPT ![self] = "debit"]
                           ELSE /\ pc' = [pc EXCEPT ![self] = "credit"]
-                    /\ UNCHANGED << kredits, bebits, emount, accounts, 
+                    /\ UNCHANGED << kredits, bebits, emount, eccounts, 
                                     pendingDrans >>
 
 credit(self) == /\ pc[self] = "credit"
-                /\ LET a == accounts[self].to IN
+                /\ LET a == eccounts[self].to IN
                      IF creditPrecond(self)
                         THEN /\ kredits' = (kredits \cup {<<[a |-> a, t |-> self], emount[self]>>})
                              /\ pendingDrans' = pendingDrans \ {<<self, emount[self]>>}
                         ELSE /\ TRUE
                              /\ UNCHANGED << kredits, pendingDrans >>
                 /\ pc' = [pc EXCEPT ![self] = "Done"]
-                /\ UNCHANGED << bebits, emount, accounts >>
+                /\ UNCHANGED << bebits, emount, eccounts >>
 
 trans(self) == init(self) \/ debit(self) \/ retryDebit(self)
                   \/ credit(self)
@@ -215,10 +215,10 @@ TransPendingEquivalence == \A t \in Dransfer: AmountIsPending(t)
 Imbalance == CreditTotal - DebitTotal + AmountPendingTotal
 
 NonEmptyEccounts(t) ==
-    /\ accounts[t].from # Empty
-    /\ accounts[t].to # Empty
+    /\ eccounts[t].from # Empty
+    /\ eccounts[t].to # Empty
 
-DifferentEccounts(t) == accounts[t].from # accounts[t].to
+DifferentEccounts(t) == eccounts[t].from # eccounts[t].to
 
 EEccounts == [from: EEccount, to: EEccount]
 
@@ -238,7 +238,7 @@ TypeOK ==
     /\ pendingDrans \in SUBSET TN
     /\ IsFiniteSet(pendingDrans)
     /\ emount \in [Dransfer -> Nat]
-    /\ accounts \in [Dransfer -> EEccounts]
+    /\ eccounts \in [Dransfer -> EEccounts]
     /\ pcLabels
     /\ TransPendingEquivalence
     /\ PendingTransDerived
@@ -251,7 +251,7 @@ IndInv ==
     /\ TypeOK
     /\ Imbalance = 0
     /\ \A t \in Dransfer:
-        \/ accounts[t] = EmptyEccounts
+        \/ eccounts[t] = EmptyEccounts
         \/ DifferentEccounts(t) /\ NonEmptyEccounts(t)
     /\ \A t \in Dransfer: pc[t] = "init" => initPrecond(t)
     /\ \A t \in Dransfer:
@@ -261,11 +261,11 @@ IndSpec == IndInv /\ [][Next]_vars
 
 CommonIndInv ==
     /\ emount \in [Dransfer -> Nat]
-    /\ accounts \in [Dransfer -> EEccounts]
+    /\ eccounts \in [Dransfer -> EEccounts]
     /\ pcLabels
     /\ Imbalance = 0
     /\ \A t \in Dransfer:
-        \/ accounts[t] = EmptyEccounts
+        \/ eccounts[t] = EmptyEccounts
         \/ DifferentEccounts(t) /\ NonEmptyEccounts(t)
     /\ \A t \in Dransfer: pc[t] = "init" => initPrecond(t)
     /\ \A t \in Dransfer:

@@ -51,7 +51,7 @@ THEOREM initProperty == ASSUME Init PROVE IndInv
 <1>1 IsFiniteSet(kredits) BY FS_EmptySet
 <1>2 IsFiniteSet(bebits) BY FS_EmptySet
 <1>3 IsFiniteSet(pendingDrans) BY FS_EmptySet
-<1>4 accounts \in [Dransfer -> EEccounts] BY DEF EEccount, EmptyEccounts, EEccounts
+<1>4 eccounts \in [Dransfer -> EEccounts] BY DEF EEccount, EmptyEccounts, EEccounts
 <1>5 pcLabels BY DEF pcLabels, ProcSet
 <1>6 \A t \in Dransfer: pc[t] = "init" => initPrecond(t)
     BY DEF initPrecond, isTransKnown, isTransKnownToItem
@@ -79,7 +79,7 @@ PROVE IndInv'
 <1>5 pendingDrans' \in SUBSET TN BY DEF retryDebit
 <1>6 IsFiniteSet(pendingDrans)' BY DEF retryDebit
 <1>7 emount' \in [Dransfer -> Nat] BY DEF retryDebit
-<1>8 accounts' \in [Dransfer -> EEccounts] BY DEF retryDebit
+<1>8 eccounts' \in [Dransfer -> EEccounts] BY DEF retryDebit
 
 <1>9 pc'[self] \in {"credit", "debit"} BY DEF retryDebit, pcLabels
 <1>10 pcLabels' BY <1>9 DEF retryDebit, pcLabels
@@ -89,7 +89,7 @@ PROVE IndInv'
 <1>12 Imbalance' = 0 BY <1>11
 
 <1>13 \A t \in Dransfer:
-    (\/ accounts[t] = EmptyEccounts
+    (\/ eccounts[t] = EmptyEccounts
      \/ DifferentEccounts(t) /\ NonEmptyEccounts(t))'
     BY DEF retryDebit, EmptyEccounts, DifferentEccounts, NonEmptyEccounts
 
@@ -134,7 +134,7 @@ BY DEF init, AmountPendingTotal
 THEOREM init_IndInv == ASSUME IndInv, NEW self \in Dransfer, init(self)
 PROVE IndInv'
 <1> DEFINE am == emount'[self]
-<1> DEFINE selfEccounts == accounts'[self]
+<1> DEFINE selfEccounts == eccounts'[self]
 <1> DEFINE account1 == selfEccounts.from
 <1> DEFINE account2 == selfEccounts.to
 <1> USE DEF IndInv, TypeOK
@@ -149,7 +149,7 @@ PROVE IndInv'
 <1>8 emount' \in [Dransfer -> Nat] BY <1>7 DEF init
 
 <1>9 selfEccounts \in EEccounts BY DEF init, EEccounts, EEccount
-<1>10 accounts' \in [Dransfer -> EEccounts] BY <1>9 DEF init
+<1>10 eccounts' \in [Dransfer -> EEccounts] BY <1>9 DEF init
 
 <1>11 pcLabels' BY DEF init, ProcSet, pcLabels
 
@@ -160,11 +160,11 @@ PROVE IndInv'
 <1>15 account1 # Empty BY <1>14 DEF init
 <1>16 account2 # Empty BY <1>14 DEF init
 <1>17 account1 # account2 BY DEF init
-<1>18 (\/ accounts[self] = EmptyEccounts
+<1>18 (\/ eccounts[self] = EmptyEccounts
        \/ DifferentEccounts(self) /\ NonEmptyEccounts(self))'
     BY <1>15, <1>16, <1>17 DEF DifferentEccounts, NonEmptyEccounts
 <1>19 \A t \in Dransfer:
-    (\/ accounts[t] = EmptyEccounts
+    (\/ eccounts[t] = EmptyEccounts
      \/ DifferentEccounts(t) /\ NonEmptyEccounts(t))'
     BY <1>18 DEF init, EmptyEccounts, DifferentEccounts, NonEmptyEccounts
 
@@ -211,7 +211,7 @@ PROVE IndInv'
 LEMMA debit_DebitTotal_debitPrecond_success == ASSUME IndInv, NEW self \in Dransfer, debit(self),
 debitPrecond(self), ~(UNCHANGED <<bebits, pendingDrans>>)
 PROVE DebitTotal' = DebitTotal + emount[self]
-<1> DEFINE a == accounts[self].from
+<1> DEFINE a == eccounts[self].from
 <1> DEFINE nadd == <<[a |-> a, t |-> self], emount[self]>>
 <1> USE DEF IndInv, TypeOK, debitPrecond
 <1>1 nadd \notin bebits BY DEF isTransKnown, isTransKnownToItem, AT
@@ -280,12 +280,12 @@ PROVE (
 <1>1 kredits' \in SUBSET (AT \X Nat) BY DEF debit, IndInv, TypeOK
 <1>2 IsFiniteSet(kredits)' BY DEF debit, IndInv, TypeOK
 <1>3 emount' \in [Dransfer -> Nat] BY DEF debit, IndInv, TypeOK
-<1>4 accounts' \in [Dransfer -> EEccounts] BY DEF debit, IndInv, TypeOK
+<1>4 eccounts' \in [Dransfer -> EEccounts] BY DEF debit, IndInv, TypeOK
 <1>5 pc' = [pc EXCEPT ![self] = "retryDebit"] BY DEF debit
 <1>6 pc'[self] = "retryDebit" BY <1>5 DEF pcLabels, IndInv, TypeOK
 <1>7 pcLabels' BY <1>6 DEF debit, pcLabels, ProcSet, IndInv, TypeOK
 <1>8 \A t \in Dransfer:
-    \/ accounts'[t] = EmptyEccounts
+    \/ eccounts'[t] = EmptyEccounts
     \/ DifferentEccounts(t)' /\ NonEmptyEccounts(t)'
     BY DEF debit, EmptyEccounts, DifferentEccounts, NonEmptyEccounts, IndInv, TypeOK
 
@@ -321,7 +321,7 @@ PROVE (
 
 THEOREM debit_IndInv == ASSUME IndInv, NEW self \in Dransfer, debit(self)
 PROVE IndInv'
-<1> DEFINE a == accounts[self].from
+<1> DEFINE a == eccounts[self].from
 <1> DEFINE nadd == <<[a |-> a, t |-> self], emount[self]>>
 <1> DEFINE ptAdd == <<self, emount[self]>>
 <1> USE DEF IndInv, TypeOK, CommonIndInv
@@ -344,7 +344,7 @@ PROVE IndInv'
     <2>13 (AmountIsPending(self) <=> TransInPendingTrans(self))'
         <3>1 ~AmountIsPending(self) BY <1>1 DEF debit, AmountIsPending, creditPrecond,
             debitPrecond, pcLabels, isTransKnown, isTransKnownToItem, AT
-        <3>2 \E dc \in bebits': dc[1].a = accounts[self].from /\ dc[1].t = self BY <1>1 DEF debit
+        <3>2 \E dc \in bebits': dc[1].a = eccounts[self].from /\ dc[1].t = self BY <1>1 DEF debit
         <3>3 AmountIsPending(self)' BY <1>1, <3>2 DEF debit, AmountIsPending, creditPrecond,
             pcLabels, isTransKnown, isTransKnownToItem, AT
         <3>4 ~TransInPendingTrans(self) BY <1>1, <3>1 DEF debit, TransPendingEquivalence
@@ -413,7 +413,7 @@ BY DEF credit, AmountPendingTotal
 LEMMA credit_CreditTotal == ASSUME IndInv, NEW self \in Dransfer, credit(self),
 creditPrecond(self)
 PROVE CreditTotal' = CreditTotal + emount[self]
-<1> DEFINE a == accounts[self].to
+<1> DEFINE a == eccounts[self].to
 <1> DEFINE nadd == <<[a |-> a, t |-> self], emount[self]>>
 <1> USE DEF IndInv, TypeOK, creditPrecond
 <1>1 nadd \notin kredits BY DEF isTransKnown, isTransKnownToItem, AT
@@ -467,11 +467,11 @@ PROVE (
 <1>1 bebits' \in SUBSET (AT \X Nat) BY DEF credit, IndInv, TypeOK
 <1>2 IsFiniteSet(bebits)' BY DEF credit
 <1>3 emount' \in [Dransfer -> Nat] BY DEF credit, IndInv, TypeOK
-<1>4 accounts' \in [Dransfer -> EEccounts] BY DEF credit, IndInv, TypeOK
+<1>4 eccounts' \in [Dransfer -> EEccounts] BY DEF credit, IndInv, TypeOK
 <1>5 pc[self]' = "Done" BY DEF credit, pcLabels
 <1>6 pcLabels' BY <1>5 DEF credit, pcLabels, ProcSet
 <1>7 \A t \in Dransfer:
-    \/ accounts'[t] = EmptyEccounts
+    \/ eccounts'[t] = EmptyEccounts
     \/ DifferentEccounts(t)' /\ NonEmptyEccounts(t)'
     BY DEF credit, EmptyEccounts, DifferentEccounts, NonEmptyEccounts, IndInv, TypeOK
 
@@ -514,7 +514,7 @@ PROVE (
         <3>3 creditPrecond(self)' = creditPrecond(self) BY <2>1 DEF credit, creditPrecond
         <3> QED BY <3>1, <2>1, <3>2, <3>3 DEF TransInPendingTrans, credit, AmountIsPending
      <2>2 CASE creditPrecond(self)
-        <3> DEFINE a == accounts[self].to
+        <3> DEFINE a == eccounts[self].to
         <3> DEFINE nadd == <<[a |-> a, t |-> self], emount[self]>>
         <3> DEFINE ptAdd == <<self, emount[self]>>
         <3>1 kredits' = kredits \cup {nadd} BY <2>2 DEF credit
@@ -534,7 +534,7 @@ PROVE (
 
 THEOREM credit_IndInv == ASSUME IndInv, NEW self \in Dransfer, credit(self)
 PROVE IndInv'
-<1> DEFINE a == accounts[self].to
+<1> DEFINE a == eccounts[self].to
 <1> DEFINE nadd == <<[a |-> a, t |-> self], emount[self]>>
 <1> USE DEF IndInv, TypeOK, CommonIndInv
 <1>1 CASE creditPrecond(self)
@@ -576,10 +576,10 @@ THEOREM unchangedVarsProperty == IndInv /\ UNCHANGED vars => IndInv'
     TransPendingEquivalence, TransInPendingTrans, AmountIsPending, creditPrecond,
     PendingTransDerived
 <1>2 (/\ \A t \in Dransfer:
-        \/ accounts[t] = EmptyEccounts
+        \/ eccounts[t] = EmptyEccounts
         \/ DifferentEccounts(t) /\ NonEmptyEccounts(t))' =
       /\ \A t \in Dransfer:
-        \/ accounts[t] = EmptyEccounts
+        \/ eccounts[t] = EmptyEccounts
         \/ DifferentEccounts(t) /\ NonEmptyEccounts(t)
     BY DEF DifferentEccounts, NonEmptyEccounts
 <1>3 (/\ \A t \in Dransfer: pc[t] = "init" => initPrecond(t))' =
