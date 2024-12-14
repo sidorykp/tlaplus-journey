@@ -429,7 +429,7 @@ PROVE IndInv'
 <1> DEFINE a == eccounts[self].to
 <1> DEFINE nadd == <<[a |-> a, t |-> self], emount[self]>>
 <1> USE DEF IndInv, TypeOK, CommonIndInv
-<1>1 CASE creditPrecond(self)
+<1>1 CASE creditPrecond(self) /\ ~(UNCHANGED <<kredits, pendingDrans>>)
     <2>3 kredits' = kredits \cup {nadd} BY <1>1 DEF credit
     <2>4 a \in EEccount BY DEF EEccounts
     <2>5 a # Empty BY DEF credit, NonEmptyEccounts
@@ -440,7 +440,7 @@ PROVE IndInv'
     <2>9 IsFiniteSet(kredits)' BY <1>1, FS_AddElement DEF credit
     <2> QED BY <2>8, <2>9, <1>1, credit_IndInv_common, credit_Imbalance
         DEF IndInv, TypeOK, CommonIndInv
-<1>2 CASE ~creditPrecond(self)
+<1>2 CASE ~creditPrecond(self) \/ UNCHANGED <<kredits, pendingDrans>>
     <2>3 kredits' \in SUBSET (AT \X Nat) BY <1>2 DEF credit
     <2>4 IsFiniteSet(kredits)' BY <1>2 DEF credit
     <2> QED BY <2>3, <2>4, <1>1, credit_IndInv_common, credit_Imbalance
