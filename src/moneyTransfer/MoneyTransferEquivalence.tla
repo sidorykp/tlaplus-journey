@@ -35,7 +35,6 @@ PROVE init(self)
     E!isTransKnown, isTransKnown,
     AmountIsPending, creditPrecond
 
-
 THEOREM initEquivalenceRev == ASSUME NEW self \in Transfer, init(self), IndInv
 PROVE E!init(self)
 <1>1 ~AmountIsPending(self) BY DEF init, AmountIsPending, creditPrecond,
@@ -55,7 +54,6 @@ PROVE E!init(self)
     E!isTransKnown, isTransKnown,
     AmountIsPending, creditPrecond
 
-
 THEOREM debitEquivalence == ASSUME NEW self \in Transfer, E!debit(self)
 PROVE debit(self)
 BY DEF E!debit, debit, pendingTransDerived,
@@ -66,7 +64,7 @@ THEOREM debitEquivalenceRev == ASSUME NEW self \in Transfer, debit(self)
 PROVE E!debit(self)
 BY DEF E!debit, debit, pendingTransDerived,
     AmountIsPending, debitPrecond, isTransKnown,
-    E!debitPrecond
+    E!debitPrecond, E!isTransKnown
     
 THEOREM retryDebitEquivalence == ASSUME NEW self \in Transfer, E!retryDebit(self)
 PROVE retryDebit(self)
@@ -84,7 +82,7 @@ PROVE retryDebit(self)
     <2> QED BY <1>2, <2>1 DEF E!retryDebit, retryDebit
 <1> QED BY <1>1, <1>2
     
-THEOREM retryDebitEquivalenceRev == ASSUME NEW self \in Transfer, retryDebit(self)
+THEOREM retryDebitEquivalenceRev == ASSUME NEW self \in Transfer, retryDebit(self), IndInv
 PROVE E!retryDebit(self)
 <1>1 CASE debitPrecond(self)
     <2>1 E!debitPrecond(self) BY <1>1 DEF
@@ -93,7 +91,7 @@ PROVE E!retryDebit(self)
         E!isTransKnown, isTransKnown
     <2>2 UNCHANGED pendingTransDerived
         BY <1>1, <2>1 DEF retryDebit, pendingTransDerived, AmountIsPending,
-            creditPrecond, isTransKnown
+            creditPrecond, isTransKnown, IndInv, TypeOK
     <2> QED BY <1>1, <2>1, <2>2 DEF E!retryDebit, retryDebit
 <1>2 CASE ~debitPrecond(self)
     <2>1 ~E!debitPrecond(self) BY <1>2 DEF
@@ -108,7 +106,7 @@ PROVE E!retryDebit(self)
 THEOREM creditEquivalence == ASSUME NEW self \in Transfer, E!credit(self)
 PROVE credit(self)
 BY DEF E!credit, credit, pendingTransDerived,
-    E!creditPrecond
+    E!creditPrecond, E!isTransKnown
 
 THEOREM creditEquivalenceRev == ASSUME NEW self \in Transfer, credit(self)
 PROVE E!credit(self)
