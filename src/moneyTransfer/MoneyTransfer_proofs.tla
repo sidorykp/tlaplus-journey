@@ -376,19 +376,19 @@ PROVE IndInv'
 <1> DEFINE nadd == <<[a |-> a, t |-> self], amount[self]>>
 <1> USE DEF IndInv, TypeOK, CommonIndInv
 <1>1 CASE debitPrecond(self) /\ ~(UNCHANGED debits)
-    <2>3 debits' = debits \cup {nadd} BY <1>1 DEF debit
-    <2>4 a \in EAccount BY DEF EAccounts
-    <2>5 a # Empty BY DEF debit, NonEmptyAccounts
-    <2>6 a \in Account BY <2>4, <2>5 DEF EAccount
-    <2>7 nadd \in AT \X Nat BY <2>6, transAmountInNat DEF AT
-    <2>8 debits' \in SUBSET (AT \X Nat)
-        BY <2>3, <2>7
-    <2>9 IsFiniteSet(debits)' BY <1>1, FS_AddElement DEF debit
-    <2> QED BY <2>8, <2>9, <1>1, debit_IndInv_common, debit_Imbalance
+    <2>1 debits' = debits \cup {nadd} BY <1>1 DEF debit
+    <2>2 a \in EAccount BY DEF EAccounts
+    <2>3 a # Empty BY DEF debit, NonEmptyAccounts
+    <2>4 a \in Account BY <2>2, <2>3 DEF EAccount
+    <2>5 nadd \in AT \X Nat BY <2>4, transAmountInNat DEF AT
+    <2>6 debits' \in SUBSET (AT \X Nat)
+        BY <2>1, <2>5
+    <2>7 IsFiniteSet(debits)' BY <1>1, FS_AddElement DEF debit
+    <2> QED BY <2>6, <2>7, <1>1, debit_IndInv_common, debit_Imbalance
 <1>2 CASE ~debitPrecond(self) \/ UNCHANGED debits
-    <2>3 debits' \in SUBSET (AT \X Nat) BY <1>2 DEF debit
-    <2>4 IsFiniteSet(debits)' BY <1>2 DEF debit
-    <2> QED BY <2>3, <2>4, <1>1, debit_IndInv_common, debit_Imbalance
+    <2>1 debits' \in SUBSET (AT \X Nat) BY <1>2 DEF debit
+    <2>2 IsFiniteSet(debits)' BY <1>2 DEF debit
+    <2> QED BY <2>1, <2>2, <1>1, debit_IndInv_common, debit_Imbalance
 <1> QED BY <1>1, <1>2
 
 
