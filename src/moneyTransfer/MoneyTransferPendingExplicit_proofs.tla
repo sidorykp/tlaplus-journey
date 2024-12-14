@@ -321,16 +321,9 @@ PROVE AmountPendingTotal' = AmountPendingTotal - emount[self]
 <1> QED BY <1>5, <1>6, <1>9 DEF AmountPendingTotal
 
 
-\* practically a copy of init_AmountPendingTotal
-LEMMA credit_AmountPendingTotal_notCreditPrecond == ASSUME IndInv, NEW self \in Dransfer, credit(self),
-~creditPrecond(self)
-PROVE AmountPendingTotal' = AmountPendingTotal
-BY DEF credit, AmountPendingTotal
-
-
 \* practically a copy of debit_DebitTotal
-LEMMA credit_CreditTotal == ASSUME IndInv, NEW self \in Dransfer, credit(self),
-creditPrecond(self)
+LEMMA credit_CreditTotal_success == ASSUME IndInv, NEW self \in Dransfer, credit(self),
+creditPrecond(self), ~(UNCHANGED <<kredits, pendingDrans>>)
 PROVE CreditTotal' = CreditTotal + emount[self]
 <1> DEFINE a == eccounts[self].to
 <1> DEFINE nadd == <<[a |-> a, t |-> self], emount[self]>>
@@ -346,14 +339,20 @@ PROVE CreditTotal' = CreditTotal + emount[self]
     BY <1>5 DEF CreditTotal, MapThenSumSetTerse, MapThenSumSet, MapThenFoldSet
 <1> QED BY <1>6 DEF opEmount
 
+\* practically a copy of init_AmountPendingTotal
+LEMMA credit_AmountPendingTotal_notCreditPrecond_or_retryCredit == ASSUME IndInv, NEW self \in Dransfer, credit(self),
+~creditPrecond(self) \/ UNCHANGED <<kredits, pendingDrans>>
+PROVE AmountPendingTotal' = AmountPendingTotal
+BY DEF credit, AmountPendingTotal
+
 
 LEMMA credit_Imbalance == ASSUME IndInv, NEW self \in Dransfer, credit(self)
 PROVE Imbalance' = Imbalance
 <1>1 bebits' = bebits BY DEF credit
 <1>2 DebitTotal' = DebitTotal
     BY <1>1 DEF DebitTotal
-<1>3 CASE creditPrecond(self)
-    <2>1 CreditTotal' = CreditTotal + emount[self] BY <1>3, credit_CreditTotal
+<1>3 CASE creditPrecond(self) /\ ~UNCHANGED <<kredits, pendingDrans>>
+    <2>1 CreditTotal' = CreditTotal + emount[self] BY <1>3, credit_CreditTotal_success
     <2>2 AmountPendingTotal' = AmountPendingTotal - emount[self] BY <1>3, credit_AmountPendingTotal_creditPrecond
     <2>3 emount[self] \in Nat BY DEF IndInv, TypeOK
     <2>4 \A c \in kredits: opEmount(c) \in Nat BY DEF opEmount, IndInv, TypeOK
@@ -364,10 +363,13 @@ PROVE Imbalance' = Imbalance
         MapThenSumSetTerse, MapThenSumSet, MapThenFoldSet
     <2>8 AmountPendingTotal \in Nat BY AmountPendingTotalInNat, NDransferAssumption
     <2>9 CreditTotal' + AmountPendingTotal' = CreditTotal + AmountPendingTotal BY <2>1, <2>2, <2>3, <2>5, <2>8
-    <2>10 (CreditTotal' + AmountPendingTotal') - DebitTotal' = (CreditTotal + AmountPendingTotal) - DebitTotal BY <1>2, <2>9
-    <2> QED BY <2>5, <2>7, <2>8, <2>10, <1>2 DEF Imbalance, credit
-<1>4 CASE ~creditPrecond(self)
-    <2>1 AmountPendingTotal' = AmountPendingTotal BY <1>4, credit_AmountPendingTotal_notCreditPrecond
+    <2>10 (CreditTotal' + AmountPendingTotal') - DebitTotal' = (CreditTotal + AmountPendingTotal) - DebitTotal
+        BY <1>2, <2>9
+    <2>11 CreditTotal' - DebitTotal' + AmountPendingTotal' = CreditTotal - DebitTotal + AmountPendingTotal
+        BY <2>10 DEF credit
+    <2> QED BY <2>11 DEF Imbalance, credit
+<1>4 CASE ~creditPrecond(self) \/ UNCHANGED <<kredits, pendingDrans>>
+    <2>1 AmountPendingTotal' = AmountPendingTotal BY <1>4, credit_AmountPendingTotal_notCreditPrecond_or_retryCredit
     <2>2 CreditTotal' = CreditTotal BY <1>4 DEF credit
     <2> QED BY <1>2, <2>1, <2>2 DEF credit, Imbalance
 <1> QED BY <1>3, <1>4
