@@ -68,12 +68,38 @@ THEOREM retryDebit_AmountPendingTotal == ASSUME IndInv, NEW self \in Dransfer, r
 PROVE AmountPendingTotal' = AmountPendingTotal
 BY DEF retryDebit, AmountPendingTotal
 
-
 THEOREM retryDebit_IndInv == ASSUME IndInv, NEW self \in Dransfer, retryDebit(self)
 PROVE IndInv'
 <1> USE DEF IndInv, TypeOK, retryDebit
 <1>1 pcLabels' BY DEF pcLabels
 <1>2 Imbalance' = Imbalance BY retryDebit_AmountPendingTotal
+    DEF Imbalance, creditPrecond, CreditTotal, DebitTotal
+<1>3 Imbalance' = 0 BY <1>2
+<1>4 \A t \in Dransfer:
+    (\/ eccounts[t] = EmptyEccounts
+     \/ DifferentEccounts(t) /\ NonEmptyEccounts(t))'
+    BY DEF EmptyEccounts, DifferentEccounts, NonEmptyEccounts
+<1>5 \A t \in Dransfer: pc'[t] = "init" => initPrecond(t)'
+    BY DEF pcLabels
+<1>6 \A t \in Dransfer: pc'[t] \notin {"init"} <=> NonEmptyEccounts(t)'
+    BY DEF NonEmptyEccounts, pcLabels
+<1>7 TransPendingEquivalence' BY DEF TransPendingEquivalence, TransInPendingTrans,
+    pcLabels, AmountIsPending, creditPrecond, isTransKnown
+<1>8 PendingTransDerived' BY DEF PendingTransDerived
+<1> QED BY <1>1, <1>3, <1>4, <1>5, <1>6, <1>7, <1>8
+
+
+\* a copy of retryDebit_AmountPendingTotal
+THEOREM retryCredit_AmountPendingTotal == ASSUME IndInv, NEW self \in Dransfer, retryCredit(self)
+PROVE AmountPendingTotal' = AmountPendingTotal
+BY DEF retryCredit, AmountPendingTotal
+
+\* a copy of retryDebit_IndInv
+THEOREM retryCredit_IndInv == ASSUME IndInv, NEW self \in Dransfer, retryCredit(self)
+PROVE IndInv'
+<1> USE DEF IndInv, TypeOK, retryCredit
+<1>1 pcLabels' BY DEF pcLabels
+<1>2 Imbalance' = Imbalance BY retryCredit_AmountPendingTotal
     DEF Imbalance, creditPrecond, CreditTotal, DebitTotal
 <1>3 Imbalance' = 0 BY <1>2
 <1>4 \A t \in Dransfer:
@@ -469,7 +495,8 @@ PROVE IndInv'
 <1>2 CASE debit(self) BY <1>2, debit_IndInv
 <1>3 CASE retryDebit(self) BY <1>3, retryDebit_IndInv
 <1>4 CASE credit(self) BY <1>4, credit_IndInv
-<1> QED BY <1>1, <1>2, <1>3, <1>4 DEF trans
+<1>5 CASE retryCredit(self) BY <1>5, retryCredit_IndInv
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5 DEF trans
 
 
 THEOREM unchangedVarsProperty == IndInv /\ UNCHANGED vars => IndInv'
