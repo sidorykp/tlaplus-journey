@@ -464,51 +464,27 @@ PROVE (
     /\ CommonIndInv
     /\ TransPendingEquivalence
     /\ PendingTransDerived)'
-<1> USE DEF CommonIndInv
-<1>1 bebits' \in SUBSET (AT \X Nat) BY DEF credit, IndInv, TypeOK
+<1> USE DEF IndInv, TypeOK, CommonIndInv
+<1>1 bebits' \in SUBSET (AT \X Nat) BY DEF credit
 <1>2 IsFiniteSet(bebits)' BY DEF credit
-<1>3 emount' \in [Dransfer -> Nat] BY DEF credit, IndInv, TypeOK
-<1>4 eccounts' \in [Dransfer -> EEccounts] BY DEF credit, IndInv, TypeOK
-<1>5 pc[self]' = "Done" BY DEF credit, pcLabels
-<1>6 pcLabels' BY <1>5 DEF credit, pcLabels, ProcSet
-<1>7 \A t \in Dransfer:
+<1>3 emount' \in [Dransfer -> Nat] BY DEF credit
+<1>4 eccounts' \in [Dransfer -> EEccounts] BY DEF credit
+<1>5 pcLabels' BY DEF credit, pcLabels
+<1>6 \A t \in Dransfer:
     \/ eccounts'[t] = EmptyEccounts
     \/ DifferentEccounts(t)' /\ NonEmptyEccounts(t)'
-    BY DEF credit, EmptyEccounts, DifferentEccounts, NonEmptyEccounts, IndInv, TypeOK
-
-<1>8 pc' = [pc EXCEPT ![self] = "Done"] BY DEF credit
-<1>9 pc'[self] = "init" => initPrecond(self)' BY <1>5
-<1>10 \A t \in Dransfer \ {self}: pc[t]' = pc[t]
-    BY <1>8 DEF pcLabels, IndInv, TypeOK
-<1>11 \A t \in Dransfer: pc'[t] = "init" => initPrecond(t)'
-    BY <1>9, <1>10 DEF IndInv
-
-<1>12 \A t \in Dransfer: pc[t] \notin {"init"} <=> NonEmptyEccounts(t)
-    BY DEF IndInv
-<1>13 \A t \in Dransfer: NonEmptyEccounts(t)' = NonEmptyEccounts(t)
+    BY DEF credit, EmptyEccounts, DifferentEccounts, NonEmptyEccounts
+<1>7 \A t \in Dransfer: pc'[t] = "init" => initPrecond(t)' BY DEF credit, pcLabels
+<1>8 \A t \in Dransfer: NonEmptyEccounts(t)' = NonEmptyEccounts(t)
     BY DEF credit, NonEmptyEccounts
-<1>14 NonEmptyEccounts(self)' = NonEmptyEccounts(self)
-    BY <1>13
-<1>15 pc[self] \notin {"init"} <=> NonEmptyEccounts(self)
-    BY <1>12
-<1>16 pc[self] \notin {"init"} BY DEF credit
-<1>17 pc'[self] \notin {"init"} BY <1>5
-<1>18 pc'[self] \notin {"init"} <=> NonEmptyEccounts(self)'
-    BY <1>14, <1>15, <1>16, <1>17
-
-<1>19 \A t \in Dransfer \ {self}: pc'[t] \notin {"init"} <=> pc[t] \notin {"init"}
-    BY <1>10
-<1>20 \A t \in Dransfer \ {self}: pc'[t] \notin {"init"} <=> NonEmptyEccounts(t)'
-    BY <1>12, <1>13, <1>19
-
-<1>21 \A t \in Dransfer: pc'[t] \notin {"init"} <=> NonEmptyEccounts(t)'
-    BY <1>18, <1>20
-
-<1>22 bebits' = bebits BY DEF credit
-<1>23 pendingDrans' \in SUBSET TN  BY DEF credit, IndInv, TypeOK
-<1>24 IsFiniteSet(pendingDrans)' BY DEF credit
-<1> HIDE DEF IndInv, TypeOK, CommonIndInv
-<1>25 AmountIsPending(self)' <=> TransInPendingTrans(self)'
+<1>9 NonEmptyEccounts(self)' = NonEmptyEccounts(self)
+    BY <1>8
+<1>10 \A t \in Dransfer: pc'[t] \notin {"init"} <=> NonEmptyEccounts(t)'
+    BY <1>8, <1>9 DEF credit, pcLabels
+<1>11 bebits' = bebits BY DEF credit
+<1>12 pendingDrans' \in SUBSET TN  BY DEF credit
+<1>13 IsFiniteSet(pendingDrans)' BY DEF credit, TN, AT, FS_RemoveElement
+<1>14 AmountIsPending(self)' <=> TransInPendingTrans(self)'
     <2>1 CASE ~creditPrecond(self)
         <3>1 kredits' = kredits BY <2>1 DEF credit
         <3>2 pendingDrans' = pendingDrans BY <2>1 DEF credit
@@ -521,16 +497,18 @@ PROVE (
         <3>1 kredits' = kredits \cup {nadd} BY <2>2 DEF credit
         <3>2 pendingDrans' = pendingDrans \ {ptAdd} BY <2>2 DEF credit
         <3> QED BY <2>2, <3>1, <3>2
-            DEF TransInPendingTrans, credit, AmountIsPending
+            DEF TransInPendingTrans, credit, AmountIsPending, pcLabels
      <2> QED BY <2>1, <2>2
-
-<1>26 TransPendingEquivalence'
-    BY <1>25 DEF credit, TransPendingEquivalence, TransInPendingTrans
-
-<1>27 PendingTransDerived' BY DEF credit, PendingTransDerived, IndInv, TypeOK
-
-<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>6, <1>7, <1>11, <1>21, <1>23, <1>24, <1>26, <1>27, credit_Imbalance
-    DEF IndInv, TypeOK, CommonIndInv
+<1>15 TransPendingEquivalence'
+    <2>1 CASE ~creditPrecond(self) BY <2>1, <1>14 DEF credit, TransPendingEquivalence,
+        TransInPendingTrans, AmountIsPending, pcLabels
+    <2>2 CASE creditPrecond(self) BY <2>2, <1>14 DEF credit, TransPendingEquivalence,
+        TransInPendingTrans, AmountIsPending, pcLabels, creditPrecond,
+        isTransKnown, isTransKnownToItem
+    <2> QED BY <2>1, <2>2
+<1>16 PendingTransDerived' BY DEF credit, PendingTransDerived
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>7, <1>10, <1>12, <1>13, <1>15, <1>16,
+    credit_Imbalance
 
 
 THEOREM credit_IndInv == ASSUME IndInv, NEW self \in Dransfer, credit(self)
