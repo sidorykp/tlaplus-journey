@@ -276,47 +276,31 @@ PROVE (
     /\ kredits \in SUBSET (AT \X Nat)
     /\ IsFiniteSet(kredits)
     /\ CommonIndInv)'
-<1> USE DEF CommonIndInv
-<1>1 kredits' \in SUBSET (AT \X Nat) BY DEF debit, IndInv, TypeOK
-<1>2 IsFiniteSet(kredits)' BY DEF debit, IndInv, TypeOK
-<1>3 emount' \in [Dransfer -> Nat] BY DEF debit, IndInv, TypeOK
-<1>4 eccounts' \in [Dransfer -> EEccounts] BY DEF debit, IndInv, TypeOK
-<1>5 pc' = [pc EXCEPT ![self] = "retryDebit"] BY DEF debit
-<1>6 pc'[self] = "retryDebit" BY <1>5 DEF pcLabels, IndInv, TypeOK
-<1>7 pcLabels' BY <1>6 DEF debit, pcLabels, ProcSet, IndInv, TypeOK
-<1>8 \A t \in Dransfer:
+<1> USE DEF IndInv, TypeOK, CommonIndInv
+<1>1 kredits' \in SUBSET (AT \X Nat) BY DEF debit
+<1>2 IsFiniteSet(kredits)' BY DEF debit
+<1>3 emount' \in [Dransfer -> Nat] BY DEF debit
+<1>4 eccounts' \in [Dransfer -> EEccounts] BY DEF debit
+<1>5 pcLabels' BY DEF debit, pcLabels
+<1>6 \A t \in Dransfer:
     \/ eccounts'[t] = EmptyEccounts
     \/ DifferentEccounts(t)' /\ NonEmptyEccounts(t)'
-    BY DEF debit, EmptyEccounts, DifferentEccounts, NonEmptyEccounts, IndInv, TypeOK
-
-<1>9 pc'[self] = "init" => initPrecond(self)' BY <1>6
-<1>10 \A t \in Dransfer \ {self}: pc[t]' = pc[t]
-    BY <1>5 DEF pcLabels, IndInv, TypeOK
-<1>11 \A t \in Dransfer: pc'[t] = "init" => initPrecond(t)'
-    BY <1>9, <1>10 DEF IndInv
-
-<1>12 \A t \in Dransfer: pc[t] \notin {"init"} <=> NonEmptyEccounts(t)
-    BY DEF IndInv
-<1>13 \A t \in Dransfer: NonEmptyEccounts(t)' = NonEmptyEccounts(t)
+    BY DEF debit, EmptyEccounts, DifferentEccounts, NonEmptyEccounts
+<1>7 \A t \in Dransfer: pc'[t] = "init" => initPrecond(t)'
+    BY DEF debit, pcLabels, IndInv, TypeOK
+<1>8 \A t \in Dransfer: NonEmptyEccounts(t)' = NonEmptyEccounts(t)
     BY DEF debit, NonEmptyEccounts
-<1>14 NonEmptyEccounts(self)' = NonEmptyEccounts(self)
-    BY <1>13
-<1>15 pc[self] \notin {"init"} <=> NonEmptyEccounts(self)
-    BY <1>12
-<1>16 pc[self] \notin {"init"} BY DEF debit
-<1>17 pc'[self] \notin {"init"} BY <1>6
-<1>18 pc'[self] \notin {"init"} <=> NonEmptyEccounts(self)'
-    BY <1>14, <1>15, <1>16, <1>17
-
-<1>19 \A t \in Dransfer \ {self}: pc'[t] \notin {"init"} <=> pc[t] \notin {"init"}
-    BY <1>10
-<1>20 \A t \in Dransfer \ {self}: pc'[t] \notin {"init"} <=> NonEmptyEccounts(t)'
-    BY <1>12, <1>13, <1>19
-
-<1>21 \A t \in Dransfer: pc'[t] \notin {"init"} <=> NonEmptyEccounts(t)'
-    BY <1>18, <1>20
-
-<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>7, <1>8, <1>11, <1>21, debit_Imbalance DEF IndInv
+<1>9 NonEmptyEccounts(self)' = NonEmptyEccounts(self)
+    BY <1>8
+<1>10 pc'[self] \notin {"init"} <=> NonEmptyEccounts(self)'
+    BY <1>8 DEF debit
+<1>11 \A t \in Dransfer \ {self}: pc'[t] \notin {"init"} <=> pc[t] \notin {"init"}
+    BY DEF debit, pcLabels
+<1>12 \A t \in Dransfer \ {self}: pc'[t] \notin {"init"} <=> NonEmptyEccounts(t)'
+    BY <1>8, <1>11
+<1>13 \A t \in Dransfer: pc'[t] \notin {"init"} <=> NonEmptyEccounts(t)'
+    BY <1>10, <1>12
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>7, <1>13, debit_Imbalance
 
 
 THEOREM debit_IndInv == ASSUME IndInv, NEW self \in Dransfer, debit(self)
