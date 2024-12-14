@@ -435,7 +435,8 @@ PROVE (
         <3>1 AmountIsPending(self)' = AmountIsPending(self) BY <2>1 DEF credit, AmountIsPending
         <3>2 TransInPendingTrans(self)' = TransInPendingTrans(self) BY <2>1
             DEF credit, TransInPendingTrans
-        <3> QED BY <2>1, <3>1, <3>2 DEF credit, TransPendingEquivalence
+        <3> QED BY <2>1, <3>1, <3>2 DEF credit, TransPendingEquivalence,
+            AmountIsPending, TransInPendingTrans, pcLabels, creditPrecond
     <2>2 CASE creditPrecond(self) BY <2>2, <1>14 DEF credit, TransPendingEquivalence,
         TransInPendingTrans, AmountIsPending, pcLabels, creditPrecond,
         isTransKnown
@@ -486,8 +487,7 @@ THEOREM unchangedVarsProperty == IndInv /\ UNCHANGED vars => IndInv'
     OBVIOUS
 <1> USE DEF vars
 <1>1 TypeOK' = TypeOK BY DEF TypeOK, pcLabels,
-    TransPendingEquivalence, TransInPendingTrans, AmountIsPending, creditPrecond,
-    PendingTransDerived
+    TransInPendingTrans, AmountIsPending, creditPrecond
 <1>2 (/\ \A t \in Dransfer:
         \/ eccounts[t] = EmptyEccounts
         \/ DifferentEccounts(t) /\ NonEmptyEccounts(t))' =
@@ -506,10 +506,10 @@ THEOREM unchangedVarsProperty == IndInv /\ UNCHANGED vars => IndInv'
 <1>5 CreditTotal' = CreditTotal BY DEF CreditTotal
 <1>6 DebitTotal' = DebitTotal BY DEF DebitTotal
 <1>7 AmountPendingTotal' = AmountPendingTotal BY DEF AmountPendingTotal
-
 <1>8 (Imbalance = 0)' = (Imbalance = 0) BY <1>5, <1>6, <1>7 DEF Imbalance
-
-<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>8 DEF IndInv
+<1>9 TransPendingEquivalence' = TransPendingEquivalence BY DEF TransPendingEquivalence,
+    IndInv, TypeOK, AmountIsPending, TransInPendingTrans, pcLabels, creditPrecond
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>8, <1>9 DEF IndInv
 
 
 THEOREM nextTerminating == ASSUME IndInv, Next, Terminating

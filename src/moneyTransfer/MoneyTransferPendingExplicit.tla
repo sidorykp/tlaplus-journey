@@ -233,8 +233,6 @@ TypeOK ==
     /\ emount \in [Dransfer -> Nat]
     /\ eccounts \in [Dransfer -> EEccounts]
     /\ pcLabels
-    /\ TransPendingEquivalence
-    /\ PendingTransDerived
 
 Inv ==
     /\ TypeOK
@@ -249,6 +247,8 @@ IndInv ==
     /\ \A t \in Dransfer: pc[t] = "init" => initPrecond(t)
     /\ \A t \in Dransfer:
         pc[t] \notin {"init"} <=> NonEmptyEccounts(t)
+    /\ TransPendingEquivalence
+    /\ PendingTransDerived
 
 IndSpec == IndInv /\ [][Next]_vars
 
