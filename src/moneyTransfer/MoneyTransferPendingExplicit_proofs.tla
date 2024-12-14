@@ -71,31 +71,23 @@ BY DEF retryDebit, AmountPendingTotal
 
 THEOREM retryDebit_IndInv == ASSUME IndInv, NEW self \in Dransfer, retryDebit(self)
 PROVE IndInv'
-<1> USE DEF IndInv, TypeOK
-<1>1 kredits' \in SUBSET (AT \X Nat) BY DEF retryDebit
-<1>2 IsFiniteSet(kredits)' BY DEF retryDebit
-<1>3 bebits' \in SUBSET (AT \X Nat) BY DEF retryDebit
-<1>4 IsFiniteSet(bebits)' BY DEF retryDebit
-<1>5 pendingDrans' \in SUBSET TN BY DEF retryDebit
-<1>6 IsFiniteSet(pendingDrans)' BY DEF retryDebit
-<1>7 emount' \in [Dransfer -> Nat] BY DEF retryDebit
-<1>8 eccounts' \in [Dransfer -> EEccounts] BY DEF retryDebit
-<1>9 pcLabels' BY DEF retryDebit, pcLabels
-<1>10 Imbalance' = Imbalance BY retryDebit_AmountPendingTotal
-    DEF retryDebit, Imbalance, creditPrecond, CreditTotal, DebitTotal
-<1>11 Imbalance' = 0 BY <1>10
-<1>12 \A t \in Dransfer:
+<1> USE DEF IndInv, TypeOK, retryDebit
+<1>1 pcLabels' BY DEF pcLabels
+<1>2 Imbalance' = Imbalance BY retryDebit_AmountPendingTotal
+    DEF Imbalance, creditPrecond, CreditTotal, DebitTotal
+<1>3 Imbalance' = 0 BY <1>2
+<1>4 \A t \in Dransfer:
     (\/ eccounts[t] = EmptyEccounts
      \/ DifferentEccounts(t) /\ NonEmptyEccounts(t))'
-    BY DEF retryDebit, EmptyEccounts, DifferentEccounts, NonEmptyEccounts
-<1>13 \A t \in Dransfer: pc'[t] = "init" => initPrecond(t)'
-    BY DEF retryDebit, pcLabels
-<1>14 \A t \in Dransfer: pc'[t] \notin {"init"} <=> NonEmptyEccounts(t)'
-    BY DEF retryDebit, NonEmptyEccounts, pcLabels
-<1>15 TransPendingEquivalence' BY DEF retryDebit, TransPendingEquivalence, TransInPendingTrans,
+    BY DEF EmptyEccounts, DifferentEccounts, NonEmptyEccounts
+<1>5 \A t \in Dransfer: pc'[t] = "init" => initPrecond(t)'
+    BY DEF pcLabels
+<1>6 \A t \in Dransfer: pc'[t] \notin {"init"} <=> NonEmptyEccounts(t)'
+    BY DEF NonEmptyEccounts, pcLabels
+<1>7 TransPendingEquivalence' BY DEF TransPendingEquivalence, TransInPendingTrans,
     pcLabels, AmountIsPending, creditPrecond, isTransKnown
-<1>16 PendingTransDerived' BY DEF retryDebit, PendingTransDerived
-<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>7, <1>8, <1>9, <1>11, <1>12, <1>13, <1>14, <1>15, <1>16
+<1>8 PendingTransDerived' BY DEF PendingTransDerived
+<1> QED BY <1>1, <1>3, <1>4, <1>5, <1>6, <1>7, <1>8
 
 
 THEOREM init_AmountPendingTotal == ASSUME IndInv, NEW self \in Dransfer, init(self)
