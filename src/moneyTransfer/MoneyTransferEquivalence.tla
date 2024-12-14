@@ -3,15 +3,24 @@ EXTENDS MoneyTransfer, TLAPS, FiniteSetsExt_theorems, FiniteSetTheorems
 
 pendingTransDerived == {<<t, amount[t]>>: t \in {t \in Transfer: AmountIsPending(t)}}
 
-E == INSTANCE MoneyTransferPendingExplicit WITH pendingTrans <- pendingTransDerived
+E == INSTANCE MoneyTransferPendingExplicit
+    WITH
+        pendingDrans <- pendingTransDerived,
+        bebits <- debits,
+        kredits <- credits,
+        emount <- amount,
+        eccounts <- accounts,
+        Dransfer <- Transfer,
+        Eccount <- Account,
+        Evail <- Avail
 
 ASSUME EquivalentSymbolsAssumption ==
-    /\ E!EmptyAccounts = EmptyAccounts
+    /\ E!EmptyEccounts = EmptyAccounts
 
 THEOREM InitEquivalence == E!Init <=> Init
 BY EquivalentSymbolsAssumption DEF E!Init, Init, pendingTransDerived,
     E!ProcSet, ProcSet,
-    AmountIsPending, creditPrecond, isTransKnown, isTransKnownToItem
+    AmountIsPending, creditPrecond, isTransKnown
 
 THEOREM initEquivalence == ASSUME NEW self \in Transfer, E!init(self)
 PROVE init(self)
@@ -19,48 +28,44 @@ PROVE init(self)
     E!init, init,
     E!NNat, NNat,
     E!amountAvail, amountAvail,
-    E!accountCredits, E!accountDebits,
+    E!accountKredits, E!accountBebits,
     accountCredits, accountDebits,
-    E!MapThenSumSetE, MapThenSumSet,
-    E!MapThenFoldSetE, MapThenFoldSet,
-    E!opAmount, opAmount,
-    E!isTransKnown, E!isTransKnownToItem,
-    isTransKnown, isTransKnownToItem,
+    E!MapThenSumSetTerse, MapThenSumSet, MapThenFoldSet,
+    E!opEmount, opAmount,
+    E!isTransKnown, isTransKnown,
     AmountIsPending, creditPrecond
 
 
 THEOREM initEquivalenceRev == ASSUME NEW self \in Transfer, init(self), IndInv
 PROVE E!init(self)
 <1>1 ~AmountIsPending(self) BY DEF init, AmountIsPending, creditPrecond,
-    isTransKnown, isTransKnownToItem, initPrecond
+    isTransKnown, initPrecond
 <1>2 UNCHANGED {<<t, amount[t]>>: t \in {t \in Transfer : AmountIsPending(t)}}
     BY <1>1 DEF init, AmountIsPending, creditPrecond,
-    isTransKnown, isTransKnownToItem, initPrecond, IndInv, TypeOK, pcLabels
+    isTransKnown, initPrecond, IndInv, TypeOK, pcLabels
 <1> QED BY <1>2
     DEF pendingTransDerived,
     E!init, init,
     E!NNat, NNat,
     E!amountAvail, amountAvail,
-    E!accountCredits, E!accountDebits,
+    E!accountKredits, E!accountBebits,
     accountCredits, accountDebits,
-    E!MapThenSumSetE, MapThenSumSet,
-    E!MapThenFoldSetE, MapThenFoldSet,
-    E!opAmount, opAmount,
-    E!isTransKnown, E!isTransKnownToItem,
-    isTransKnown, isTransKnownToItem,
+    E!MapThenSumSetTerse, MapThenSumSet, MapThenFoldSet,
+    E!opEmount, opAmount,
+    E!isTransKnown, isTransKnown,
     AmountIsPending, creditPrecond
 
 
 THEOREM debitEquivalence == ASSUME NEW self \in Transfer, E!debit(self)
 PROVE debit(self)
 BY DEF E!debit, debit, pendingTransDerived,
-    AmountIsPending, debitPrecond, isTransKnown, isTransKnownToItem,
+    AmountIsPending, debitPrecond, isTransKnown,
     E!debitPrecond
 
 THEOREM debitEquivalenceRev == ASSUME NEW self \in Transfer, debit(self)
 PROVE E!debit(self)
 BY DEF E!debit, debit, pendingTransDerived,
-    AmountIsPending, debitPrecond, isTransKnown, isTransKnownToItem,
+    AmountIsPending, debitPrecond, isTransKnown,
     E!debitPrecond
     
 THEOREM retryDebitEquivalence == ASSUME NEW self \in Transfer, E!retryDebit(self)
@@ -69,15 +74,13 @@ PROVE retryDebit(self)
     <2>1 debitPrecond(self) BY <1>1 DEF
         E!retryDebit, retryDebit,
         E!debitPrecond, debitPrecond,
-        E!isTransKnown, isTransKnown,
-        E!isTransKnownToItem, isTransKnownToItem
+        E!isTransKnown, isTransKnown
     <2> QED BY <1>1, <2>1 DEF E!retryDebit, retryDebit
 <1>2 CASE ~E!debitPrecond(self)
     <2>1 ~debitPrecond(self) BY <1>2 DEF
         E!retryDebit, retryDebit,
         E!debitPrecond, debitPrecond,
-        E!isTransKnown, isTransKnown,
-        E!isTransKnownToItem, isTransKnownToItem
+        E!isTransKnown, isTransKnown
     <2> QED BY <1>2, <2>1 DEF E!retryDebit, retryDebit
 <1> QED BY <1>1, <1>2
     
@@ -87,18 +90,16 @@ PROVE E!retryDebit(self)
     <2>1 E!debitPrecond(self) BY <1>1 DEF
         E!retryDebit, retryDebit,
         E!debitPrecond, debitPrecond,
-        E!isTransKnown, isTransKnown,
-        E!isTransKnownToItem, isTransKnownToItem
+        E!isTransKnown, isTransKnown
     <2>2 UNCHANGED pendingTransDerived
         BY <1>1, <2>1 DEF retryDebit, pendingTransDerived, AmountIsPending,
-            creditPrecond, isTransKnown, isTransKnownToItem
+            creditPrecond, isTransKnown
     <2> QED BY <1>1, <2>1, <2>2 DEF E!retryDebit, retryDebit
 <1>2 CASE ~debitPrecond(self)
     <2>1 ~E!debitPrecond(self) BY <1>2 DEF
         E!retryDebit, retryDebit,
         E!debitPrecond, debitPrecond,
-        E!isTransKnown, isTransKnown,
-        E!isTransKnownToItem, isTransKnownToItem
+        E!isTransKnown, isTransKnown
     <2>2 UNCHANGED pendingTransDerived
         BY <1>2, <2>1 DEF retryDebit, pendingTransDerived
     <2> QED BY <1>2, <2>1, <2>2 DEF E!retryDebit, retryDebit
@@ -133,7 +134,7 @@ PROVE E!trans(self)
 
 THEOREM unchangedEquivalence == UNCHANGED E!vars <=> UNCHANGED vars
 BY DEF E!vars, vars, pendingTransDerived, AmountIsPending,
-    creditPrecond, isTransKnown, isTransKnownToItem
+    creditPrecond, isTransKnown
 
 THEOREM terminatingEquivalence == E!Terminating <=> Terminating
 BY unchangedEquivalence DEF E!Terminating, Terminating,
@@ -181,13 +182,13 @@ PROVE E!AmountPendingTotal \in Nat OMITTED
 
 THEOREM DebitTotalEquivalence == E!DebitTotal = DebitTotal
 BY DEF E!DebitTotal, DebitTotal,
-    E!MapThenSumSetE, E!MapThenFoldSetE, MapThenSumSet, MapThenFoldSet,
-    E!opAmount, opAmount
+    E!MapThenSumSetTerse, MapThenSumSet, MapThenFoldSet,
+    E!opEmount, opAmount
 
 THEOREM CreditTotalEquivalence == E!CreditTotal = CreditTotal
 BY DEF E!CreditTotal, CreditTotal,
-    E!MapThenSumSetE, E!MapThenFoldSetE, MapThenSumSet, MapThenFoldSet,
-    E!opAmount, opAmount
+    E!MapThenSumSetTerse, MapThenSumSet, MapThenFoldSet,
+    E!opEmount, opAmount
     
 LEMMA transPendingAmountNat == ASSUME IndInv
 PROVE \A am \in transPending: transAmount(am) \in Nat

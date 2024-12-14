@@ -1,7 +1,7 @@
 ----MODULE MoneyTransfer----
 EXTENDS Naturals, FiniteSets, FiniteSetsExt
 
-CONSTANTS Empty, Account, Transfer, NAvail
+CONSTANTS Empty, Account, Transfer, Avail
 
 NNat == Nat \ {0}
 
@@ -31,11 +31,9 @@ Transfer -> amount
         
         accountDebits(a) == MapThenSumSet(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 0, debits)
         
-        amountAvail(a) == NAvail + accountCredits(a) - accountDebits(a)
+        amountAvail(a) == Avail + accountCredits(a) - accountDebits(a)
         
-        isTransKnownToItem(t, a, dc) == dc[1].a = a /\ dc[1].t = t
-        
-        isTransKnown(t, a, bal) == \E dc \in bal: isTransKnownToItem(t, a, dc)
+        isTransKnown(t, a, bal) == \E dc \in bal: dc[1].a = a /\ dc[1].t = t
         
         initPrecond(t) == ~\E a \in Account: isTransKnown(t, a, debits)
         
@@ -85,7 +83,7 @@ Transfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "fab5f310" /\ chksum(tla) = "d12c27f4")
+\* BEGIN TRANSLATION (chksum(pcal) = "ac562" /\ chksum(tla) = "9b214983")
 VARIABLES credits, debits, amount, accounts, pc
 
 (* define statement *)
@@ -95,11 +93,9 @@ accountCredits(a) == MapThenSumSet(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE
 
 accountDebits(a) == MapThenSumSet(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 0, debits)
 
-amountAvail(a) == NAvail + accountCredits(a) - accountDebits(a)
+amountAvail(a) == Avail + accountCredits(a) - accountDebits(a)
 
-isTransKnownToItem(t, a, dc) == dc[1].a = a /\ dc[1].t = t
-
-isTransKnown(t, a, bal) == \E dc \in bal: isTransKnownToItem(t, a, dc)
+isTransKnown(t, a, bal) == \E dc \in bal: dc[1].a = a /\ dc[1].t = t
 
 initPrecond(t) == ~\E a \in Account: isTransKnown(t, a, debits)
 
