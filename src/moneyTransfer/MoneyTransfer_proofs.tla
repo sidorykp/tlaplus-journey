@@ -192,28 +192,54 @@ PROVE IndInv'
 <1> DEFINE selfAccounts == accounts'[self]
 <1> DEFINE account1 == selfAccounts.from
 <1> DEFINE account2 == selfAccounts.to
-<1> USE DEF IndInv, TypeOK, init
-<1>1 amount' \in [Transfer -> Nat] BY DEF NNat
-<1>2 selfAccounts \in EAccounts BY DEF EAccounts, EAccount
-<1>3 accounts' \in [Transfer -> EAccounts] BY <1>2 DEF init
-<1>4 pcLabels' BY DEF pcLabels
-<1>5 Imbalance' = Imbalance BY init_AmountPendingTotal_initPrecond, init_AmountPendingTotal_notInitPrecond
-    DEF Imbalance, creditPrecond, CreditTotal, DebitTotal
-<1>6 Imbalance' = 0 BY <1>5
-<1>7 Empty \notin Account BY EmptyAssumption, AccountAssumption
-<1>8 (\/ accounts[self] = EmptyAccounts
-      \/ DifferentAccounts(self) /\ NonEmptyAccounts(self))'
-    BY <1>7 DEF DifferentAccounts, NonEmptyAccounts
-<1>9 \A t \in Transfer:
+<1> USE DEF IndInv, TypeOK
+<1>1 credits' \in SUBSET (AT \X Nat) BY DEF init
+<1>2 IsFiniteSet(credits)' BY DEF init
+<1>3 debits' \in SUBSET (AT \X Nat) BY DEF init
+<1>4 IsFiniteSet(debits)' BY DEF init
+
+<1>5 am \in Nat BY DEF init, NNat
+<1>6 amount' \in [Transfer -> Nat] BY <1>5 DEF init
+
+<1>7 selfAccounts \in EAccounts BY DEF init, EAccounts, EAccount
+<1>8 accounts' \in [Transfer -> EAccounts] BY <1>7 DEF init
+
+<1>9 pcLabels' BY DEF init, ProcSet, pcLabels
+
+<1>10 Imbalance' = Imbalance BY init_AmountPendingTotal_initPrecond, init_AmountPendingTotal_notInitPrecond
+    DEF init, Imbalance, creditPrecond, CreditTotal, DebitTotal
+<1>11 Imbalance' = 0 BY <1>10
+
+<1>12 Empty \notin Account BY EmptyAssumption, AccountAssumption
+<1>13 account1 # Empty BY <1>12 DEF init
+<1>14 account2 # Empty BY <1>12 DEF init
+<1>15 account1 # account2 BY DEF init
+<1>16 (\/ accounts[self] = EmptyAccounts
+       \/ DifferentAccounts(self) /\ NonEmptyAccounts(self))'
+    BY <1>13, <1>14, <1>15 DEF DifferentAccounts, NonEmptyAccounts
+<1>17 \A t \in Transfer:
     (\/ accounts[t] = EmptyAccounts
      \/ DifferentAccounts(t) /\ NonEmptyAccounts(t))'
-    BY <1>8 DEF EmptyAccounts, DifferentAccounts, NonEmptyAccounts
-<1>10 pc'[self] = "init" => initPrecond(self)' BY DEF initPrecond, isTransKnown
-<1>11 \A t \in Transfer: pc'[t] = "init" => initPrecond(t)' BY <1>10 DEF pcLabels
-<1>12 pc'[self] \notin {"init"} <=> NonEmptyAccounts(self)' BY <1>7 DEF NonEmptyAccounts, pcLabels
-<1>13 \A t \in Transfer: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
-    BY <1>12 DEF pcLabels, NonEmptyAccounts
-<1> QED BY <1>1, <1>3, <1>4, <1>6, <1>9, <1>11, <1>13
+    BY <1>16 DEF init, EmptyAccounts, DifferentAccounts, NonEmptyAccounts
+
+<1>18 initPrecond(self)' BY DEF init, initPrecond, isTransKnown
+<1>19 pc'[self] = "init" => initPrecond(self)' BY <1>18 DEF ProcSet
+<1>20 \A t \in Transfer: pc'[t] = "init" => initPrecond(t)' BY <1>19 DEF init, pcLabels
+
+<1>21 NonEmptyAccounts(self)' BY <1>13, <1>14 DEF NonEmptyAccounts
+<1>22 pc'[self] \notin {"init"} <=> NonEmptyAccounts(self)' BY <1>21 DEF init, ProcSet, pcLabels
+
+<1>23 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> pc[t] \notin {"init"}
+    BY DEF init, pcLabels
+<1>24 \A t \in Transfer \ {self}: NonEmptyAccounts(t)' = NonEmptyAccounts(t)
+    BY DEF init, NonEmptyAccounts
+<1>25 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
+    BY <1>23, <1>24 DEF IndInv
+
+<1>26 \A t \in Transfer: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
+    BY <1>22, <1>25 DEF init, ProcSet, pcLabels
+
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>6, <1>8, <1>9, <1>11, <1>17, <1>20, <1>26
 
 
 LEMMA debit_DebitTotal_debitPrecond_success == ASSUME IndInv, NEW self \in Transfer, debit(self),
