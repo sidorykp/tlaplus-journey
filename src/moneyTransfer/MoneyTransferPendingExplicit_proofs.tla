@@ -391,58 +391,43 @@ PROVE (
     /\ CommonIndInv
     /\ TransPendingEquivalence
     /\ PendingTransDerived)'
-<1> USE DEF IndInv, TypeOK, CommonIndInv
-<1>1 bebits' \in SUBSET (AT \X Nat) BY DEF credit
-<1>2 IsFiniteSet(bebits)' BY DEF credit
-<1>3 emount' \in [Dransfer -> Nat] BY DEF credit
-<1>4 eccounts' \in [Dransfer -> EEccounts] BY DEF credit
-<1>5 pcLabels' BY DEF credit, pcLabels
-<1>6 \A t \in Dransfer:
+<1> USE DEF IndInv, TypeOK, CommonIndInv, credit
+<1>1 pcLabels' BY DEF pcLabels
+<1>2 \A t \in Dransfer:
     \/ eccounts'[t] = EmptyEccounts
     \/ DifferentEccounts(t)' /\ NonEmptyEccounts(t)'
-    BY DEF credit, EmptyEccounts, DifferentEccounts, NonEmptyEccounts
-<1>7 \A t \in Dransfer: pc'[t] = "init" => initPrecond(t)' BY DEF credit, pcLabels
-<1>8 \A t \in Dransfer: NonEmptyEccounts(t)' = NonEmptyEccounts(t)
-    BY DEF credit, NonEmptyEccounts
-<1>9 NonEmptyEccounts(self)' = NonEmptyEccounts(self)
-    BY <1>8
-<1>10 \A t \in Dransfer: pc'[t] \notin {"init"} <=> NonEmptyEccounts(t)'
-    BY <1>8, <1>9 DEF credit, pcLabels
-<1>11 bebits' = bebits BY DEF credit
-<1>12 pendingDrans' \in SUBSET TN  BY DEF credit
-<1>13 IsFiniteSet(pendingDrans)'
-    <2>1 CASE ~creditPrecond(self) BY <2>1 DEF credit
-    <2>2 CASE creditPrecond(self) BY <2>2 DEF credit, TN, AT, FS_RemoveElement
+    BY DEF EmptyEccounts, DifferentEccounts, NonEmptyEccounts
+<1>3 \A t \in Dransfer: pc'[t] = "init" => initPrecond(t)' BY DEF pcLabels
+<1>4 \A t \in Dransfer: NonEmptyEccounts(t)' = NonEmptyEccounts(t)
+    BY DEF NonEmptyEccounts
+<1>5 \A t \in Dransfer: pc'[t] \notin {"init"} <=> NonEmptyEccounts(t)'
+    BY <1>4 DEF pcLabels
+<1>6 IsFiniteSet(pendingDrans)'
+    <2>1 CASE ~creditPrecond(self) BY <2>1
+    <2>2 CASE creditPrecond(self) BY <2>2 DEF TN, AT, FS_RemoveElement
     <2> QED BY <2>1, <2>2
-<1>14 AmountIsPending(self)' <=> TransInPendingTrans(self)'
+<1>7 AmountIsPending(self)' <=> TransInPendingTrans(self)'
     <2>1 CASE ~creditPrecond(self)
-        <3>1 AmountIsPending(self)' = AmountIsPending(self) BY <2>1 DEF credit, AmountIsPending
+        <3>1 AmountIsPending(self)' = AmountIsPending(self) BY <2>1 DEF AmountIsPending
         <3>2 TransInPendingTrans(self)' = TransInPendingTrans(self) BY <2>1
-            DEF credit, TransInPendingTrans
+            DEF TransInPendingTrans
         <3> QED BY <2>1, <3>2, <3>2
-            DEF credit, TransInPendingTrans
-     <2>2 CASE creditPrecond(self)
-        <3> DEFINE a == eccounts[self].to
-        <3> DEFINE nadd == <<[a |-> a, t |-> self], emount[self]>>
-        <3> DEFINE ptAdd == <<self, emount[self]>>
-        <3>1 kredits' = kredits \cup {nadd} BY <2>2 DEF credit
-        <3>2 pendingDrans' = pendingDrans \ {ptAdd} BY <2>2 DEF credit
-        <3> QED BY <2>2, <3>1, <3>2
-            DEF TransInPendingTrans, credit, AmountIsPending, pcLabels
+            DEF TransInPendingTrans
+     <2>2 CASE creditPrecond(self) BY <2>2 DEF TransInPendingTrans, credit, AmountIsPending, pcLabels
      <2> QED BY <2>1, <2>2
-<1>15 TransPendingEquivalence'
+<1>8 TransPendingEquivalence'
     <2>1 CASE ~creditPrecond(self)
-        <3>1 AmountIsPending(self)' = AmountIsPending(self) BY <2>1 DEF credit, AmountIsPending
+        <3>1 AmountIsPending(self)' = AmountIsPending(self) BY <2>1 DEF AmountIsPending
         <3>2 TransInPendingTrans(self)' = TransInPendingTrans(self) BY <2>1
-            DEF credit, TransInPendingTrans
-        <3> QED BY <2>1, <3>1, <3>2 DEF credit, TransPendingEquivalence,
+            DEF TransInPendingTrans
+        <3> QED BY <2>1, <3>1, <3>2 DEF TransPendingEquivalence,
             AmountIsPending, TransInPendingTrans, pcLabels, creditPrecond
-    <2>2 CASE creditPrecond(self) BY <2>2, <1>14 DEF credit, TransPendingEquivalence,
+    <2>2 CASE creditPrecond(self) BY <2>2, <1>7 DEF TransPendingEquivalence,
         TransInPendingTrans, AmountIsPending, pcLabels, creditPrecond,
         isTransKnown
     <2> QED BY <2>1, <2>2
-<1>16 PendingTransDerived' BY DEF credit, PendingTransDerived
-<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>7, <1>10, <1>12, <1>13, <1>15, <1>16,
+<1>9 PendingTransDerived' BY DEF PendingTransDerived
+<1> QED BY <1>1, <1>2, <1>3, <1>5, <1>6, <1>8, <1>9,
     credit_Imbalance
 
 
