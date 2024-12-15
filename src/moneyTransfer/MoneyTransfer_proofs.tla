@@ -306,24 +306,9 @@ PROVE AmountPendingTotal' = AmountPendingTotal
                       + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending]
     BY <1>5 DEF debit, pcLabels, transPending, AmountIsPending, creditPrecond,
     isTransKnown
-<1>7 (CHOOSE iter :
-          iter
-          = [s \in SUBSET transPending' |->
-               IF s = {}
-                 THEN 0
-                 ELSE amount[CHOOSE x \in s : TRUE]
-                      + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending']
-    = (CHOOSE iter :
-          iter
-          = [s \in SUBSET transPending' |->
-               IF s = {}
-                 THEN 0
-                 ELSE amount[CHOOSE x \in s : TRUE]'
-                      + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending']
-    BY <1>6, <1>3
-<1>8 MapThenSumSet(transAmount, transPending)' = MapThenSumSet(transAmount, transPending)
-    BY <1>4, <1>7 DEF debit, transAmount, MapThenSumSet, MapThenFoldSet
-<1> QED BY <1>8 DEF AmountPendingTotal
+<1>7 MapThenSumSet(transAmount, transPending)' = MapThenSumSet(transAmount, transPending)
+    BY <1>4, <1>6, <1>3 DEF debit, transAmount, MapThenSumSet, MapThenFoldSet
+<1> QED BY <1>7 DEF AmountPendingTotal
 
 
 LEMMA debit_Imbalance == ASSUME IndInv, NEW self \in Transfer, debit(self)
