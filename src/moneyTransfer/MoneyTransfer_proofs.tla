@@ -104,6 +104,28 @@ PROVE IndInv'
 <1> QED BY <1>1, <1>3, <1>4, <1>6, <1>8
 
 
+THEOREM retryCredit_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, retryCredit(self)
+PROVE AmountPendingTotal' = AmountPendingTotal
+<1> USE DEF retryCredit, IndInv, TypeOK
+<1>1 transPending' = transPending
+    <2>1 CASE creditPrecond(self)
+        <3>1 self \in transPending BY <2>1 DEF transPending, AmountIsPending, creditPrecond,
+            debitPrecond, isTransKnown, pcLabels
+        <3>2 self \in transPending' BY <3>1 DEF transPending, AmountIsPending, creditPrecond,
+        isTransKnown, pcLabels
+        <3> QED BY <3>1, <3>2 DEF pcLabels,
+                transPending, AmountIsPending, creditPrecond
+    <2>2 CASE ~creditPrecond(self)
+        <3>1 ~self \in transPending BY <2>2 DEF transPending, AmountIsPending, creditPrecond
+        <3>2 ~(self \in transPending)' BY <2>2 DEF transPending, AmountIsPending, creditPrecond
+        <3> QED BY <3>1, <3>2
+    <2> QED BY <2>1, <2>2
+<1>2 \A t \in Transfer: transAmount(t)' = transAmount(t) BY DEF transAmount,
+    creditPrecond, debitPrecond
+<1> QED BY <1>1, <1>2 DEF transPending, transAmount, AmountIsPending, creditPrecond,
+    isTransKnown, MapThenSumSet, MapThenFoldSet, AmountPendingTotal
+
+
 THEOREM init_AmountPendingTotal_notInitPrecond == ASSUME IndInv, NEW self \in Transfer, init(self),
 ~initPrecond(self)
 PROVE AmountPendingTotal' = AmountPendingTotal
