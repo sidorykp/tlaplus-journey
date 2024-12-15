@@ -72,9 +72,8 @@ Transfer -> amount
         credit:
             with (a = accounts[self].to) {
                 if (creditPrecond(self)) {
-                    either {
-                        credits := credits \cup {<<[a |-> a, t |-> self], amount[self]>>};
-                    } or skip;
+                    either credits := credits \cup {<<[a |-> a, t |-> self], amount[self]>>};
+                    or skip;
                 }
             };
             
