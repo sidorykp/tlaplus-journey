@@ -147,37 +147,19 @@ PROVE IndInv'
 <1> QED BY <1>1, <1>3, <1>4, <1>6, <1>8
 
 
-THEOREM init_AmountPendingTotal_notInitPrecond == ASSUME IndInv, NEW self \in Transfer, init(self),
-~initPrecond(self)
+THEOREM init_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, init(self)
 PROVE AmountPendingTotal' = AmountPendingTotal
-<1> USE DEF IndInv, TypeOK, init
-<1>1 self \notin transPending BY DEF transPending, AmountIsPending
-<1>2 ~AmountIsPending(self)' BY DEF AmountIsPending, creditPrecond
-<1>3 self \notin transPending' BY <1>2 DEF transPending
-<1>4 transPending' = transPending BY <1>1, <1>3 DEF pcLabels,
-    transPending, AmountIsPending, creditPrecond, isTransKnown
-<1>5 \A t \in Transfer: transAmount(t)' = transAmount(t) BY
-    DEF transAmount, creditPrecond
-<1>6 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) BY <1>4, <1>5
-<1>7 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') BY <1>4, <1>5
-<1> QED BY <1>6, <1>7 DEF AmountPendingTotal
-
-THEOREM init_AmountPendingTotal_initPrecond == ASSUME IndInv, NEW self \in Transfer, init(self),
-initPrecond(self)
-PROVE AmountPendingTotal' = AmountPendingTotal
-\*<1>1 initPrecond(self) BY DEF init, IndInv
-<1>1 self \notin transPending BY DEF transPending, AmountIsPending, init
-<1>2 ~AmountIsPending(self)' BY DEF AmountIsPending, creditPrecond, initPrecond, init, IndInv, TypeOK
-<1>3 transPending \in SUBSET Transfer BY DEF transPending \* very non-obvious necessity to use it
-<1>4 self \notin transPending' BY <1>2 DEF transPending
-<1>5 transPending' = transPending BY <1>1, <1>4 DEF pcLabels,
+<1>1 initPrecond(self) BY DEF init, IndInv
+<1>2 self \notin transPending BY DEF transPending, AmountIsPending, init
+<1>3 ~AmountIsPending(self)' BY DEF AmountIsPending, creditPrecond, initPrecond, init, IndInv, TypeOK
+<1>4 self \notin transPending' BY <1>3 DEF transPending
+<1>5 transPending' = transPending BY <1>2, <1>4 DEF pcLabels,
     transPending, AmountIsPending, creditPrecond, isTransKnown, init, IndInv, TypeOK
 <1>6 \A t \in transPending: amount[t]' = amount[t] BY
-    DEF creditPrecond, transPending, AmountIsPending, creditPrecond, isTransKnown, init, IndInv, TypeOK
-<1>7 \A t \in transPending: accounts[t] = accounts[t]' BY <1>5 DEF transPending, AmountIsPending,
-    creditPrecond, isTransKnown, init, IndInv, TypeOK
+    DEF transPending, AmountIsPending, init, IndInv, TypeOK
+<1>7 \A t \in transPending: accounts[t]' = accounts[t] BY <1>5 DEF transPending, AmountIsPending,
+    init, IndInv, TypeOK
 \* it works with amount, does not work with transAmount which is surprising
-\* it did not work when initPrecond(self) was not assumed but implied
 <1>8 (CHOOSE iter :
           iter
           = [s \in SUBSET transPending |->
@@ -192,8 +174,8 @@ PROVE AmountPendingTotal' = AmountPendingTotal
                  THEN 0
                  ELSE amount[CHOOSE x \in s : TRUE]'
                       + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending]
-    BY <1>6, <1>7, <1>3 DEF pcLabels, transPending,
-    AmountIsPending, creditPrecond, isTransKnown, initPrecond, init, IndInv, TypeOK
+    BY <1>1, <1>6, <1>7 DEF pcLabels, transPending,
+    AmountIsPending, initPrecond, init, IndInv, TypeOK
 <1>9 MapThenSumSet(transAmount, transPending)' = MapThenSumSet(transAmount, transPending)
     BY <1>5, <1>8 DEF MapThenSumSet, MapThenFoldSet, transAmount
 <1> QED BY <1>9 DEF AmountPendingTotal
@@ -210,7 +192,7 @@ PROVE IndInv'
 <1>2 selfAccounts \in EAccounts BY DEF EAccounts, EAccount
 <1>3 accounts' \in [Transfer -> EAccounts] BY <1>2 DEF init
 <1>4 pcLabels' BY DEF pcLabels
-<1>5 Imbalance' = Imbalance BY init_AmountPendingTotal_initPrecond, init_AmountPendingTotal_notInitPrecond
+<1>5 Imbalance' = Imbalance BY init_AmountPendingTotal
     DEF Imbalance, creditPrecond, CreditTotal, DebitTotal
 <1>6 Imbalance' = 0 BY <1>5
 <1>7 Empty \notin Account BY EmptyAssumption, AccountAssumption
