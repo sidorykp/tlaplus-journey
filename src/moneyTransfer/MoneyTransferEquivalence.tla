@@ -62,9 +62,17 @@ BY DEF E!debit, debit, pendingTransDerived,
 
 THEOREM debitEquivalenceRev == ASSUME NEW self \in Transfer, debit(self)
 PROVE E!debit(self)
-BY DEF E!debit, debit, pendingTransDerived,
+<1>1 CASE debitPrecond(self)
+    <2>1 E!debitPrecond(self) BY <1>1 DEF E!debit, debit,
     AmountIsPending, debitPrecond, isTransKnown,
     E!debitPrecond, E!isTransKnown
+    <2> QED BY <1>1, <2>1 DEF E!debit, debit, pendingTransDerived,
+    AmountIsPending, debitPrecond, isTransKnown, E!isTransKnown
+<1>2 CASE ~debitPrecond(self)
+    <2> QED BY <1>2 DEF E!debit, debit, pendingTransDerived,
+    AmountIsPending, debitPrecond, isTransKnown,
+    E!debitPrecond, E!isTransKnown
+<1> QED BY <1>1, <1>2
     
 THEOREM retryDebitEquivalence == ASSUME NEW self \in Transfer, E!retryDebit(self)
 PROVE retryDebit(self)
