@@ -99,7 +99,7 @@ PROVE E!retryDebit(self)
         E!isTransKnown, isTransKnown
     <2>2 UNCHANGED pendingTransDerived
         BY <1>1, <2>1 DEF retryDebit, pendingTransDerived, AmountIsPending,
-            creditPrecond, isTransKnown, IndInv, TypeOK
+            creditPrecond, isTransKnown, IndInv, TypeOK, pcLabels
     <2> QED BY <1>1, <2>1, <2>2 DEF E!retryDebit, retryDebit
 <1>2 CASE ~debitPrecond(self)
     <2>1 ~E!debitPrecond(self) BY <1>2 DEF
@@ -107,7 +107,8 @@ PROVE E!retryDebit(self)
         E!debitPrecond, debitPrecond,
         E!isTransKnown, isTransKnown
     <2>2 UNCHANGED pendingTransDerived
-        BY <1>2, <2>1 DEF retryDebit, pendingTransDerived
+        BY <1>2, <2>1 DEF retryDebit, pendingTransDerived, AmountIsPending,
+            creditPrecond, isTransKnown, IndInv, TypeOK, pcLabels
     <2> QED BY <1>2, <2>1, <2>2 DEF E!retryDebit, retryDebit
 <1> QED BY <1>1, <1>2
 
