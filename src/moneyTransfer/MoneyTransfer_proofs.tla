@@ -505,7 +505,7 @@ PROVE IndInv'
 <1> DEFINE a == accounts[self].to
 <1> DEFINE nadd == <<[a |-> a, t |-> self], amount[self]>>
 <1> USE DEF IndInv, TypeOK, CommonIndInv
-<1>1 CASE creditPrecond(self)
+<1>1 CASE creditPrecond(self) /\ ~(UNCHANGED credits)
     <2>3 credits' = credits \cup {nadd} BY <1>1 DEF credit
     <2>4 a \in EAccount BY DEF EAccounts
     <2>5 a # Empty BY DEF credit, NonEmptyAccounts
@@ -515,7 +515,7 @@ PROVE IndInv'
         BY <2>3, <2>7
     <2>9 IsFiniteSet(credits)' BY <1>1, FS_AddElement DEF credit
     <2> QED BY <2>8, <2>9, <1>1, credit_IndInv_common, credit_Imbalance
-<1>2 CASE ~creditPrecond(self)
+<1>2 CASE ~creditPrecond(self) \/ UNCHANGED credits
     <2>3 credits' \in SUBSET (AT \X Nat) BY <1>2 DEF credit
     <2>4 IsFiniteSet(credits)' BY <1>2 DEF credit
     <2> QED BY <2>3, <2>4, <1>1, credit_IndInv_common, credit_Imbalance
