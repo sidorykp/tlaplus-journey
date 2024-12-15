@@ -258,7 +258,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal + amount[self]
     BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, MapThenSumSetAddElem
 <1>8 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
 <1>9 AmountPendingTotal' = MapThenSumSet(transAmount, transPending')
-    BY DEF debit, transPending, AmountIsPending
+    BY DEF debit, transPending, AmountIsPending, debitPrecond
 <1>10 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending)'
     BY <1>8, <1>9
 <1> QED BY <1>7, <1>10, <1>3 DEF AmountPendingTotal
