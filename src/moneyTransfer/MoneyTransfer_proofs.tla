@@ -125,6 +125,27 @@ PROVE AmountPendingTotal' = AmountPendingTotal
 <1> QED BY <1>1, <1>2 DEF transPending, transAmount, AmountIsPending, creditPrecond,
     isTransKnown, MapThenSumSet, MapThenFoldSet, AmountPendingTotal
 
+THEOREM retryCredit_IndInv == ASSUME IndInv, NEW self \in Transfer, retryCredit(self)
+PROVE IndInv'
+<1> USE DEF IndInv, TypeOK, retryCredit
+<1>1 pcLabels' BY DEF pcLabels
+<1>2 Imbalance' = Imbalance BY retryCredit_AmountPendingTotal
+    DEF Imbalance, creditPrecond, CreditTotal, DebitTotal
+<1>3 Imbalance' = 0 BY <1>2
+<1>4 \A t \in Transfer:
+    (\/ accounts[t] = EmptyAccounts
+     \/ DifferentAccounts(t) /\ NonEmptyAccounts(t))'
+    BY DEF EmptyAccounts, DifferentAccounts, NonEmptyAccounts
+<1>5 \A t \in Transfer: NonEmptyAccounts(t)' = NonEmptyAccounts(t)
+    BY DEF NonEmptyAccounts
+<1>6 \A t \in Transfer: pc'[t] = "init" => initPrecond(t)'
+    BY DEF pcLabels
+<1>7 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> pc[t] \notin {"init"}
+    BY DEF pcLabels
+<1>8 \A t \in Transfer: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
+    BY <1>5, <1>7 DEF pcLabels
+<1> QED BY <1>1, <1>3, <1>4, <1>6, <1>8
+
 
 THEOREM init_AmountPendingTotal_notInitPrecond == ASSUME IndInv, NEW self \in Transfer, init(self),
 ~initPrecond(self)
