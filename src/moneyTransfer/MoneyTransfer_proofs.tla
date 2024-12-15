@@ -103,7 +103,7 @@ PROVE IndInv'
     BY <1>5, <1>7 DEF pcLabels
 <1> QED BY <1>1, <1>3, <1>4, <1>6, <1>8
 
-
+\* a copy of retryDebit_IndInv
 THEOREM retryCredit_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, retryCredit(self)
 PROVE AmountPendingTotal' = AmountPendingTotal
 <1> USE DEF retryCredit, IndInv, TypeOK
@@ -176,24 +176,9 @@ PROVE AmountPendingTotal' = AmountPendingTotal
     DEF creditPrecond, transPending, AmountIsPending, creditPrecond, isTransKnown, init, IndInv, TypeOK
 <1>7 \A t \in transPending: accounts[t] = accounts[t]' BY <1>5 DEF transPending, AmountIsPending,
     creditPrecond, isTransKnown, init, IndInv, TypeOK
-<1>8 (CHOOSE iter :
-          iter
-          = [s \in SUBSET transPending |->
-               IF s = {}
-                 THEN 0
-                 ELSE amount[CHOOSE x \in s : TRUE]
-                      + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending]
-    = (CHOOSE iter :
-          iter
-          = [s \in SUBSET transPending' |->
-               IF s = {}
-                 THEN 0
-                 ELSE amount[CHOOSE x \in s : TRUE]
-                      + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending']
-    BY <1>5
 \* it works with amount, does not work with transAmount which is surprising
 \* it did not work when initPrecond(self) was not assumed but implied
-<1>9 (CHOOSE iter :
+<1>8 (CHOOSE iter :
           iter
           = [s \in SUBSET transPending |->
                IF s = {}
@@ -209,24 +194,9 @@ PROVE AmountPendingTotal' = AmountPendingTotal
                       + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending]
     BY <1>6, <1>7, <1>3 DEF pcLabels, transPending,
     AmountIsPending, creditPrecond, isTransKnown, initPrecond, init, IndInv, TypeOK
-<1>10 (CHOOSE iter :
-          iter
-          = [s \in SUBSET transPending' |->
-               IF s = {}
-                 THEN 0
-                 ELSE amount[CHOOSE x \in s : TRUE]
-                      + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending']
-    = (CHOOSE iter :
-          iter
-          = [s \in SUBSET transPending' |->
-               IF s = {}
-                 THEN 0
-                 ELSE amount[CHOOSE x \in s : TRUE]'
-                      + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending']
-    BY <1>9, <1>5
-<1>11 MapThenSumSet(transAmount, transPending)' = MapThenSumSet(transAmount, transPending)
-    BY <1>8, <1>10 DEF MapThenSumSet, MapThenFoldSet, transAmount
-<1> QED BY <1>11 DEF AmountPendingTotal
+<1>9 MapThenSumSet(transAmount, transPending)' = MapThenSumSet(transAmount, transPending)
+    BY <1>5, <1>8 DEF MapThenSumSet, MapThenFoldSet, transAmount
+<1> QED BY <1>9 DEF AmountPendingTotal
 
 
 THEOREM init_IndInv == ASSUME IndInv, NEW self \in Transfer, init(self)
@@ -576,7 +546,8 @@ PROVE IndInv'
 <1>2 CASE debit(self) BY <1>2, debit_IndInv
 <1>3 CASE retryDebit(self) BY <1>3, retryDebit_IndInv
 <1>4 CASE credit(self) BY <1>4, credit_IndInv
-<1> QED BY <1>1, <1>2, <1>3, <1>4 DEF trans
+<1>5 CASE retryCredit(self) BY <1>5, retryCredit_IndInv
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5 DEF trans
 
 
 THEOREM unchangedVarsProperty == IndInv /\ UNCHANGED vars => IndInv'
