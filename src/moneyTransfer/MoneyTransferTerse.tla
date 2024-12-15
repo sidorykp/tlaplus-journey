@@ -66,8 +66,6 @@ Transfer -> amount
                 if (debitPrecond(self)) {
                     either debits := debits \cup {[a |-> a, t |-> self]};
                     or skip;
-                } else {
-                    skip;
                 }
             };
             
@@ -76,15 +74,16 @@ Transfer -> amount
         credit:
             with (a = accounts[self].to) {
                 if (creditPrecond(self)) {
-                    credits := credits \cup {[a |-> a, t |-> self]};
+                    either credits := credits \cup {[a |-> a, t |-> self]};
+                    or skip;
                 }
             };
-            
+
         retryCredit: if (creditPrecond(self)) goto credit;
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "a0544147" /\ chksum(tla) = "8f09747f")
+\* BEGIN TRANSLATION (chksum(pcal) = "4037b538" /\ chksum(tla) = "e3bd1c37")
 VARIABLES credits, debits, amount, accounts, pc
 
 (* define statement *)
@@ -157,7 +156,9 @@ retryDebit(self) == /\ pc[self] = "retryDebit"
 credit(self) == /\ pc[self] = "credit"
                 /\ LET a == accounts[self].to IN
                      IF creditPrecond(self)
-                        THEN /\ credits' = (credits \cup {[a |-> a, t |-> self]})
+                        THEN /\ \/ /\ credits' = (credits \cup {[a |-> a, t |-> self]})
+                                \/ /\ TRUE
+                                   /\ UNCHANGED credits
                         ELSE /\ TRUE
                              /\ UNCHANGED credits
                 /\ pc' = [pc EXCEPT ![self] = "retryCredit"]
