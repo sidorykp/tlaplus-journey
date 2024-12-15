@@ -427,7 +427,9 @@ PROVE AmountPendingTotal' = AmountPendingTotal
 <1>5 \A t \in transPending: transAmount(t)' = transAmount(t) BY DEF credit, transAmount, IndInv, TypeOK,
     creditPrecond, isTransKnown
 <1>6 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) BY <1>4, <1>5
-<1>7 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') BY <1>4, <1>5 DEF credit
+<1>7 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') BY <1>4, <1>5 DEF credit,
+    transPending, transAmount, AmountIsPending, creditPrecond,
+    isTransKnown, MapThenSumSet, MapThenFoldSet, AmountPendingTotal
 <1> QED BY <1>6, <1>7 DEF AmountPendingTotal
 
 
