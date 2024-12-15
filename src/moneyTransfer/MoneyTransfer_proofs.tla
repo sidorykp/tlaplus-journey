@@ -122,18 +122,17 @@ PROVE AmountPendingTotal' = AmountPendingTotal
 THEOREM init_AmountPendingTotal_initPrecond == ASSUME IndInv, NEW self \in Transfer, init(self),
 initPrecond(self)
 PROVE AmountPendingTotal' = AmountPendingTotal
-<1> USE DEF IndInv, TypeOK, init
-<1>1 self \notin transPending BY DEF transPending, AmountIsPending
-<1>2 ~AmountIsPending(self)' BY DEF AmountIsPending, creditPrecond, initPrecond
+\*<1>1 initPrecond(self) BY DEF init, IndInv
+<1>1 self \notin transPending BY DEF transPending, AmountIsPending, init
+<1>2 ~AmountIsPending(self)' BY DEF AmountIsPending, creditPrecond, initPrecond, init, IndInv, TypeOK
 <1>3 transPending \in SUBSET Transfer BY DEF transPending \* very non-obvious necessity to use it
 <1>4 self \notin transPending' BY <1>2 DEF transPending
 <1>5 transPending' = transPending BY <1>1, <1>4 DEF pcLabels,
-    transPending, AmountIsPending, creditPrecond, isTransKnown
+    transPending, AmountIsPending, creditPrecond, isTransKnown, init, IndInv, TypeOK
 <1>6 \A t \in transPending: amount[t]' = amount[t] BY
-    DEF creditPrecond, transPending,
-    pcLabels, transPending, AmountIsPending, creditPrecond, isTransKnown
-<1>7 \A t \in transPending: accounts[t] = accounts[t]' BY <1>5 DEF pcLabels,
-    transPending, AmountIsPending, creditPrecond, isTransKnown
+    DEF creditPrecond, transPending, AmountIsPending, creditPrecond, isTransKnown, init, IndInv, TypeOK
+<1>7 \A t \in transPending: accounts[t] = accounts[t]' BY <1>5 DEF transPending, AmountIsPending,
+    creditPrecond, isTransKnown, init, IndInv, TypeOK
 <1>8 (CHOOSE iter :
           iter
           = [s \in SUBSET transPending |->
@@ -150,7 +149,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal
                       + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending']
     BY <1>5
 \* it works with amount, does not work with transAmount which is surprising
-\* it did not work when initPrecond(self) was not assumed
+\* it did not work when initPrecond(self) was not assumed but implied
 <1>9 (CHOOSE iter :
           iter
           = [s \in SUBSET transPending |->
@@ -166,7 +165,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal
                  ELSE amount[CHOOSE x \in s : TRUE]'
                       + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending]
     BY <1>6, <1>7, <1>3 DEF pcLabels, transPending,
-    AmountIsPending, creditPrecond, isTransKnown, initPrecond
+    AmountIsPending, creditPrecond, isTransKnown, initPrecond, init, IndInv, TypeOK
 <1>10 (CHOOSE iter :
           iter
           = [s \in SUBSET transPending' |->
