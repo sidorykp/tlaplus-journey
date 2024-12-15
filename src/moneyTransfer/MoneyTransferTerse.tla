@@ -1,4 +1,4 @@
-----MODULE MoneyTransfer----
+----MODULE MoneyTransferTerse----
 EXTENDS Naturals, FiniteSets, FiniteSetsExt
 
 CONSTANTS Empty, Account, Transfer, Avail
@@ -17,7 +17,7 @@ Transfer -> amount
 ***************************************)
 
 (***************************************************************************
---algorithm MoneyTransfer {
+--algorithm MoneyTerse {
     variables
        credits = {},
        debits = {},
@@ -25,17 +25,17 @@ Transfer -> amount
        accounts = [t \in Transfer |-> EmptyAccounts]
 
     define {
-        opAmount(dc) == dc[2]
+        transAmount(t) == amount[t]
     
-        accountCredits(a) == MapThenSumSet(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, credits)
+        opAmount(dc) == amount[dc.t]
+    
+        accountCredits(a) == MapThenSumSet(LAMBDA c: IF c.a = a THEN opAmount(c) ELSE 0, credits)
         
-        accountDebits(a) == MapThenSumSet(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 0, debits)
+        accountDebits(a) == MapThenSumSet(LAMBDA d: IF d.a = a THEN opAmount(d) ELSE 0, debits)
         
         amountAvail(a) == Avail + accountCredits(a) - accountDebits(a)
         
-        isTransKnown(t, a, bal) == \E dc \in bal: dc[1].a = a /\ dc[1].t = t
-        
-        initPrecond(t) == ~\E a \in Account: isTransKnown(t, a, debits)
+        isTransKnown(t, a, bal) == \E dc \in bal: dc.a = a /\ dc.t = t
         
         debitPrecond(t) == ~\E a \in Account:
             \/ isTransKnown(t, a, debits)
@@ -45,24 +45,26 @@ Transfer -> amount
             /\ ~\E a \in Account: isTransKnown(t, a, credits)
             /\ ~isTransKnown(t, accounts[t].to, debits)
             /\ isTransKnown(t, accounts[t].from, debits)
-            
-        transAmount(t) == amount[t]
     }
 
     process (trans \in Transfer)    
     {
-        init:
-            with (account1 \in Account; account2 \in Account \ {account1}; am \in NNat) {
-                await amountAvail(account1) > 0;
-                await am <= amountAvail(account1);
+        choose_accounts:
+            with (account1 \in Account; account2 \in Account \ {account1}) {
                 accounts[self] := [from |-> account1, to |-> account2];
+            };
+            
+        choose_amount:
+            with (a = accounts[self].from; am \in NNat) {
+                await amountAvail(a) > 0;
+                await am <= amountAvail(a);
                 amount[self] := am;
             };
             
         debit:
             with (a = accounts[self].from) {
                 if (debitPrecond(self)) {
-                    either debits := debits \cup {<<[a |-> a, t |-> self], amount[self]>>};
+                    either debits := debits \cup {[a |-> a, t |-> self]};
                     or skip;
                 }
             };
@@ -72,30 +74,30 @@ Transfer -> amount
         credit:
             with (a = accounts[self].to) {
                 if (creditPrecond(self)) {
-                    either credits := credits \cup {<<[a |-> a, t |-> self], amount[self]>>};
+                    either credits := credits \cup {[a |-> a, t |-> self]};
                     or skip;
                 }
             };
-            
+
         retryCredit: if (creditPrecond(self)) goto credit;
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "86cb898b" /\ chksum(tla) = "3813d60f")
+\* BEGIN TRANSLATION (chksum(pcal) = "4037b538" /\ chksum(tla) = "e3bd1c37")
 VARIABLES credits, debits, amount, accounts, pc
 
 (* define statement *)
-opAmount(dc) == dc[2]
+transAmount(t) == amount[t]
 
-accountCredits(a) == MapThenSumSet(LAMBDA c: IF c[1].a = a THEN opAmount(c) ELSE 0, credits)
+opAmount(dc) == amount[dc.t]
 
-accountDebits(a) == MapThenSumSet(LAMBDA d: IF d[1].a = a THEN opAmount(d) ELSE 0, debits)
+accountCredits(a) == MapThenSumSet(LAMBDA c: IF c.a = a THEN opAmount(c) ELSE 0, credits)
+
+accountDebits(a) == MapThenSumSet(LAMBDA d: IF d.a = a THEN opAmount(d) ELSE 0, debits)
 
 amountAvail(a) == Avail + accountCredits(a) - accountDebits(a)
 
-isTransKnown(t, a, bal) == \E dc \in bal: dc[1].a = a /\ dc[1].t = t
-
-initPrecond(t) == ~\E a \in Account: isTransKnown(t, a, debits)
+isTransKnown(t, a, bal) == \E dc \in bal: dc.a = a /\ dc.t = t
 
 debitPrecond(t) == ~\E a \in Account:
     \/ isTransKnown(t, a, debits)
@@ -105,8 +107,6 @@ creditPrecond(t) ==
     /\ ~\E a \in Account: isTransKnown(t, a, credits)
     /\ ~isTransKnown(t, accounts[t].to, debits)
     /\ isTransKnown(t, accounts[t].from, debits)
-
-transAmount(t) == amount[t]
 
 
 vars == << credits, debits, amount, accounts, pc >>
@@ -118,23 +118,28 @@ Init == (* Global variables *)
         /\ debits = {}
         /\ amount = [t \in Transfer |-> 0]
         /\ accounts = [t \in Transfer |-> EmptyAccounts]
-        /\ pc = [self \in ProcSet |-> "init"]
+        /\ pc = [self \in ProcSet |-> "choose_accounts"]
 
-init(self) == /\ pc[self] = "init"
-              /\ \E account1 \in Account:
-                   \E account2 \in Account \ {account1}:
-                     \E am \in NNat:
-                       /\ amountAvail(account1) > 0
-                       /\ am <= amountAvail(account1)
-                       /\ accounts' = [accounts EXCEPT ![self] = [from |-> account1, to |-> account2]]
-                       /\ amount' = [amount EXCEPT ![self] = am]
-              /\ pc' = [pc EXCEPT ![self] = "debit"]
-              /\ UNCHANGED << credits, debits >>
+choose_accounts(self) == /\ pc[self] = "choose_accounts"
+                         /\ \E account1 \in Account:
+                              \E account2 \in Account \ {account1}:
+                                accounts' = [accounts EXCEPT ![self] = [from |-> account1, to |-> account2]]
+                         /\ pc' = [pc EXCEPT ![self] = "choose_amount"]
+                         /\ UNCHANGED << credits, debits, amount >>
+
+choose_amount(self) == /\ pc[self] = "choose_amount"
+                       /\ LET a == accounts[self].from IN
+                            \E am \in NNat:
+                              /\ amountAvail(a) > 0
+                              /\ am <= amountAvail(a)
+                              /\ amount' = [amount EXCEPT ![self] = am]
+                       /\ pc' = [pc EXCEPT ![self] = "debit"]
+                       /\ UNCHANGED << credits, debits, accounts >>
 
 debit(self) == /\ pc[self] = "debit"
                /\ LET a == accounts[self].from IN
                     IF debitPrecond(self)
-                       THEN /\ \/ /\ debits' = (debits \cup {<<[a |-> a, t |-> self], amount[self]>>})
+                       THEN /\ \/ /\ debits' = (debits \cup {[a |-> a, t |-> self]})
                                \/ /\ TRUE
                                   /\ UNCHANGED debits
                        ELSE /\ TRUE
@@ -151,7 +156,7 @@ retryDebit(self) == /\ pc[self] = "retryDebit"
 credit(self) == /\ pc[self] = "credit"
                 /\ LET a == accounts[self].to IN
                      IF creditPrecond(self)
-                        THEN /\ \/ /\ credits' = (credits \cup {<<[a |-> a, t |-> self], amount[self]>>})
+                        THEN /\ \/ /\ credits' = (credits \cup {[a |-> a, t |-> self]})
                                 \/ /\ TRUE
                                    /\ UNCHANGED credits
                         ELSE /\ TRUE
@@ -165,8 +170,8 @@ retryCredit(self) == /\ pc[self] = "retryCredit"
                            ELSE /\ pc' = [pc EXCEPT ![self] = "Done"]
                      /\ UNCHANGED << credits, debits, amount, accounts >>
 
-trans(self) == init(self) \/ debit(self) \/ retryDebit(self)
-                  \/ credit(self) \/ retryCredit(self)
+trans(self) == choose_accounts(self) \/ choose_amount(self) \/ debit(self)
+                  \/ retryDebit(self) \/ credit(self) \/ retryCredit(self)
 
 (* Allow infinite stuttering to prevent deadlock on termination. *)
 Terminating == /\ \A self \in ProcSet: pc[self] = "Done"
@@ -205,12 +210,12 @@ EAccounts == [from: EAccount, to: EAccount]
 
 AT == [a: Account, t: Transfer]
 
-pcLabels == pc \in [Transfer -> {"init", "debit", "retryDebit", "credit", "retryCredit", "Done"}]
+pcLabels == pc \in [Transfer -> {"choose_accounts", "choose_amount", "debit", "retryDebit", "credit", "retryCredit", "Done"}]
 
 TypeOK ==
-    /\ credits \in SUBSET (AT \X Nat)
+    /\ credits \in SUBSET AT
     /\ IsFiniteSet(credits)
-    /\ debits \in SUBSET (AT \X Nat)
+    /\ debits \in SUBSET AT
     /\ IsFiniteSet(debits)
     /\ amount \in [Transfer -> Nat]
     /\ accounts \in [Transfer -> EAccounts]
@@ -226,9 +231,9 @@ IndInv ==
     /\ \A t \in Transfer:
         \/ accounts[t] = EmptyAccounts
         \/ DifferentAccounts(t) /\ NonEmptyAccounts(t)
-    /\ \A t \in Transfer: pc[t] = "init" => initPrecond(t)
+    /\ \A t \in Transfer: pc[t] \in {"choose_accounts", "choose_amount"} => debitPrecond(t)
     /\ \A t \in Transfer:
-        pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
+        pc[t] \notin {"choose_accounts"} <=> NonEmptyAccounts(t)
 
 IndSpec == IndInv /\ [][Next]_vars
 
@@ -240,16 +245,16 @@ CommonIndInv ==
     /\ \A t \in Transfer:
         \/ accounts[t] = EmptyAccounts
         \/ DifferentAccounts(t) /\ NonEmptyAccounts(t)
-    /\ \A t \in Transfer: pc[t] = "init" => initPrecond(t)
+    /\ \A t \in Transfer: pc[t] \in {"choose_accounts", "choose_amount"} => debitPrecond(t)
     /\ \A t \in Transfer:
-        pc[t] \notin {"init"} <=> NonEmptyAccounts(t)
+        pc[t] \notin {"choose_accounts"} <=> NonEmptyAccounts(t)
 
 IndInvInteractiveStateConstraints ==
     /\ \A c \in credits: \E d \in debits: 
-        /\ d[1].t = c[1].t
-        /\ d[1].a # c[1].a
+        /\ d.t = c.t
+        /\ d.a # c.a
         /\ opAmount(d) = opAmount(c)
     /\ \A t \in Transfer:
-        amount[t] = 0 <=> pc[t] = "init"
+        pc[t] \in {"choose_accounts", "choose_amount"} => debitPrecond(t)
 
 ====

@@ -441,7 +441,7 @@ PROVE (
             creditPrecond, pcLabels, isTransKnown
         <3>3 ~AmountIsPending(self)' BY <2>2 DEF AmountIsPending,
             creditPrecond, pcLabels, isTransKnown
-        <3>4 TransInPendingTrans(self) BY <2>2 DEF TransInPendingTrans
+        <3>4 TransInPendingTrans(self) BY <2>2, <3>2 DEF TransInPendingTrans, TransPendingEquivalence
         <3>5 ~TransInPendingTrans(self)' BY <2>2, <3>4, <3>1 DEF TransInPendingTrans
         <3> QED BY <2>2, <3>1, <3>2, <3>3, <3>4, <3>5
      <2> QED BY <2>1, <2>2

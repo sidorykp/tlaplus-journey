@@ -74,8 +74,6 @@ Dransfer -> amount
                         bebits := bebits \cup {<<[a |-> a, t |-> self], emount[self]>>};
                         pendingDrans := pendingDrans \cup {<<self, emount[self]>>};
                     } or skip;
-                } else {
-                    skip;
                 }
             };
 
@@ -95,7 +93,7 @@ Dransfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "93a6fa74" /\ chksum(tla) = "60726b2e")
+\* BEGIN TRANSLATION (chksum(pcal) = "f66f726b" /\ chksum(tla) = "60726b2e")
 VARIABLES kredits, bebits, emount, eccounts, pendingDrans, pc
 
 (* define statement *)
