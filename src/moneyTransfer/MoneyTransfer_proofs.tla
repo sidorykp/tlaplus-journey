@@ -71,7 +71,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal
 <1> USE DEF retryDebit, IndInv, TypeOK
 <1>1 transPending' = transPending
     <2>1 self \in transPending BY DEF transPending, AmountIsPending, creditPrecond,
-        isTransKnown, pcLabels
+        debitPrecond, isTransKnown, pcLabels
     <2>2 self \in transPending' BY <2>1 DEF transPending, AmountIsPending, creditPrecond,
     isTransKnown, pcLabels
     <2> QED BY <2>1, <2>2 DEF pcLabels,
