@@ -68,12 +68,38 @@ THEOREM retryDebit_AmountPendingTotal == ASSUME IndInv, NEW self \in Dransfer, r
 PROVE AmountPendingTotal' = AmountPendingTotal
 BY DEF retryDebit, AmountPendingTotal
 
-
 THEOREM retryDebit_IndInv == ASSUME IndInv, NEW self \in Dransfer, retryDebit(self)
 PROVE IndInv'
 <1> USE DEF IndInv, TypeOK, retryDebit
 <1>1 pcLabels' BY DEF pcLabels
 <1>2 Imbalance' = Imbalance BY retryDebit_AmountPendingTotal
+    DEF Imbalance, creditPrecond, CreditTotal, DebitTotal
+<1>3 Imbalance' = 0 BY <1>2
+<1>4 \A t \in Dransfer:
+    (\/ eccounts[t] = EmptyEccounts
+     \/ DifferentEccounts(t) /\ NonEmptyEccounts(t))'
+    BY DEF EmptyEccounts, DifferentEccounts, NonEmptyEccounts
+<1>5 \A t \in Dransfer: pc'[t] = "init" => initPrecond(t)'
+    BY DEF pcLabels
+<1>6 \A t \in Dransfer: pc'[t] \notin {"init"} <=> NonEmptyEccounts(t)'
+    BY DEF NonEmptyEccounts, pcLabels
+<1>7 TransPendingEquivalence' BY DEF TransPendingEquivalence, TransInPendingTrans,
+    pcLabels, AmountIsPending, creditPrecond, isTransKnown
+<1>8 PendingTransDerived' BY DEF PendingTransDerived
+<1> QED BY <1>1, <1>3, <1>4, <1>5, <1>6, <1>7, <1>8
+
+
+\* a copy of retryDebit_AmountPendingTotal
+THEOREM retryCredit_AmountPendingTotal == ASSUME IndInv, NEW self \in Dransfer, retryCredit(self)
+PROVE AmountPendingTotal' = AmountPendingTotal
+BY DEF retryCredit, AmountPendingTotal
+
+\* a copy of retryDebit_IndInv
+THEOREM retryCredit_IndInv == ASSUME IndInv, NEW self \in Dransfer, retryCredit(self)
+PROVE IndInv'
+<1> USE DEF IndInv, TypeOK, retryCredit
+<1>1 pcLabels' BY DEF pcLabels
+<1>2 Imbalance' = Imbalance BY retryCredit_AmountPendingTotal
     DEF Imbalance, creditPrecond, CreditTotal, DebitTotal
 <1>3 Imbalance' = 0 BY <1>2
 <1>4 \A t \in Dransfer:
@@ -117,7 +143,7 @@ PROVE IndInv'
     BY <1>7 DEF EmptyEccounts, DifferentEccounts, NonEmptyEccounts
 <1>9 initPrecond(self)' BY DEF initPrecond, isTransKnown
 <1>10 \A t \in Dransfer: pc'[t] = "init" => initPrecond(t)' BY <1>9 DEF pcLabels
-<1>11 NonEmptyEccounts(self)' BY DEF NonEmptyEccounts
+<1>11 NonEmptyEccounts(self)' BY EmptyAssumption DEF NonEmptyEccounts
 <1>12 pc'[self] \notin {"init"} <=> NonEmptyEccounts(self)' BY <1>11 DEF pcLabels
 <1>13 \A t \in Dransfer: pc'[t] \notin {"init"} <=> NonEmptyEccounts(t)'
     BY <1>12 DEF NonEmptyEccounts, pcLabels
@@ -259,14 +285,16 @@ PROVE IndInv'
     
     <2>13 (AmountIsPending(self) <=> TransInPendingTrans(self))'
         <3>1 ~AmountIsPending(self) BY <1>1 DEF debit, AmountIsPending, creditPrecond,
-            debitPrecond, pcLabels, isTransKnown, AT
+            debitPrecond, pcLabels, isTransKnown
         <3>2 \E dc \in bebits': dc[1].a = eccounts[self].from /\ dc[1].t = self BY <1>1 DEF debit
-        <3>3 AmountIsPending(self)' BY <1>1, <3>2 DEF debit, AmountIsPending, creditPrecond,
-            pcLabels, isTransKnown, AT, EEccounts, EEccount,
-            NonEmptyEccounts, DifferentEccounts
-        <3>4 ~TransInPendingTrans(self) BY <1>1, <3>1 DEF debit, TransPendingEquivalence
-        <3>5 TransInPendingTrans(self)' BY <1>1, <2>8 DEF debit, TransInPendingTrans
-        <3> QED BY <3>1, <3>3, <3>4, <3>5
+        <3>3 ~(\E dc \in bebits: dc[1].a = eccounts[self].to /\ dc[1].t = self)'
+            BY <1>1, <3>1 DEF debit, AmountIsPending, creditPrecond,
+            pcLabels, isTransKnown
+        <3>4 AmountIsPending(self)' BY <1>1, <3>1, <3>2, <3>3 DEF debit, AmountIsPending, creditPrecond,
+            pcLabels, isTransKnown
+        <3>5 ~TransInPendingTrans(self) BY <1>1, <3>1 DEF debit, TransPendingEquivalence
+        <3>6 TransInPendingTrans(self)' BY <1>1, <2>8 DEF debit, TransInPendingTrans
+        <3> QED BY <3>1, <3>4, <3>5, <3>6
     <2>14 \A t \in Dransfer \ {self}: TransInPendingTrans(t) = TransInPendingTrans(t)'
         BY <1>1, <2>1, <2>8, <2>12
         DEF TransInPendingTrans, debit
@@ -319,16 +347,9 @@ PROVE AmountPendingTotal' = AmountPendingTotal - emount[self]
 <1> QED BY <1>5, <1>6, <1>9 DEF AmountPendingTotal
 
 
-\* practically a copy of init_AmountPendingTotal
-LEMMA credit_AmountPendingTotal_notCreditPrecond == ASSUME IndInv, NEW self \in Dransfer, credit(self),
-~creditPrecond(self)
-PROVE AmountPendingTotal' = AmountPendingTotal
-BY DEF credit, AmountPendingTotal
-
-
 \* practically a copy of debit_DebitTotal
-LEMMA credit_CreditTotal == ASSUME IndInv, NEW self \in Dransfer, credit(self),
-creditPrecond(self)
+LEMMA credit_CreditTotal_success == ASSUME IndInv, NEW self \in Dransfer, credit(self),
+creditPrecond(self), ~(UNCHANGED <<kredits, pendingDrans>>)
 PROVE CreditTotal' = CreditTotal + emount[self]
 <1> DEFINE a == eccounts[self].to
 <1> DEFINE nadd == <<[a |-> a, t |-> self], emount[self]>>
@@ -344,14 +365,20 @@ PROVE CreditTotal' = CreditTotal + emount[self]
     BY <1>5 DEF CreditTotal, MapThenSumSetTerse, MapThenSumSet, MapThenFoldSet
 <1> QED BY <1>6 DEF opEmount
 
+\* practically a copy of init_AmountPendingTotal
+LEMMA credit_AmountPendingTotal_notCreditPrecond_or_retryCredit == ASSUME IndInv, NEW self \in Dransfer, credit(self),
+~creditPrecond(self) \/ UNCHANGED <<kredits, pendingDrans>>
+PROVE AmountPendingTotal' = AmountPendingTotal
+BY DEF credit, AmountPendingTotal
+
 
 LEMMA credit_Imbalance == ASSUME IndInv, NEW self \in Dransfer, credit(self)
 PROVE Imbalance' = Imbalance
 <1>1 bebits' = bebits BY DEF credit
 <1>2 DebitTotal' = DebitTotal
     BY <1>1 DEF DebitTotal
-<1>3 CASE creditPrecond(self)
-    <2>1 CreditTotal' = CreditTotal + emount[self] BY <1>3, credit_CreditTotal
+<1>3 CASE creditPrecond(self) /\ ~UNCHANGED <<kredits, pendingDrans>>
+    <2>1 CreditTotal' = CreditTotal + emount[self] BY <1>3, credit_CreditTotal_success
     <2>2 AmountPendingTotal' = AmountPendingTotal - emount[self] BY <1>3, credit_AmountPendingTotal_creditPrecond
     <2>3 emount[self] \in Nat BY DEF IndInv, TypeOK
     <2>4 \A c \in kredits: opEmount(c) \in Nat BY DEF opEmount, IndInv, TypeOK
@@ -362,10 +389,13 @@ PROVE Imbalance' = Imbalance
         MapThenSumSetTerse, MapThenSumSet, MapThenFoldSet
     <2>8 AmountPendingTotal \in Nat BY AmountPendingTotalInNat, NDransferAssumption
     <2>9 CreditTotal' + AmountPendingTotal' = CreditTotal + AmountPendingTotal BY <2>1, <2>2, <2>3, <2>5, <2>8
-    <2>10 (CreditTotal' + AmountPendingTotal') - DebitTotal' = (CreditTotal + AmountPendingTotal) - DebitTotal BY <1>2, <2>9
-    <2> QED BY <2>5, <2>7, <2>8, <2>10, <1>2 DEF Imbalance, credit
-<1>4 CASE ~creditPrecond(self)
-    <2>1 AmountPendingTotal' = AmountPendingTotal BY <1>4, credit_AmountPendingTotal_notCreditPrecond
+    <2>10 (CreditTotal' + AmountPendingTotal') - DebitTotal' = (CreditTotal + AmountPendingTotal) - DebitTotal
+        BY <1>2, <2>9
+    <2>11 CreditTotal' - DebitTotal' + AmountPendingTotal' = CreditTotal - DebitTotal + AmountPendingTotal
+        BY <2>10 DEF credit
+    <2> QED BY <2>11 DEF Imbalance, credit
+<1>4 CASE ~creditPrecond(self) \/ UNCHANGED <<kredits, pendingDrans>>
+    <2>1 AmountPendingTotal' = AmountPendingTotal BY <1>4, credit_AmountPendingTotal_notCreditPrecond_or_retryCredit
     <2>2 CreditTotal' = CreditTotal BY <1>4 DEF credit
     <2> QED BY <1>2, <2>1, <2>2 DEF credit, Imbalance
 <1> QED BY <1>3, <1>4
@@ -392,26 +422,39 @@ PROVE (
 <1>5 \A t \in Dransfer: pc'[t] \notin {"init"} <=> NonEmptyEccounts(t)'
     BY <1>4 DEF pcLabels
 <1>6 IsFiniteSet(pendingDrans)'
-    <2>1 CASE ~creditPrecond(self) BY <2>1
-    <2>2 CASE creditPrecond(self) BY <2>2 DEF TN, AT, FS_RemoveElement
+    <2>1 CASE ~creditPrecond(self) \/ UNCHANGED <<kredits, pendingDrans>> BY <2>1
+    <2>2 CASE creditPrecond(self) /\ ~(UNCHANGED <<kredits, pendingDrans>>)
+        <3>1 pendingDrans' = pendingDrans \ {<<self, emount[self]>>} BY <2>2
+        <3> QED BY <2>2, <3>1 DEF TN, FS_RemoveElement
     <2> QED BY <2>1, <2>2
 <1>7 AmountIsPending(self)' <=> TransInPendingTrans(self)'
-    <2>1 CASE ~creditPrecond(self)
-        <3>1 AmountIsPending(self)' = AmountIsPending(self) BY <2>1 DEF AmountIsPending
+    <2>1 CASE ~creditPrecond(self) \/ UNCHANGED <<kredits, pendingDrans>>
+        <3>1 AmountIsPending(self)' = AmountIsPending(self) BY <2>1 DEF AmountIsPending,
+            creditPrecond, pcLabels, isTransKnown
         <3>2 TransInPendingTrans(self)' = TransInPendingTrans(self) BY <2>1
             DEF TransInPendingTrans
-        <3> QED BY <2>1, <3>2, <3>2
+        <3> QED BY <3>1, <3>2
             DEF TransInPendingTrans
-     <2>2 CASE creditPrecond(self) BY <2>2 DEF TransInPendingTrans, credit, AmountIsPending, pcLabels
+     <2>2 CASE creditPrecond(self) /\ ~(UNCHANGED <<kredits, pendingDrans>>)
+        <3>1 pendingDrans' = pendingDrans \ {<<self, emount[self]>>} BY <2>2
+        <3>2 AmountIsPending(self) BY <2>2 DEF AmountIsPending,
+            creditPrecond, pcLabels, isTransKnown
+        <3>3 ~AmountIsPending(self)' BY <2>2 DEF AmountIsPending,
+            creditPrecond, pcLabels, isTransKnown
+        <3>4 TransInPendingTrans(self) BY <2>2 DEF TransInPendingTrans
+        <3>5 ~TransInPendingTrans(self)' BY <2>2, <3>4, <3>1 DEF TransInPendingTrans
+        <3> QED BY <2>2, <3>1, <3>2, <3>3, <3>4, <3>5
      <2> QED BY <2>1, <2>2
 <1>8 TransPendingEquivalence'
-    <2>1 CASE ~creditPrecond(self)
-        <3>1 AmountIsPending(self)' = AmountIsPending(self) BY <2>1 DEF AmountIsPending
+    <2>1 CASE ~creditPrecond(self) \/ UNCHANGED <<kredits, pendingDrans>>
+        <3>1 AmountIsPending(self)' = AmountIsPending(self) BY <2>1 DEF AmountIsPending,
+            creditPrecond, pcLabels, isTransKnown
         <3>2 TransInPendingTrans(self)' = TransInPendingTrans(self) BY <2>1
             DEF TransInPendingTrans
         <3> QED BY <2>1, <3>1, <3>2 DEF TransPendingEquivalence,
             AmountIsPending, TransInPendingTrans, pcLabels, creditPrecond
-    <2>2 CASE creditPrecond(self) BY <2>2, <1>7 DEF TransPendingEquivalence,
+    <2>2 CASE creditPrecond(self) /\ ~(UNCHANGED <<kredits, pendingDrans>>) BY <2>2, <1>7
+        DEF TransPendingEquivalence,
         TransInPendingTrans, AmountIsPending, pcLabels, creditPrecond,
         isTransKnown
     <2> QED BY <2>1, <2>2
@@ -425,7 +468,7 @@ PROVE IndInv'
 <1> DEFINE a == eccounts[self].to
 <1> DEFINE nadd == <<[a |-> a, t |-> self], emount[self]>>
 <1> USE DEF IndInv, TypeOK, CommonIndInv
-<1>1 CASE creditPrecond(self)
+<1>1 CASE creditPrecond(self) /\ ~(UNCHANGED <<kredits, pendingDrans>>)
     <2>3 kredits' = kredits \cup {nadd} BY <1>1 DEF credit
     <2>4 a \in EEccount BY DEF EEccounts
     <2>5 a # Empty BY DEF credit, NonEmptyEccounts
@@ -436,7 +479,7 @@ PROVE IndInv'
     <2>9 IsFiniteSet(kredits)' BY <1>1, FS_AddElement DEF credit
     <2> QED BY <2>8, <2>9, <1>1, credit_IndInv_common, credit_Imbalance
         DEF IndInv, TypeOK, CommonIndInv
-<1>2 CASE ~creditPrecond(self)
+<1>2 CASE ~creditPrecond(self) \/ UNCHANGED <<kredits, pendingDrans>>
     <2>3 kredits' \in SUBSET (AT \X Nat) BY <1>2 DEF credit
     <2>4 IsFiniteSet(kredits)' BY <1>2 DEF credit
     <2> QED BY <2>3, <2>4, <1>1, credit_IndInv_common, credit_Imbalance
@@ -452,7 +495,8 @@ PROVE IndInv'
 <1>2 CASE debit(self) BY <1>2, debit_IndInv
 <1>3 CASE retryDebit(self) BY <1>3, retryDebit_IndInv
 <1>4 CASE credit(self) BY <1>4, credit_IndInv
-<1> QED BY <1>1, <1>2, <1>3, <1>4 DEF trans
+<1>5 CASE retryCredit(self) BY <1>5, retryCredit_IndInv
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5 DEF trans
 
 
 THEOREM unchangedVarsProperty == IndInv /\ UNCHANGED vars => IndInv'

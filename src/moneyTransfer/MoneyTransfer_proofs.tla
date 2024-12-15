@@ -71,7 +71,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal
 <1> USE DEF retryDebit, IndInv, TypeOK
 <1>1 transPending' = transPending
     <2>1 self \in transPending BY DEF transPending, AmountIsPending, creditPrecond,
-        isTransKnown, pcLabels
+        debitPrecond, isTransKnown, pcLabels
     <2>2 self \in transPending' BY <2>1 DEF transPending, AmountIsPending, creditPrecond,
     isTransKnown, pcLabels
     <2> QED BY <2>1, <2>2 DEF pcLabels,
@@ -87,6 +87,49 @@ PROVE IndInv'
 <1> USE DEF IndInv, TypeOK, retryDebit
 <1>1 pcLabels' BY DEF pcLabels
 <1>2 Imbalance' = Imbalance BY retryDebit_AmountPendingTotal
+    DEF Imbalance, creditPrecond, CreditTotal, DebitTotal
+<1>3 Imbalance' = 0 BY <1>2
+<1>4 \A t \in Transfer:
+    (\/ accounts[t] = EmptyAccounts
+     \/ DifferentAccounts(t) /\ NonEmptyAccounts(t))'
+    BY DEF EmptyAccounts, DifferentAccounts, NonEmptyAccounts
+<1>5 \A t \in Transfer: NonEmptyAccounts(t)' = NonEmptyAccounts(t)
+    BY DEF NonEmptyAccounts
+<1>6 \A t \in Transfer: pc'[t] = "init" => initPrecond(t)'
+    BY DEF pcLabels
+<1>7 \A t \in Transfer \ {self}: pc'[t] \notin {"init"} <=> pc[t] \notin {"init"}
+    BY DEF pcLabels
+<1>8 \A t \in Transfer: pc'[t] \notin {"init"} <=> NonEmptyAccounts(t)'
+    BY <1>5, <1>7 DEF pcLabels
+<1> QED BY <1>1, <1>3, <1>4, <1>6, <1>8
+
+\* a copy of retryDebit_IndInv
+THEOREM retryCredit_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, retryCredit(self)
+PROVE AmountPendingTotal' = AmountPendingTotal
+<1> USE DEF retryCredit, IndInv, TypeOK
+<1>1 transPending' = transPending
+    <2>1 CASE creditPrecond(self)
+        <3>1 self \in transPending BY <2>1 DEF transPending, AmountIsPending, creditPrecond,
+            debitPrecond, isTransKnown, pcLabels
+        <3>2 self \in transPending' BY <3>1 DEF transPending, AmountIsPending, creditPrecond,
+        isTransKnown, pcLabels
+        <3> QED BY <3>1, <3>2 DEF pcLabels,
+                transPending, AmountIsPending, creditPrecond
+    <2>2 CASE ~creditPrecond(self)
+        <3>1 ~self \in transPending BY <2>2 DEF transPending, AmountIsPending, creditPrecond
+        <3>2 ~(self \in transPending)' BY <2>2 DEF transPending, AmountIsPending, creditPrecond
+        <3> QED BY <3>1, <3>2
+    <2> QED BY <2>1, <2>2
+<1>2 \A t \in Transfer: transAmount(t)' = transAmount(t) BY DEF transAmount,
+    creditPrecond, debitPrecond
+<1> QED BY <1>1, <1>2 DEF transPending, transAmount, AmountIsPending, creditPrecond,
+    isTransKnown, MapThenSumSet, MapThenFoldSet, AmountPendingTotal
+
+THEOREM retryCredit_IndInv == ASSUME IndInv, NEW self \in Transfer, retryCredit(self)
+PROVE IndInv'
+<1> USE DEF IndInv, TypeOK, retryCredit
+<1>1 pcLabels' BY DEF pcLabels
+<1>2 Imbalance' = Imbalance BY retryCredit_AmountPendingTotal
     DEF Imbalance, creditPrecond, CreditTotal, DebitTotal
 <1>3 Imbalance' = 0 BY <1>2
 <1>4 \A t \in Transfer:
@@ -122,35 +165,20 @@ PROVE AmountPendingTotal' = AmountPendingTotal
 THEOREM init_AmountPendingTotal_initPrecond == ASSUME IndInv, NEW self \in Transfer, init(self),
 initPrecond(self)
 PROVE AmountPendingTotal' = AmountPendingTotal
-<1> USE DEF IndInv, TypeOK, init
-<1>1 self \notin transPending BY DEF transPending, AmountIsPending
-<1>2 ~AmountIsPending(self)' BY DEF AmountIsPending, creditPrecond, initPrecond
+\*<1>1 initPrecond(self) BY DEF init, IndInv
+<1>1 self \notin transPending BY DEF transPending, AmountIsPending, init
+<1>2 ~AmountIsPending(self)' BY DEF AmountIsPending, creditPrecond, initPrecond, init, IndInv, TypeOK
 <1>3 transPending \in SUBSET Transfer BY DEF transPending \* very non-obvious necessity to use it
 <1>4 self \notin transPending' BY <1>2 DEF transPending
 <1>5 transPending' = transPending BY <1>1, <1>4 DEF pcLabels,
-    transPending, AmountIsPending, creditPrecond, isTransKnown
+    transPending, AmountIsPending, creditPrecond, isTransKnown, init, IndInv, TypeOK
 <1>6 \A t \in transPending: amount[t]' = amount[t] BY
-    DEF creditPrecond, transPending,
-    pcLabels, transPending, AmountIsPending, creditPrecond, isTransKnown
-<1>7 \A t \in transPending: accounts[t] = accounts[t]' BY <1>5 DEF pcLabels,
-    transPending, AmountIsPending, creditPrecond, isTransKnown
-<1>8 (CHOOSE iter :
-          iter
-          = [s \in SUBSET transPending |->
-               IF s = {}
-                 THEN 0
-                 ELSE amount[CHOOSE x \in s : TRUE]
-                      + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending]
-    = (CHOOSE iter :
-          iter
-          = [s \in SUBSET transPending' |->
-               IF s = {}
-                 THEN 0
-                 ELSE amount[CHOOSE x \in s : TRUE]
-                      + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending']
-    BY <1>5 DEF transAmount
+    DEF creditPrecond, transPending, AmountIsPending, creditPrecond, isTransKnown, init, IndInv, TypeOK
+<1>7 \A t \in transPending: accounts[t] = accounts[t]' BY <1>5 DEF transPending, AmountIsPending,
+    creditPrecond, isTransKnown, init, IndInv, TypeOK
 \* it works with amount, does not work with transAmount which is surprising
-<1>9 (CHOOSE iter :
+\* it did not work when initPrecond(self) was not assumed but implied
+<1>8 (CHOOSE iter :
           iter
           = [s \in SUBSET transPending |->
                IF s = {}
@@ -165,25 +193,10 @@ PROVE AmountPendingTotal' = AmountPendingTotal
                  ELSE amount[CHOOSE x \in s : TRUE]'
                       + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending]
     BY <1>6, <1>7, <1>3 DEF pcLabels, transPending,
-    AmountIsPending, creditPrecond, isTransKnown
-<1>10 (CHOOSE iter :
-          iter
-          = [s \in SUBSET transPending' |->
-               IF s = {}
-                 THEN 0
-                 ELSE amount[CHOOSE x \in s : TRUE]
-                      + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending']
-    = (CHOOSE iter :
-          iter
-          = [s \in SUBSET transPending' |->
-               IF s = {}
-                 THEN 0
-                 ELSE amount[CHOOSE x \in s : TRUE]'
-                      + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending']
-    BY <1>9, <1>5
-<1>11 MapThenSumSet(transAmount, transPending)' = MapThenSumSet(transAmount, transPending)
-    BY <1>8, <1>10 DEF MapThenSumSet, MapThenFoldSet, transAmount
-<1> QED BY <1>11 DEF AmountPendingTotal
+    AmountIsPending, creditPrecond, isTransKnown, initPrecond, init, IndInv, TypeOK
+<1>9 MapThenSumSet(transAmount, transPending)' = MapThenSumSet(transAmount, transPending)
+    BY <1>5, <1>8 DEF MapThenSumSet, MapThenFoldSet, transAmount
+<1> QED BY <1>9 DEF AmountPendingTotal
 
 
 THEOREM init_IndInv == ASSUME IndInv, NEW self \in Transfer, init(self)
@@ -258,7 +271,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal + amount[self]
     BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, MapThenSumSetAddElem
 <1>8 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
 <1>9 AmountPendingTotal' = MapThenSumSet(transAmount, transPending')
-    BY DEF debit, transPending, AmountIsPending
+    BY DEF debit, transPending, AmountIsPending, debitPrecond
 <1>10 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending)'
     BY <1>8, <1>9
 <1> QED BY <1>7, <1>10, <1>3 DEF AmountPendingTotal
@@ -293,24 +306,9 @@ PROVE AmountPendingTotal' = AmountPendingTotal
                       + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending]
     BY <1>5 DEF debit, pcLabels, transPending, AmountIsPending, creditPrecond,
     isTransKnown
-<1>7 (CHOOSE iter :
-          iter
-          = [s \in SUBSET transPending' |->
-               IF s = {}
-                 THEN 0
-                 ELSE amount[CHOOSE x \in s : TRUE]
-                      + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending']
-    = (CHOOSE iter :
-          iter
-          = [s \in SUBSET transPending' |->
-               IF s = {}
-                 THEN 0
-                 ELSE amount[CHOOSE x \in s : TRUE]'
-                      + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending']
-    BY <1>6, <1>3
-<1>8 MapThenSumSet(transAmount, transPending)' = MapThenSumSet(transAmount, transPending)
-    BY <1>4, <1>7 DEF debit, transAmount, MapThenSumSet, MapThenFoldSet
-<1> QED BY <1>8 DEF AmountPendingTotal
+<1>7 MapThenSumSet(transAmount, transPending)' = MapThenSumSet(transAmount, transPending)
+    BY <1>4, <1>6, <1>3 DEF debit, transAmount, MapThenSumSet, MapThenFoldSet
+<1> QED BY <1>7 DEF AmountPendingTotal
 
 
 LEMMA debit_Imbalance == ASSUME IndInv, NEW self \in Transfer, debit(self)
@@ -427,7 +425,9 @@ PROVE AmountPendingTotal' = AmountPendingTotal
 <1>5 \A t \in transPending: transAmount(t)' = transAmount(t) BY DEF credit, transAmount, IndInv, TypeOK,
     creditPrecond, isTransKnown
 <1>6 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) BY <1>4, <1>5
-<1>7 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') BY <1>4, <1>5 DEF credit
+<1>7 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') BY <1>4, <1>5 DEF credit,
+    transPending, transAmount, AmountIsPending, creditPrecond,
+    isTransKnown, MapThenSumSet, MapThenFoldSet, AmountPendingTotal
 <1> QED BY <1>6, <1>7 DEF AmountPendingTotal
 
 
@@ -531,7 +531,8 @@ PROVE IndInv'
 <1>2 CASE debit(self) BY <1>2, debit_IndInv
 <1>3 CASE retryDebit(self) BY <1>3, retryDebit_IndInv
 <1>4 CASE credit(self) BY <1>4, credit_IndInv
-<1> QED BY <1>1, <1>2, <1>3, <1>4 DEF trans
+<1>5 CASE retryCredit(self) BY <1>5, retryCredit_IndInv
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5 DEF trans
 
 
 THEOREM unchangedVarsProperty == IndInv /\ UNCHANGED vars => IndInv'

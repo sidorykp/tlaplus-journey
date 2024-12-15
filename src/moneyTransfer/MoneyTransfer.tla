@@ -69,10 +69,7 @@ Transfer -> amount
                 }
             };
             
-        retryDebit:
-            if (debitPrecond(self)) {
-                goto debit;
-            };
+        retryDebit: if (debitPrecond(self)) goto debit;
 
         credit:
             with (a = accounts[self].to) {
@@ -80,10 +77,12 @@ Transfer -> amount
                     credits := credits \cup {<<[a |-> a, t |-> self], amount[self]>>};
                 }
             };
+            
+        retryCredit: if (creditPrecond(self)) goto credit;
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "ac562" /\ chksum(tla) = "9b214983")
+\* BEGIN TRANSLATION (chksum(pcal) = "c15ce77c" /\ chksum(tla) = "87eaf143")
 VARIABLES credits, debits, amount, accounts, pc
 
 (* define statement *)
@@ -156,11 +155,17 @@ credit(self) == /\ pc[self] = "credit"
                         THEN /\ credits' = (credits \cup {<<[a |-> a, t |-> self], amount[self]>>})
                         ELSE /\ TRUE
                              /\ UNCHANGED credits
-                /\ pc' = [pc EXCEPT ![self] = "Done"]
+                /\ pc' = [pc EXCEPT ![self] = "retryCredit"]
                 /\ UNCHANGED << debits, amount, accounts >>
 
+retryCredit(self) == /\ pc[self] = "retryCredit"
+                     /\ IF creditPrecond(self)
+                           THEN /\ pc' = [pc EXCEPT ![self] = "credit"]
+                           ELSE /\ pc' = [pc EXCEPT ![self] = "Done"]
+                     /\ UNCHANGED << credits, debits, amount, accounts >>
+
 trans(self) == init(self) \/ debit(self) \/ retryDebit(self)
-                  \/ credit(self)
+                  \/ credit(self) \/ retryCredit(self)
 
 (* Allow infinite stuttering to prevent deadlock on termination. *)
 Terminating == /\ \A self \in ProcSet: pc[self] = "Done"
@@ -180,7 +185,7 @@ CreditTotal == MapThenSumSet(opAmount, credits)
 DebitTotal == MapThenSumSet(opAmount, debits)
 
 AmountIsPending(t) ==
-    /\ pc[t] \in {"debit", "retryDebit", "credit"}
+    /\ pc[t] \in {"debit", "retryDebit", "credit", "retryCredit"}
     /\ creditPrecond(t)
 
 transPending == {t \in Transfer: AmountIsPending(t)}
@@ -199,7 +204,7 @@ EAccounts == [from: EAccount, to: EAccount]
 
 AT == [a: Account, t: Transfer]
 
-pcLabels == pc \in [Transfer -> {"init", "debit", "retryDebit", "credit", "Done"}]
+pcLabels == pc \in [Transfer -> {"init", "debit", "retryDebit", "credit", "retryCredit", "Done"}]
 
 TypeOK ==
     /\ credits \in SUBSET (AT \X Nat)

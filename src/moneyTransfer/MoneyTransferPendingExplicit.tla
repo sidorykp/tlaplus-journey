@@ -79,22 +79,23 @@ Dransfer -> amount
                 }
             };
 
-        retryDebit:
-            if (debitPrecond(self)) {
-                goto debit;
-            };
+        retryDebit: if (debitPrecond(self)) goto debit;
 
         credit:
             with (a = eccounts[self].to) {
                 if (creditPrecond(self)) {
-                    kredits := kredits \cup {<<[a |-> a, t |-> self], emount[self]>>};
-                    pendingDrans := pendingDrans \ {<<self, emount[self]>>};
+                    either {
+                        kredits := kredits \cup {<<[a |-> a, t |-> self], emount[self]>>};
+                        pendingDrans := pendingDrans \ {<<self, emount[self]>>};
+                    } or skip;
                 }
             };
+            
+        retryCredit: if (creditPrecond(self)) goto credit;
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "686b9624" /\ chksum(tla) = "2472bf00")
+\* BEGIN TRANSLATION (chksum(pcal) = "93a6fa74" /\ chksum(tla) = "60726b2e")
 VARIABLES kredits, bebits, emount, eccounts, pendingDrans, pc
 
 (* define statement *)
@@ -167,15 +168,24 @@ retryDebit(self) == /\ pc[self] = "retryDebit"
 credit(self) == /\ pc[self] = "credit"
                 /\ LET a == eccounts[self].to IN
                      IF creditPrecond(self)
-                        THEN /\ kredits' = (kredits \cup {<<[a |-> a, t |-> self], emount[self]>>})
-                             /\ pendingDrans' = pendingDrans \ {<<self, emount[self]>>}
+                        THEN /\ \/ /\ kredits' = (kredits \cup {<<[a |-> a, t |-> self], emount[self]>>})
+                                   /\ pendingDrans' = pendingDrans \ {<<self, emount[self]>>}
+                                \/ /\ TRUE
+                                   /\ UNCHANGED <<kredits, pendingDrans>>
                         ELSE /\ TRUE
                              /\ UNCHANGED << kredits, pendingDrans >>
-                /\ pc' = [pc EXCEPT ![self] = "Done"]
+                /\ pc' = [pc EXCEPT ![self] = "retryCredit"]
                 /\ UNCHANGED << bebits, emount, eccounts >>
 
+retryCredit(self) == /\ pc[self] = "retryCredit"
+                     /\ IF creditPrecond(self)
+                           THEN /\ pc' = [pc EXCEPT ![self] = "credit"]
+                           ELSE /\ pc' = [pc EXCEPT ![self] = "Done"]
+                     /\ UNCHANGED << kredits, bebits, emount, eccounts, 
+                                     pendingDrans >>
+
 trans(self) == init(self) \/ debit(self) \/ retryDebit(self)
-                  \/ credit(self)
+                  \/ credit(self) \/ retryCredit(self)
 
 (* Allow infinite stuttering to prevent deadlock on termination. *)
 Terminating == /\ \A self \in ProcSet: pc[self] = "Done"
@@ -195,7 +205,7 @@ CreditTotal == MapThenSumSetTerse(opEmount, kredits)
 DebitTotal == MapThenSumSetTerse(opEmount, bebits)
 
 AmountIsPending(t) ==
-    /\ pc[t] \in {"debit", "retryDebit", "credit"}
+    /\ pc[t] \in {"debit", "retryDebit", "credit", "retryCredit"}
     /\ creditPrecond(t)
 
 AmountPendingTotal == MapThenSumSet(pendingTransAmount, pendingDrans)
@@ -219,7 +229,7 @@ AT == [a: Eccount, t: Dransfer]
 
 TN == Dransfer \X Nat
 
-pcLabels == pc \in [Dransfer -> {"init", "debit", "retryDebit", "credit", "Done"}]
+pcLabels == pc \in [Dransfer -> {"init", "debit", "retryDebit", "credit", "retryCredit", "Done"}]
 
 PendingTransDerived == \A pt \in pendingDrans: \E d \in bebits: d[1].t = pt[1] /\ d[2] = pt[2]
 

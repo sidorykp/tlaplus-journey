@@ -62,9 +62,17 @@ BY DEF E!debit, debit, pendingTransDerived,
 
 THEOREM debitEquivalenceRev == ASSUME NEW self \in Transfer, debit(self)
 PROVE E!debit(self)
-BY DEF E!debit, debit, pendingTransDerived,
+<1>1 CASE debitPrecond(self)
+    <2>1 E!debitPrecond(self) BY <1>1 DEF E!debit, debit,
     AmountIsPending, debitPrecond, isTransKnown,
     E!debitPrecond, E!isTransKnown
+    <2> QED BY <1>1, <2>1 DEF E!debit, debit, pendingTransDerived,
+    AmountIsPending, debitPrecond, isTransKnown, E!isTransKnown
+<1>2 CASE ~debitPrecond(self)
+    <2> QED BY <1>2 DEF E!debit, debit, pendingTransDerived,
+    AmountIsPending, debitPrecond, isTransKnown,
+    E!debitPrecond, E!isTransKnown
+<1> QED BY <1>1, <1>2
     
 THEOREM retryDebitEquivalence == ASSUME NEW self \in Transfer, E!retryDebit(self)
 PROVE retryDebit(self)
@@ -91,7 +99,7 @@ PROVE E!retryDebit(self)
         E!isTransKnown, isTransKnown
     <2>2 UNCHANGED pendingTransDerived
         BY <1>1, <2>1 DEF retryDebit, pendingTransDerived, AmountIsPending,
-            creditPrecond, isTransKnown, IndInv, TypeOK
+            creditPrecond, isTransKnown, IndInv, TypeOK, pcLabels
     <2> QED BY <1>1, <2>1, <2>2 DEF E!retryDebit, retryDebit
 <1>2 CASE ~debitPrecond(self)
     <2>1 ~E!debitPrecond(self) BY <1>2 DEF
@@ -99,7 +107,8 @@ PROVE E!retryDebit(self)
         E!debitPrecond, debitPrecond,
         E!isTransKnown, isTransKnown
     <2>2 UNCHANGED pendingTransDerived
-        BY <1>2, <2>1 DEF retryDebit, pendingTransDerived
+        BY <1>2, <2>1 DEF retryDebit, pendingTransDerived, AmountIsPending,
+            creditPrecond, isTransKnown, IndInv, TypeOK, pcLabels
     <2> QED BY <1>2, <2>1, <2>2 DEF E!retryDebit, retryDebit
 <1> QED BY <1>1, <1>2
 
@@ -111,14 +120,55 @@ BY DEF E!credit, credit, pendingTransDerived,
 THEOREM creditEquivalenceRev == ASSUME NEW self \in Transfer, credit(self)
 PROVE E!credit(self)
 BY DEF E!credit, credit
-    
+
+\* a copy of retryDebitEquivalence
+THEOREM retryCreditEquivalence == ASSUME NEW self \in Transfer, E!retryCredit(self)
+PROVE retryCredit(self)
+<1>1 CASE E!creditPrecond(self)
+    <2>1 creditPrecond(self) BY <1>1 DEF
+        E!retryCredit, retryCredit,
+        E!creditPrecond, creditPrecond,
+        E!isTransKnown, isTransKnown
+    <2> QED BY <1>1, <2>1 DEF E!retryCredit, retryCredit
+<1>2 CASE ~E!creditPrecond(self)
+    <2>1 ~creditPrecond(self) BY <1>2 DEF
+        E!retryCredit, retryCredit,
+        E!creditPrecond, creditPrecond,
+        E!isTransKnown, isTransKnown
+    <2> QED BY <1>2, <2>1 DEF E!retryCredit, retryCredit
+<1> QED BY <1>1, <1>2
+
+\* a copy of retryDebitEquivalenceRev
+THEOREM retryCreditEquivalenceRev == ASSUME NEW self \in Transfer, retryCredit(self), IndInv
+PROVE E!retryCredit(self)
+<1>1 CASE creditPrecond(self)
+    <2>1 E!creditPrecond(self) BY <1>1 DEF
+        E!retryCredit, retryCredit,
+        E!creditPrecond, creditPrecond,
+        E!isTransKnown, isTransKnown
+    <2>2 UNCHANGED pendingTransDerived
+        BY <1>1, <2>1 DEF retryCredit, pendingTransDerived, AmountIsPending,
+            creditPrecond, isTransKnown, IndInv, TypeOK, pcLabels
+    <2> QED BY <1>1, <2>1, <2>2 DEF E!retryCredit, retryCredit
+<1>2 CASE ~creditPrecond(self)
+    <2>1 ~E!creditPrecond(self) BY <1>2 DEF
+        E!retryCredit, retryCredit,
+        E!creditPrecond, creditPrecond,
+        E!isTransKnown, isTransKnown
+    <2>2 UNCHANGED pendingTransDerived
+        BY <1>2, <2>1 DEF retryCredit, pendingTransDerived, AmountIsPending,
+            creditPrecond, isTransKnown, IndInv, TypeOK, pcLabels
+    <2> QED BY <1>2, <2>1, <2>2 DEF E!retryCredit, retryCredit
+<1> QED BY <1>1, <1>2
+
 THEOREM transEquivalence == ASSUME NEW self \in Transfer, E!trans(self)
 PROVE trans(self)
 <1>1 CASE E!init(self) BY <1>1, initEquivalence DEF E!trans, trans
 <1>2 CASE E!debit(self) BY <1>2, debitEquivalence DEF E!trans, trans
 <1>3 CASE E!retryDebit(self) BY <1>3, retryDebitEquivalence DEF E!trans, trans
 <1>4 CASE E!credit(self) BY <1>4, creditEquivalence DEF E!trans, trans
-<1> QED BY <1>1, <1>2, <1>3, <1>4
+<1>5 CASE E!retryCredit(self) BY <1>5, retryCreditEquivalence DEF E!trans, trans
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5
     DEF E!trans
 
 THEOREM transEquivalenceRev == ASSUME NEW self \in Transfer, trans(self), IndInv
@@ -127,7 +177,8 @@ PROVE E!trans(self)
 <1>2 CASE debit(self) BY <1>2, debitEquivalenceRev DEF E!trans, trans
 <1>3 CASE retryDebit(self) BY <1>3, retryDebitEquivalenceRev DEF E!trans, trans
 <1>4 CASE credit(self) BY <1>4, creditEquivalenceRev DEF E!trans, trans
-<1> QED BY <1>1, <1>2, <1>3, <1>4
+<1>5 CASE retryCredit(self) BY <1>5, retryCreditEquivalenceRev DEF E!trans, trans
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5
     DEF trans
 
 THEOREM unchangedEquivalence == UNCHANGED E!vars <=> UNCHANGED vars
