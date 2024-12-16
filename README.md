@@ -111,19 +111,6 @@ Utilizing equivalence between algorithms is an advanced topic because it require
 1. proving equivalence between two algorithms
 1. proving the property that we are interested in based on the proved equivalence
 
-# The price we pay for having two equivalent algorithms
-One fragment of the **specEquivalence** proof was particularly hard during developing the two MoneyTransfer algorithms:
->ASSUME NEW self \in Transfer, init(self)
-PROVE E!init(self)
-
-The workaround was to use one **redundant** condition:
->init:\
->&nbsp;&nbsp;&nbsp;&nbsp;if(initPrecond(self)) {
-
-The above redundant condition is **completely unnecessary** in each of the two MoneyTransfer algorithms when treated separately.
-
-The sole purpose of this redundant condition is to make the specEquivalence proof possible.
-
 # Pre-Requisites
 The project is being developed using:
 - [TLA+ Toolbox v1.7.4](https://github.com/tlaplus/tlaplus/releases/tag/v1.7.4)
