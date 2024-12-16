@@ -255,6 +255,6 @@ IndInvInteractiveStateConstraints ==
         /\ d.a # c.a
         /\ opAmount(d) = opAmount(c)
     /\ \A t \in Transfer:
-        pc[t] \in {"choose_accounts", "choose_amount"} => debitPrecond(t)
+        amount[t] = 0 <=> pc[t] = "choose_amount"
 
 ====
