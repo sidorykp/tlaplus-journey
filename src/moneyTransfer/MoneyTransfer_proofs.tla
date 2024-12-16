@@ -183,13 +183,9 @@ PROVE AmountPendingTotal' = AmountPendingTotal
 
 THEOREM init_IndInv == ASSUME IndInv, NEW self \in Transfer, init(self)
 PROVE IndInv'
-<1> DEFINE am == amount'[self]
-<1> DEFINE selfAccounts == accounts'[self]
-<1> DEFINE account1 == selfAccounts.from
-<1> DEFINE account2 == selfAccounts.to
 <1> USE DEF IndInv, TypeOK, init
 <1>1 amount' \in [Transfer -> Nat] BY DEF NNat
-<1>2 selfAccounts \in EAccounts BY DEF EAccounts, EAccount
+<1>2 accounts'[self] \in EAccounts BY DEF EAccounts, EAccount
 <1>3 accounts' \in [Transfer -> EAccounts] BY <1>2 DEF init
 <1>4 pcLabels' BY DEF pcLabels
 <1>5 Imbalance' = Imbalance BY init_AmountPendingTotal
