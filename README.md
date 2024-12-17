@@ -117,7 +117,7 @@ The project is being developed using:
 - [TLA+ Proof manager (tlapm)](https://github.com/tlaplus/tlapm)
 - [TLA+ Community Modules](https://github.com/tlaplus/CommunityModules)
 
-tlapm needs to be **built from sources**. The [latest available](https://github.com/tlaplus/tlapm/commit/ffb8846ff3c49d53ee6eeedfc4c8c4c409306ae3) sources of tlapm are used. The reason to build tlapm from sources is that its released versions use outdated [Isabelle](https://isabelle.in.tum.de) versions. And outdated Isabelle fails to prove some of the theorems. Using released versions of tlapm is possible but some theorems will not be proved.
+tlapm version [1.6.0-pre](https://github.com/tlaplus/tlapm/releases/tag/1.6.0-pre) is used to work with the project's code. Using older versions of tlapm is possible but some theorems will not be proved then.
 
 The [latest tagged version](https://github.com/tlaplus/CommunityModules/releases/tag/202409181925) of Community Modules is used. The Community Modules source code is just checked out and the sources are used directly.
 
