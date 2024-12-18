@@ -66,8 +66,10 @@ amountPending == IF pc = "credit" THEN amount ELSE 0
 
 MoneyTotal == bal1 + bal2 + amountPending
 
+pcLabels == pc \in {"choose_amount", "debit", "credit", "Done"}
+
 TypeOK ==
-    /\ pc \in {"choose_amount", "debit", "credit", "Done"}
+    /\ pcLabels
     /\ bal1 \in Int
     /\ bal2 \in Int
     /\ amount \in Nat
