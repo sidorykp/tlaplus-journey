@@ -9,7 +9,6 @@ CONSTANTS Avail
        bal1 = Avail,
        bal2 = Avail,
        amount = 0;
-    
     {
         choose_amount:
             with (am \in 1..Avail)
