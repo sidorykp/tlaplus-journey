@@ -17,7 +17,7 @@ Transfer -> amount
 ***************************************)
 
 (***************************************************************************
---algorithm MoneyTerse {
+--algorithm MoneyTransferTerse {
     variables
        credits = {},
        debits = {},
@@ -83,7 +83,7 @@ Transfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "4037b538" /\ chksum(tla) = "e3bd1c37")
+\* BEGIN TRANSLATION (chksum(pcal) = "3de6b2fb" /\ chksum(tla) = "e3bd1c37")
 VARIABLES credits, debits, amount, accounts, pc
 
 (* define statement *)
