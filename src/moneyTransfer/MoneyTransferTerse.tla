@@ -7,8 +7,6 @@ NNat == Nat \ {0}
 
 EAccount == Account \cup {Empty}
 
-ETransfer == Transfer \cup {Empty}
-
 EmptyAccounts == [from |-> Empty, to |-> Empty]
 
 (***************************************
