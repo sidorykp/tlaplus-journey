@@ -87,16 +87,16 @@ PROVE IndInv'
     <2>3 amountPending(self) = 0 BY DEF amountPending, pcLabels
     <2>4 amountPending(self)' = amount[self] BY DEF amountPending, pcLabels
     <2>5 (bal[a] + amountPending(self))' = bal[a] + amountPending(self) BY <2>1, <2>3, <2>4
-    <2>10 bal[a1] + bal[a2] + bal[a3] + amountPending(self) \in Int BY DEF amountPending
-    <2>11 (bal[a1] + bal[a2] + bal[a3] + amountPending(self))' \in Int BY DEF amountPending
-    <2>12 bal[a] \in Int BY <2>1
-    <2>13 bal[a]' \in Int BY <2>12, <2>2
-    <2>7 (bal[a1] + bal[a2] + bal[a3] + amountPending(self))'
+    <2>6 bal[a1] + bal[a2] + bal[a3] + amountPending(self) \in Int BY DEF amountPending
+    <2>7 (bal[a1] + bal[a2] + bal[a3] + amountPending(self))' \in Int BY DEF amountPending
+    <2>8 bal[a] \in Int BY <2>1
+    <2>9 bal[a]' \in Int BY <2>8, <2>2
+    <2>10 (bal[a1] + bal[a2] + bal[a3] + amountPending(self))'
         = bal[a1] + bal[a2] + bal[a3] + amountPending(self)
-        BY AccountsUniqueAssumption, <2>5, <2>10, <2>11, <2>12, <2>13 DEF amountPending
-    <2>8 \A t \in Transfer \ {self}: amountPending(t)' = amountPending(t)
+        BY AccountsUniqueAssumption, <2>5, <2>6, <2>7, <2>8, <2>9 DEF amountPending
+    <2>11 \A t \in Transfer \ {self}: amountPending(t)' = amountPending(t)
         BY DEF amountPending, pcLabels
-    <2> QED BY AccountsUniqueAssumption, <2>7, <2>8, TransfersUniqueAssumption
+    <2> QED BY AccountsUniqueAssumption, <2>10, <2>11, TransfersUniqueAssumption
         DEF MoneyTotalPreserved, MoneyTotal, amountPending
 <1>3 \A t \in Transfer: (pc[t] \notin {"choose_accounts"})' <=> NonEmptyAccounts(t)'
     BY EmptyAssumption DEF NonEmptyAccounts, pcLabels
@@ -119,16 +119,16 @@ PROVE IndInv'
     <2>3 amountPending(self)' = 0 BY DEF amountPending, pcLabels
     <2>4 amountPending(self) = amount[self] BY DEF amountPending, pcLabels
     <2>5 (bal[a] + amountPending(self))' = bal[a] + amountPending(self) BY <2>1, <2>3, <2>4
-    <2>10 bal[a1] + bal[a2] + bal[a3] + amountPending(self) \in Int BY DEF amountPending
-    <2>11 (bal[a1] + bal[a2] + bal[a3] + amountPending(self))' \in Int BY DEF amountPending
-    <2>12 bal[a] \in Int BY <2>1
-    <2>13 bal[a]' \in Int BY <2>12, <2>2
-    <2>7 (bal[a1] + bal[a2] + bal[a3] + amountPending(self))'
+    <2>6 bal[a1] + bal[a2] + bal[a3] + amountPending(self) \in Int BY DEF amountPending
+    <2>7 (bal[a1] + bal[a2] + bal[a3] + amountPending(self))' \in Int BY DEF amountPending
+    <2>8 bal[a] \in Int BY <2>1
+    <2>9 bal[a]' \in Int BY <2>8, <2>2
+    <2>10 (bal[a1] + bal[a2] + bal[a3] + amountPending(self))'
         = bal[a1] + bal[a2] + bal[a3] + amountPending(self)
-        BY AccountsUniqueAssumption, <2>5, <2>10, <2>11, <2>12, <2>13 DEF amountPending
-    <2>8 \A t \in Transfer \ {self}: amountPending(t)' = amountPending(t)
+        BY AccountsUniqueAssumption, <2>5, <2>6, <2>7, <2>8, <2>9 DEF amountPending
+    <2>11 \A t \in Transfer \ {self}: amountPending(t)' = amountPending(t)
         BY DEF amountPending, pcLabels
-    <2> QED BY AccountsUniqueAssumption, <2>7, <2>8, TransfersUniqueAssumption
+    <2> QED BY AccountsUniqueAssumption, <2>10, <2>11, TransfersUniqueAssumption
         DEF MoneyTotalPreserved, MoneyTotal, amountPending
 <1>3 \A t \in Transfer: (pc[t] \notin {"choose_accounts"})' <=> NonEmptyAccounts(t)'
     BY EmptyAssumption DEF NonEmptyAccounts, pcLabels
