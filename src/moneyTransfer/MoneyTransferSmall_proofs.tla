@@ -102,4 +102,36 @@ PROVE IndInv'
     BY EmptyAssumption DEF NonEmptyAccounts, pcLabels
 <1> QED BY <1>1, <1>2, <1>3
 
+
+THEOREM credit_IndInv == ASSUME IndInv, NEW self \in Transfer, credit(self)
+PROVE IndInv'
+<1> USE DEF Init, IndInv, TypeOK, Account, Transfer, credit
+<1>1 TypeOK'
+    <2>1 pcLabels' BY DEF pcLabels
+    <2>2 bal' \in [Account -> Int] BY AvailAssumption
+    <2>3 accounts' \in [Transfer -> EAccounts] BY EmptyAssumption
+        DEF EmptyAccounts, EAccounts, EAccount
+    <2> QED BY <2>1, <2>2, <2>3
+<1> DEFINE a == accounts[self].to
+<1>2 MoneyTotalPreserved'
+    <2>1 a \in Account BY DEF EAccounts, EAccount, NonEmptyAccounts
+    <2>2 bal[a]' = bal[a] + amount[self] BY <2>1
+    <2>3 amountPending(self)' = 0 BY DEF amountPending, pcLabels
+    <2>4 amountPending(self) = amount[self] BY DEF amountPending, pcLabels
+    <2>5 (bal[a] + amountPending(self))' = bal[a] + amountPending(self) BY <2>1, <2>3, <2>4
+    <2>10 bal[a1] + bal[a2] + bal[a3] + amountPending(self) \in Int BY DEF amountPending
+    <2>11 (bal[a1] + bal[a2] + bal[a3] + amountPending(self))' \in Int BY DEF amountPending
+    <2>12 bal[a] \in Int BY <2>1
+    <2>13 bal[a]' \in Int BY <2>12, <2>2
+    <2>7 (bal[a1] + bal[a2] + bal[a3] + amountPending(self))'
+        = bal[a1] + bal[a2] + bal[a3] + amountPending(self)
+        BY AccountsUniqueAssumption, <2>5, <2>10, <2>11, <2>12, <2>13 DEF amountPending
+    <2>8 \A t \in Transfer \ {self}: amountPending(t)' = amountPending(t)
+        BY DEF amountPending, pcLabels
+    <2> QED BY AccountsUniqueAssumption, <2>7, <2>8, TransfersUniqueAssumption
+        DEF MoneyTotalPreserved, MoneyTotal, amountPending
+<1>3 \A t \in Transfer: (pc[t] \notin {"choose_accounts"})' <=> NonEmptyAccounts(t)'
+    BY EmptyAssumption DEF NonEmptyAccounts, pcLabels
+<1> QED BY <1>1, <1>2, <1>3
+
 ====
