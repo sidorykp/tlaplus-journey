@@ -32,7 +32,7 @@ THEOREM choose_accounts_IndInv == ASSUME IndInv, \E self \in Transfer: choose_ac
 PROVE IndInv'
 <1> USE DEF Init, IndInv, TypeOK, Account, Transfer, choose_accounts
 <1>1 TypeOK'
-    <2>1 pcLabels' BY DEF pcLabels, ProcSet
+    <2>1 pcLabels' BY DEF pcLabels
     <2>2 bal' \in [Account -> Int] BY AvailAssumption
     <2>3 accounts' \in [Transfer -> EAccounts] BY EmptyAssumption
         DEF EmptyAccounts, EAccounts, EAccount
@@ -46,11 +46,11 @@ PROVE IndInv'
 <1> QED BY <1>1, <1>2, <1>3
 
 
-THEOREM choose_amount_IndInv == ASSUME IndInv, \E self \in Transfer: choose_amount(self)
+THEOREM choose_amount_IndInv == ASSUME IndInv, NEW self \in Transfer, choose_amount(self)
 PROVE IndInv'
 <1> USE DEF Init, IndInv, TypeOK, Account, Transfer, choose_amount
 <1>1 TypeOK'
-    <2>1 pcLabels' BY DEF pcLabels, ProcSet
+    <2>1 pcLabels' BY DEF pcLabels
     <2>2 bal' \in [Account -> Int] BY AvailAssumption
     <2>3 accounts' \in [Transfer -> EAccounts] BY EmptyAssumption
         DEF EmptyAccounts, EAccounts, EAccount
