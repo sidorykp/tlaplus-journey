@@ -43,15 +43,14 @@ THEOREM initProperty == ASSUME Init PROVE IndInv
 
 THEOREM choose_accounts_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, choose_accounts(self)
 PROVE AmountPendingTotal' = AmountPendingTotal
-<1>1 debitPrecond(self) BY DEF choose_accounts, IndInv
-<1>2 self \notin transPending BY DEF transPending, AmountIsPending, choose_accounts
-<1>3 ~AmountIsPending(self)' BY DEF AmountIsPending, creditPrecond, debitPrecond, choose_accounts, IndInv, TypeOK
-<1>4 self \notin transPending' BY <1>3 DEF transPending
-<1>5 transPending' = transPending BY <1>2, <1>4 DEF pcLabels,
+<1>1 self \notin transPending BY DEF transPending, AmountIsPending, choose_accounts
+<1>2 ~AmountIsPending(self)' BY DEF AmountIsPending, creditPrecond, debitPrecond, choose_accounts, IndInv, TypeOK
+<1>3 self \notin transPending' BY <1>2 DEF transPending
+<1>4 transPending' = transPending BY <1>1, <1>3 DEF pcLabels,
     transPending, AmountIsPending, creditPrecond, isTransKnown, choose_accounts, IndInv, TypeOK
-<1>6 \A t \in transPending: amount[t]' = amount[t] BY
+<1>5 \A t \in transPending: amount[t]' = amount[t] BY
     DEF transPending, AmountIsPending, choose_accounts, IndInv, TypeOK
-<1>7 (CHOOSE iter :
+<1>6 (CHOOSE iter :
           iter
           = [s \in SUBSET transPending |->
                IF s = {}
@@ -65,11 +64,10 @@ PROVE AmountPendingTotal' = AmountPendingTotal
                  THEN 0
                  ELSE amount[CHOOSE x \in s : TRUE]'
                       + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending]
-    BY <1>1, <1>6 DEF pcLabels, transPending,
-    AmountIsPending, debitPrecond, choose_accounts, IndInv, TypeOK
-<1>8 MapThenSumSet(transAmount, transPending)' = MapThenSumSet(transAmount, transPending)
-    BY <1>5, <1>7 DEF MapThenSumSet, MapThenFoldSet, transAmount
-<1> QED BY <1>8 DEF AmountPendingTotal
+    BY <1>5 DEF choose_accounts
+<1>7 MapThenSumSet(transAmount, transPending)' = MapThenSumSet(transAmount, transPending)
+    BY <1>4, <1>6 DEF MapThenSumSet, MapThenFoldSet, transAmount
+<1> QED BY <1>7 DEF AmountPendingTotal
 
 
 THEOREM choose_amount_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, choose_amount(self)
