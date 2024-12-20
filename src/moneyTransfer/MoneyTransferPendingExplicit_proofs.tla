@@ -530,15 +530,6 @@ THEOREM unchangedVarsProperty == IndInv /\ UNCHANGED vars => IndInv'
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>8, <1>9 DEF IndInv
 
 
-THEOREM nextTerminating == ASSUME IndInv, Next, Terminating
-PROVE IndInv'
-<1> SUFFICES ASSUME IndInv, Terminating
-    PROVE IndInv'
-    BY DEF Next, Terminating
-<1>1 UNCHANGED vars BY DEF Terminating
-<1> QED BY <1>1, unchangedVarsProperty
-
-
 THEOREM nextProperty == IndInv /\ Next => IndInv'
 <1> SUFFICES ASSUME IndInv, Next
     PROVE IndInv'
@@ -547,7 +538,7 @@ THEOREM nextProperty == IndInv /\ Next => IndInv'
 <1>1 CASE ~Terminating
     <2> QED BY <1>1, nextNonTerminating
 <1>2 CASE Terminating
-    <2> QED BY <1>2, nextTerminating    
+    <2> QED BY <1>2, unchangedVarsProperty 
 <1> QED BY <1>1, <1>2
 
 
