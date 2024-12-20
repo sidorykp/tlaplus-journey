@@ -134,4 +134,60 @@ PROVE IndInv'
     BY EmptyAssumption DEF NonEmptyAccounts, pcLabels
 <1> QED BY <1>1, <1>2, <1>3
 
+
+THEOREM NextNonTerminating == ASSUME IndInv, Next, ~Terminating
+PROVE IndInv'
+<1> SUFFICES ASSUME IndInv, NEW self \in Transfer, trans(self)
+    PROVE IndInv'
+    BY DEF Next, trans
+<1>1 CASE choose_accounts(self) BY <1>1, choose_accounts_IndInv
+<1>2 CASE choose_amount(self) BY <1>2, choose_amount_IndInv
+<1>3 CASE debit(self) BY <1>3, debit_IndInv
+<1>4 CASE credit(self) BY <1>4, credit_IndInv
+<1> QED BY <1>1, <1>2, <1>3, <1>4 DEF trans
+
+
+THEOREM unchangedVarsProperty == IndInv /\ UNCHANGED vars => IndInv'
+<1> SUFFICES ASSUME IndInv, UNCHANGED vars
+    PROVE IndInv'
+    OBVIOUS
+<1> USE DEF vars
+<1>1 TypeOK' = TypeOK BY DEF TypeOK, pcLabels
+<1>2 MoneyTotalPreserved' BY DEF MoneyTotalPreserved, MoneyTotal, amountPending,
+    IndInv, TypeOK
+<1>3 \A t \in Transfer: pc[t]' \notin {"choose_accounts"} <=> NonEmptyAccounts(t)'
+    BY DEF IndInv, TypeOK, NonEmptyAccounts
+<1> QED BY <1>1, <1>2, <1>3 DEF IndInv
+
+
+THEOREM NextTerminating == ASSUME IndInv, Next, Terminating
+PROVE IndInv'
+<1> SUFFICES ASSUME IndInv, Terminating
+    PROVE IndInv'
+    BY DEF Next, Terminating
+<1>1 UNCHANGED vars BY DEF Terminating
+<1> QED BY <1>1, unchangedVarsProperty
+
+
+THEOREM NextProperty == IndInv /\ Next => IndInv'
+<1> SUFFICES ASSUME IndInv, Next
+    PROVE IndInv'
+    OBVIOUS
+<1> USE DEF IndInv, Next, Terminating
+<1>1 CASE ~Terminating
+    <2> QED BY <1>1, NextNonTerminating
+<1>2 CASE Terminating
+    <2> QED BY <1>2, NextTerminating    
+<1> QED BY <1>1, <1>2
+
+
+THEOREM IndInvPreserved == Spec => []IndInv
+<1>1 IndInv /\ UNCHANGED vars => IndInv'
+    BY unchangedVarsProperty
+<1> QED BY PTL, InitProperty, NextProperty, <1>1 DEF Spec
+
+
+THEOREM Correctenss == Spec => []MoneyTotalPreserved
+BY PTL, IndInvPreserved, ImplicationProperty DEF Spec
+
 ====
