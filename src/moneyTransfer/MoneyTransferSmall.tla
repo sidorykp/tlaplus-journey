@@ -126,7 +126,8 @@ IndInv ==
 
 IndSpec == IndInv /\ [][Next]_vars
 
-
+IndInt == -3..3
+IndNat == 0..2
 IntSmall == -1..1
 
 StateConstraint ==
