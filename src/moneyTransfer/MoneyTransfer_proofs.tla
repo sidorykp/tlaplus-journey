@@ -1,19 +1,6 @@
 ---- MODULE MoneyTransfer_proofs ----
-EXTENDS MoneyTransfer, FiniteSetsExt_theorems, FiniteSetTheorems, TLAPS
-
-CONSTANTS NAccount, NTransfer
-
-ASSUME AccountAssumption == Account = 1..NAccount
-
-ASSUME TransferAssumption == Transfer = 1..NTransfer
-
-ASSUME NTransferAssumption == NTransfer \in NNat
-
-ASSUME NAccountAssumption == NAccount \in NNat
-
-ASSUME AvailAssumption == Avail \in NNat
-
-ASSUME EmptyAssumption == Empty = 0
+EXTENDS MoneyTransfer, MoneyTransferCommon, MoneyTransfer_proofsCommon,
+FiniteSetsExt_theorems, FiniteSetTheorems, TLAPS
 
 LEMMA transAmountInNat == ASSUME TypeOK, NEW self \in Transfer
 PROVE transAmount(self) \in Nat
