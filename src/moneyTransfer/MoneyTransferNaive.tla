@@ -6,7 +6,7 @@ EmptyAccounts == [from |-> Empty, to |-> Empty]
 (***************************************************************************
 --algorithm MoneyTransferNaive {
     variables
-        bal = [a \in Account |-> Avail],
+        bal = [a \in Account |-> 0],
         amount = [t \in Transfer |-> 0],
         accounts = [t \in Transfer |-> EmptyAccounts]
 
@@ -36,7 +36,7 @@ EmptyAccounts == [from |-> Empty, to |-> Empty]
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "4e462c53" /\ chksum(tla) = "d9770d05")
+\* BEGIN TRANSLATION (chksum(pcal) = "819f40d1" /\ chksum(tla) = "823b6bf4")
 VARIABLES bal, amount, accounts, pc
 
 (* define statement *)
@@ -50,7 +50,7 @@ vars == << bal, amount, accounts, pc >>
 ProcSet == (Transfer)
 
 Init == (* Global variables *)
-        /\ bal = [a \in Account |-> Avail]
+        /\ bal = [a \in Account |-> 0]
         /\ amount = [t \in Transfer |-> 0]
         /\ accounts = [t \in Transfer |-> EmptyAccounts]
         /\ pc = [self \in ProcSet |-> "choose_accounts"]
@@ -104,9 +104,9 @@ AmountPendingTotal == MapThenSumSet(transAmount, transPending)
 
 BalanceTotal == MapThenSumSet(accBal, Account)
 
-MoneyTotal == BalanceTotal + AmountPendingTotal
+Imbalance == BalanceTotal + AmountPendingTotal
 
-MoneyTotalPreserved == MoneyTotal = Avail * Cardinality(Account)
+MoneyTotalPreserved == Imbalance = 0
 
 pcLabels == pc \in [Transfer -> {"choose_accounts", "choose_amount", "debit", "credit", "Done"}]
 
