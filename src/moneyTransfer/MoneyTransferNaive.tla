@@ -114,8 +114,6 @@ NonEmptyAccounts(t) ==
     /\ accounts[t].from # Empty
     /\ accounts[t].to # Empty
 
-DifferentAccounts(t) == accounts[t].from # accounts[t].to
-
 TypeOK ==
     /\ pcLabels
     /\ bal \in [Account -> Int]
