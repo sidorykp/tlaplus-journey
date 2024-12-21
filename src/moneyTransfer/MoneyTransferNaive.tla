@@ -106,8 +106,40 @@ MoneyTotal == BalanceTotal + AmountPendingTotal
 
 MoneyTotalPreserved == MoneyTotal = Avail * Cardinality(Account)
 
+pcLabels == pc \in [Transfer -> {"choose_accounts", "choose_amount", "debit", "credit", "Done"}]
+
+EAccounts == [from: EAccount, to: EAccount]
+
+NonEmptyAccounts(t) ==
+    /\ accounts[t].from # Empty
+    /\ accounts[t].to # Empty
+
+DifferentAccounts(t) == accounts[t].from # accounts[t].to
+
+TypeOK ==
+    /\ pcLabels
+    /\ bal \in [Account -> Int]
+    /\ amount \in [Transfer -> Nat]
+    /\ accounts \in [Transfer -> EAccounts]
+
 Inv ==
+    /\ TypeOK
     /\ MoneyTotalPreserved
+
+IndInv ==
+    /\ TypeOK
+    /\ MoneyTotalPreserved
+    /\ \A t \in Transfer:
+        pc[t] \notin {"choose_accounts"} <=> NonEmptyAccounts(t)
+
+IndSpec == IndInv /\ [][Next]_vars
+
+IndInt == -3..3
+IndNat == 0..2
+IntSmall == -1..1
+
+StateConstraint ==
+    /\ bal \in [Account -> IntSmall]
 
 
 ====
