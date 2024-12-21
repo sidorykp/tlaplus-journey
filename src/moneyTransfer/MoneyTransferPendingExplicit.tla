@@ -7,8 +7,6 @@ NNat == Nat \ {0}
 
 EEccount == Eccount \cup {Empty}
 
-EDransfer == Dransfer \cup {Empty}
-
 EmptyEccounts == [from |-> Empty, to |-> Empty]
 
 MapThenSumSetTerse(op(_), S) ==
