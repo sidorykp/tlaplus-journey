@@ -1,9 +1,5 @@
 ---- MODULE MoneyTransferNaive ----
-EXTENDS Integers, FiniteSets, FiniteSetsExt
-
-CONSTANTS Avail, Empty, Account, Transfer
-
-EAccount == Account \cup {Empty}
+EXTENDS MoneyTransferCommon, Integers, FiniteSets, FiniteSetsExt
 
 EmptyAccounts == [from |-> Empty, to |-> Empty]
 

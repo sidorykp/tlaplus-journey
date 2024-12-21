@@ -1,11 +1,5 @@
 ----MODULE MoneyTransferTerse----
-EXTENDS Naturals, FiniteSets, FiniteSetsExt
-
-CONSTANTS Empty, Account, Transfer, Avail
-
-NNat == Nat \ {0}
-
-EAccount == Account \cup {Empty}
+EXTENDS MoneyTransferCommon, FiniteSets, FiniteSetsExt
 
 EmptyAccounts == [from |-> Empty, to |-> Empty]
 
