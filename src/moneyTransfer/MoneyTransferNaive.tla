@@ -16,6 +16,8 @@ EmptyAccounts == [from |-> Empty, to |-> Empty]
 
     define {
         accBal(a) == bal[a]
+
+        transAmount(t) == amount[t]
     }
 
     process (trans \in Transfer)
@@ -38,11 +40,13 @@ EmptyAccounts == [from |-> Empty, to |-> Empty]
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "5887baf3" /\ chksum(tla) = "4a0181c0")
+\* BEGIN TRANSLATION (chksum(pcal) = "4e462c53" /\ chksum(tla) = "d9770d05")
 VARIABLES bal, amount, accounts, pc
 
 (* define statement *)
 accBal(a) == bal[a]
+
+transAmount(t) == amount[t]
 
 
 vars == << bal, amount, accounts, pc >>
@@ -96,9 +100,11 @@ Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
 \* END TRANSLATION 
 
-amountPending(t) == IF pc[t] = "credit" THEN amount[t] ELSE 0
+AmountIsPending(t) == pc[t] = "credit"
 
-AmountPendingTotal == MapThenSumSet(amountPending, Transfer)
+transPending == {t \in Transfer: AmountIsPending(t)}
+
+AmountPendingTotal == MapThenSumSet(transAmount, transPending)
 
 BalanceTotal == MapThenSumSet(accBal, Account)
 
