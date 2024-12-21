@@ -30,4 +30,33 @@ PROVE IndInv
     BY EmptyAssumption DEF pcLabels, ProcSet, NonEmptyAccounts, EmptyAccounts
 <1> QED BY <1>1, <1>2, <1>3
 
+
+THEOREM choose_accounts_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, choose_accounts(self)
+PROVE AmountPendingTotal' = AmountPendingTotal
+<1>1 self \notin transPending BY DEF transPending, AmountIsPending, choose_accounts
+<1>2 ~AmountIsPending(self)' BY DEF AmountIsPending, pcLabels, choose_accounts, IndInv, TypeOK
+<1>3 self \notin transPending' BY <1>2 DEF transPending
+<1>4 transPending' = transPending BY <1>1, <1>3 DEF pcLabels,
+    transPending, AmountIsPending, choose_accounts, IndInv, TypeOK
+<1>5 \A t \in transPending: amount[t]' = amount[t] BY
+    DEF transPending, AmountIsPending, choose_accounts, IndInv, TypeOK
+<1>6 (CHOOSE iter :
+          iter
+          = [s \in SUBSET transPending |->
+               IF s = {}
+                 THEN 0
+                 ELSE amount[CHOOSE x \in s : TRUE]
+                      + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending]
+    = (CHOOSE iter :
+          iter
+          = [s \in SUBSET transPending |->
+               IF s = {}
+                 THEN 0
+                 ELSE amount[CHOOSE x \in s : TRUE]'
+                      + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending]
+    BY <1>5 DEF choose_accounts
+<1>7 MapThenSumSet(transAmount, transPending)' = MapThenSumSet(transAmount, transPending)
+    BY <1>4, <1>6 DEF MapThenSumSet, MapThenFoldSet, transAmount
+<1> QED BY <1>7 DEF AmountPendingTotal
+
 ====
