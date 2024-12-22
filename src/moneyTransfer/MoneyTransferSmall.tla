@@ -1,5 +1,5 @@
 ---- MODULE MoneyTransferSmall ----
-EXTENDS Integers
+EXTENDS Integers, FiniteSets, FiniteSetTheorems
 
 CONSTANTS Avail, Empty, a1, a2, a3, t1, t2
 
@@ -96,7 +96,7 @@ amountPending(t) == IF pc[t] = "credit" THEN amount[t] ELSE 0
 
 MoneyTotal == bal[a1] + bal[a2] + bal[a3] + amountPending(t1) + amountPending(t2)
 
-MoneyTotalPreserved == MoneyTotal = 3 * Avail
+MoneyTotalPreserved == MoneyTotal = Avail * Cardinality(Account)
 
 pcLabels == pc \in [Transfer -> {"choose_accounts", "choose_amount", "debit", "credit", "Done"}]
 

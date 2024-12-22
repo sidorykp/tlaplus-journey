@@ -12,6 +12,18 @@ ASSUME AccountsUniqueAssumption ==
     
 ASSUME TransfersUniqueAssumption == t1 # t2
 
+
+LEMMA AccountCardinality == Cardinality(Account) = 3
+<1>1 Cardinality({a1}) = 1 BY FS_Singleton
+<1>2 IsFiniteSet({a1}) BY FS_Singleton
+<1>3 a2 \notin {a1} BY AccountsUniqueAssumption
+<1>4 Cardinality({a1} \cup {a2}) = 2 BY <1>1, <1>3, <1>2, FS_AddElement
+<1>5 IsFiniteSet({a1} \cup {a2}) BY <1>1, <1>3, <1>2, FS_AddElement
+<1>6 a3 \notin {a1, a2} BY AccountsUniqueAssumption
+<1>7 Cardinality({a1, a2} \cup {a3}) = 3 BY <1>4, <1>5, <1>6, FS_AddElement
+<1> QED BY <1>7 DEF Account
+
+
 THEOREM ImplicationProperty == IndInv => MoneyTotalPreserved
 BY DEF MoneyTotalPreserved, IndInv
 
@@ -29,7 +41,7 @@ PROVE IndInv
     <2>2 \A t \in Transfer: amountPending(t) = 0 BY DEF amountPending, pcLabels
     <2>3 \A a \in Account: bal[a] \in Int BY AvailAssumption
     <2>4 bal[a1] + bal[a2] + bal[a3] \in Int BY <2>3
-    <2> QED BY <2>1, <2>2, <2>3 DEF MoneyTotalPreserved, MoneyTotal
+    <2> QED BY <2>1, <2>2, <2>3, AccountCardinality DEF MoneyTotalPreserved, MoneyTotal
 <1>3 \A t \in Transfer: pc[t] \notin {"choose_accounts"} <=> NonEmptyAccounts(t)
     BY EmptyAssumption DEF pcLabels, ProcSet, NonEmptyAccounts, EmptyAccounts
 <1> QED BY <1>1, <1>2, <1>3
