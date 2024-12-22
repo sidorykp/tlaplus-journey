@@ -32,7 +32,7 @@ PROVE IndInv
     <2> QED BY <2>1, <2>2, <2>3 DEF MoneyTotalPreserved, MoneyTotal
 <1>3 \A t \in Transfer: pc[t] \notin {"choose_accounts"} <=> NonEmptyAccounts(t)
     BY EmptyAssumption DEF pcLabels, ProcSet, NonEmptyAccounts, EmptyAccounts
-<1> QED BY <1>2, <1>1, <1>3
+<1> QED BY <1>1, <1>2, <1>3
 
 
 THEOREM choose_accounts_IndInv == ASSUME IndInv, \E self \in Transfer: choose_accounts(self)

@@ -1,33 +1,14 @@
 ---- MODULE MoneyTransfer_proofs ----
-EXTENDS MoneyTransfer, FiniteSetsExt_theorems, FiniteSetTheorems, TLAPS
-
-CONSTANTS NAccount, NTransfer
-
-ASSUME AccountAssumption == Account = 1..NAccount
-
-ASSUME TransferAssumption == Transfer = 1..NTransfer
-
-ASSUME NTransferAssumption == NTransfer \in NNat
-
-ASSUME NAccountAssumption == NAccount \in NNat
-
-ASSUME AvailAssumption == Avail \in NNat
-
-ASSUME EmptyAssumption == Empty = 0
+EXTENDS MoneyTransfer, MoneyTransferCommon, MoneyTransfer_proofsCommon,
+FiniteSetsExt_theorems, FiniteSetTheorems, TLAPS
 
 LEMMA transAmountInNat == ASSUME TypeOK, NEW self \in Transfer
 PROVE transAmount(self) \in Nat
 BY DEF TypeOK, transAmount
 
-LEMMA transSetIsFinite == ASSUME NTransferAssumption
-PROVE IsFiniteSet(Transfer)
-<1>1 Transfer \in SUBSET (Nat) BY TransferAssumption
-<1>2 \A t \in Transfer: t <= NTransfer BY TransferAssumption
-<1> QED BY <1>1, <1>2, FS_BoundedSetOfNaturals DEF NNat
-
-LEMMA AmountPendingTotalInNat == ASSUME NTransferAssumption, IndInv
+LEMMA AmountPendingTotalInNat == ASSUME IndInv
 PROVE AmountPendingTotal \in Nat
-<1>1 IsFiniteSet(Transfer) BY transSetIsFinite, NTransferAssumption
+<1>1 IsFiniteSet(Transfer) BY transSetIsFinite
 <1>2 IsFiniteSet({t \in Transfer : AmountIsPending(t)}) BY <1>1, FS_Subset
 <1>3 IsFiniteSet(transPending) BY <1>2, FS_Image DEF IndInv, TypeOK, transPending
 <1>4 \A t \in transPending: transAmount(t) \in Nat BY DEF transPending, transAmount, IndInv, TypeOK

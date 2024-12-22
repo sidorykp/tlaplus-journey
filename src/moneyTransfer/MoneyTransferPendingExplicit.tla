@@ -10,11 +10,11 @@ EEccount == Eccount \cup {Empty}
 EmptyEccounts == [from |-> Empty, to |-> Empty]
 
 MapThenSumSetTerse(op(_), S) ==
-  LET iter[s \in SUBSET S] ==
+    LET iter[s \in SUBSET S] ==
         IF s = {} THEN 0
         ELSE LET x == CHOOSE x \in s : TRUE
-             IN  op(x) + iter[s \ {x}]
-  IN  iter[S]
+            IN op(x) + iter[s \ {x}]
+    IN iter[S]
 
 (***************************************
 Dransfer -> Account -> kredit or bebit

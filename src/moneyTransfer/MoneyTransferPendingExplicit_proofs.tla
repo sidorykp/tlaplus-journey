@@ -19,15 +19,14 @@ LEMMA pendingTransAmountInNat == ASSUME TypeOK, NEW self \in TN
 PROVE pendingTransAmount(self) \in Nat
 BY DEF TypeOK, pendingTransAmount, TN
 
-LEMMA transSetIsFinite == ASSUME NDransferAssumption
-PROVE IsFiniteSet(Dransfer)
+LEMMA transSetIsFinite == IsFiniteSet(Dransfer)
 <1>1 Dransfer \in SUBSET (Nat) BY DransferAssumption
 <1>2 \A t \in Dransfer: t <= NDransfer BY DransferAssumption
-<1> QED BY <1>1, <1>2, FS_BoundedSetOfNaturals DEF NNat
+<1> QED BY <1>1, <1>2, FS_BoundedSetOfNaturals, NDransferAssumption DEF NNat
 
-LEMMA AmountPendingTotalInNat == ASSUME NDransferAssumption, IndInv
+LEMMA AmountPendingTotalInNat == ASSUME IndInv
 PROVE AmountPendingTotal \in Nat
-<1>1 IsFiniteSet(Dransfer) BY transSetIsFinite, NDransferAssumption
+<1>1 IsFiniteSet(Dransfer) BY transSetIsFinite
 <1>2 IsFiniteSet({t \in Dransfer : AmountIsPending(t)}) BY <1>1, FS_Subset
 <1>3 IsFiniteSet(pendingDrans) BY <1>2, FS_Image DEF IndInv, TypeOK
 <1>4 \A pt \in pendingDrans: pt \in TN BY DEF TN, IndInv, TypeOK

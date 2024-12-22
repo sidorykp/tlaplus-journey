@@ -1,21 +1,21 @@
 ---- MODULE MoneyTransferNaive ----
-EXTENDS Integers, FiniteSets, FiniteSetsExt
-
-CONSTANTS Avail, Empty, Account, Transfer
-
-EAccount == Account \cup {Empty}
+EXTENDS MoneyTransferCommon, Integers, FiniteSets, FiniteSetsExt
 
 EmptyAccounts == [from |-> Empty, to |-> Empty]
 
 (***************************************************************************
 --algorithm MoneyTransferNaive {
     variables
-        bal = [a \in Account |-> Avail],
+        bal = [a \in Account |-> 0],
         amount = [t \in Transfer |-> 0],
         accounts = [t \in Transfer |-> EmptyAccounts]
 
     define {
         accBal(a) == bal[a]
+        
+        amountAvail(a) == Avail + accBal(a)
+
+        transAmount(t) == amount[t]
     }
 
     process (trans \in Transfer)
@@ -25,7 +25,7 @@ EmptyAccounts == [from |-> Empty, to |-> Empty]
                 accounts[self] := [from |-> account1, to |-> account2];
 
         choose_amount:
-            with (am \in 1..Avail)
+            with (am \in 1..amountAvail(accounts[self].from))
                 amount[self] := am;
 
         debit:
@@ -38,11 +38,15 @@ EmptyAccounts == [from |-> Empty, to |-> Empty]
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "5887baf3" /\ chksum(tla) = "4a0181c0")
+\* BEGIN TRANSLATION (chksum(pcal) = "dc6ad40f" /\ chksum(tla) = "b59436f5")
 VARIABLES bal, amount, accounts, pc
 
 (* define statement *)
 accBal(a) == bal[a]
+
+amountAvail(a) == Avail + accBal(a)
+
+transAmount(t) == amount[t]
 
 
 vars == << bal, amount, accounts, pc >>
@@ -50,7 +54,7 @@ vars == << bal, amount, accounts, pc >>
 ProcSet == (Transfer)
 
 Init == (* Global variables *)
-        /\ bal = [a \in Account |-> Avail]
+        /\ bal = [a \in Account |-> 0]
         /\ amount = [t \in Transfer |-> 0]
         /\ accounts = [t \in Transfer |-> EmptyAccounts]
         /\ pc = [self \in ProcSet |-> "choose_accounts"]
@@ -63,7 +67,7 @@ choose_accounts(self) == /\ pc[self] = "choose_accounts"
                          /\ UNCHANGED << bal, amount >>
 
 choose_amount(self) == /\ pc[self] = "choose_amount"
-                       /\ \E am \in 1..Avail:
+                       /\ \E am \in 1..amountAvail(accounts[self].from):
                             amount' = [amount EXCEPT ![self] = am]
                        /\ pc' = [pc EXCEPT ![self] = "debit"]
                        /\ UNCHANGED << bal, accounts >>
@@ -96,15 +100,17 @@ Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
 \* END TRANSLATION 
 
-amountPending(t) == IF pc[t] = "credit" THEN amount[t] ELSE 0
+AmountIsPending(t) == pc[t] = "credit"
 
-AmountPendingTotal == MapThenSumSet(amountPending, Transfer)
+transPending == {t \in Transfer: AmountIsPending(t)}
+
+AmountPendingTotal == MapThenSumSet(transAmount, transPending)
 
 BalanceTotal == MapThenSumSet(accBal, Account)
 
-MoneyTotal == BalanceTotal + AmountPendingTotal
+Imbalance == BalanceTotal + AmountPendingTotal
 
-MoneyTotalPreserved == MoneyTotal = Avail * Cardinality(Account)
+MoneyTotalPreserved == Imbalance = 0
 
 pcLabels == pc \in [Transfer -> {"choose_accounts", "choose_amount", "debit", "credit", "Done"}]
 
