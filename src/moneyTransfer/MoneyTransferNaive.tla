@@ -12,6 +12,8 @@ EmptyAccounts == [from |-> Empty, to |-> Empty]
 
     define {
         accBal(a) == bal[a]
+        
+        amountAvail(a) == Avail + accBal(a)
 
         transAmount(t) == amount[t]
     }
@@ -23,7 +25,7 @@ EmptyAccounts == [from |-> Empty, to |-> Empty]
                 accounts[self] := [from |-> account1, to |-> account2];
 
         choose_amount:
-            with (am \in 1..Avail)
+            with (am \in 1..amountAvail(accounts[self].from))
                 amount[self] := am;
 
         debit:
@@ -36,11 +38,13 @@ EmptyAccounts == [from |-> Empty, to |-> Empty]
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "819f40d1" /\ chksum(tla) = "823b6bf4")
+\* BEGIN TRANSLATION (chksum(pcal) = "dc6ad40f" /\ chksum(tla) = "b59436f5")
 VARIABLES bal, amount, accounts, pc
 
 (* define statement *)
 accBal(a) == bal[a]
+
+amountAvail(a) == Avail + accBal(a)
 
 transAmount(t) == amount[t]
 
@@ -63,7 +67,7 @@ choose_accounts(self) == /\ pc[self] = "choose_accounts"
                          /\ UNCHANGED << bal, amount >>
 
 choose_amount(self) == /\ pc[self] = "choose_amount"
-                       /\ \E am \in 1..Avail:
+                       /\ \E am \in 1..amountAvail(accounts[self].from):
                             amount' = [amount EXCEPT ![self] = am]
                        /\ pc' = [pc EXCEPT ![self] = "debit"]
                        /\ UNCHANGED << bal, accounts >>
