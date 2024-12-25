@@ -1,6 +1,6 @@
 ---- MODULE MoneyTransferNaive_proofs ----
 EXTENDS MoneyTransferNaive, MoneyTransfer_proofsCommon,
-FiniteSetsExt_theorems, FiniteSetTheorems, TLAPS, Integers
+FiniteSetsExt_theorems, FiniteSetTheorems, TLAPS
 
 THEOREM ImplicationProperty == IndInv => MoneyTotalPreserved
 BY DEF MoneyTotalPreserved, IndInv
