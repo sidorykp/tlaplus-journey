@@ -11,6 +11,10 @@ EmptyAccounts == [from |-> Empty, to |-> Empty]
         accounts = [t \in Transfer |-> EmptyAccounts]
 
     define {
+        accBal(a) == bal[a]
+        
+        amountAvail(a) == Avail + accBal(a)
+
         transAmount(t) == amount[t]
     }
 
@@ -21,19 +25,27 @@ EmptyAccounts == [from |-> Empty, to |-> Empty]
                 accounts[self] := [from |-> account1, to |-> account2];
 
         choose_amount:
-            with (am \in 1..Avail)
+            with (am \in 1..amountAvail(accounts[self].from))
                 amount[self] := am;
-                
+
         debit:
             with (a = accounts[self].from)
                 bal[a] := bal[a] - amount[self];
+
+        credit:
+            with (a = accounts[self].to)
+                bal[a] := bal[a] + amount[self];
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "c1888640" /\ chksum(tla) = "6fa7a018")
+\* BEGIN TRANSLATION (chksum(pcal) = "dc6ad40f" /\ chksum(tla) = "b59436f5")
 VARIABLES bal, amount, accounts, pc
 
 (* define statement *)
+accBal(a) == bal[a]
+
+amountAvail(a) == Avail + accBal(a)
+
 transAmount(t) == amount[t]
 
 
@@ -55,7 +67,7 @@ choose_accounts(self) == /\ pc[self] = "choose_accounts"
                          /\ UNCHANGED << bal, amount >>
 
 choose_amount(self) == /\ pc[self] = "choose_amount"
-                       /\ \E am \in 1..Avail:
+                       /\ \E am \in 1..amountAvail(accounts[self].from):
                             amount' = [amount EXCEPT ![self] = am]
                        /\ pc' = [pc EXCEPT ![self] = "debit"]
                        /\ UNCHANGED << bal, accounts >>
@@ -63,10 +75,17 @@ choose_amount(self) == /\ pc[self] = "choose_amount"
 debit(self) == /\ pc[self] = "debit"
                /\ LET a == accounts[self].from IN
                     bal' = [bal EXCEPT ![a] = bal[a] - amount[self]]
-               /\ pc' = [pc EXCEPT ![self] = "Done"]
+               /\ pc' = [pc EXCEPT ![self] = "credit"]
                /\ UNCHANGED << amount, accounts >>
 
+credit(self) == /\ pc[self] = "credit"
+                /\ LET a == accounts[self].to IN
+                     bal' = [bal EXCEPT ![a] = bal[a] + amount[self]]
+                /\ pc' = [pc EXCEPT ![self] = "Done"]
+                /\ UNCHANGED << amount, accounts >>
+
 trans(self) == choose_accounts(self) \/ choose_amount(self) \/ debit(self)
+                  \/ credit(self)
 
 (* Allow infinite stuttering to prevent deadlock on termination. *)
 Terminating == /\ \A self \in ProcSet: pc[self] = "Done"
@@ -87,11 +106,13 @@ transPending == {t \in Transfer: AmountIsPending(t)}
 
 AmountPendingTotal == MapThenSumSet(transAmount, transPending)
 
-Imbalance == AmountPendingTotal
+BalanceTotal == MapThenSumSet(accBal, Account)
+
+Imbalance == BalanceTotal + AmountPendingTotal
 
 MoneyTotalPreserved == Imbalance = 0
 
-pcLabels == pc \in [Transfer -> {"choose_accounts", "choose_amount", "debit", "Done"}]
+pcLabels == pc \in [Transfer -> {"choose_accounts", "choose_amount", "debit", "credit", "Done"}]
 
 EAccounts == [from: EAccount, to: EAccount]
 
@@ -101,6 +122,7 @@ NonEmptyAccounts(t) ==
 
 TypeOK ==
     /\ pcLabels
+    /\ bal \in [Account -> Int]
     /\ amount \in [Transfer -> Nat]
     /\ accounts \in [Transfer -> EAccounts]
 
@@ -121,7 +143,7 @@ IndNat == 0..2
 IntSmall == -1..1
 
 StateConstraint ==
-    /\ TRUE
+    /\ bal \in [Account -> IntSmall]
 
 
 ====
