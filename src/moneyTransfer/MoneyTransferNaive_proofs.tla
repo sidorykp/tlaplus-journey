@@ -1,6 +1,6 @@
 ---- MODULE MoneyTransferNaive_proofs ----
 EXTENDS MoneyTransferNaive, MoneyTransfer_proofsCommon,
-FiniteSetsExt_theorems, FiniteSetTheorems, TLAPS
+FiniteSetsExt_theorems, FiniteSetTheorems, TLAPS, Integers
 
 THEOREM ImplicationProperty == IndInv => MoneyTotalPreserved
 BY DEF MoneyTotalPreserved, IndInv
@@ -10,10 +10,9 @@ PROVE IndInv
 <1> USE DEF Init, IndInv, TypeOK
 <1>1 TypeOK
     <2>1 pcLabels BY DEF pcLabels, ProcSet
-    <2>2 bal \in [Account -> Int] BY AvailAssumption DEF NNat
-    <2>3 accounts \in [Transfer -> EAccounts] BY EmptyAssumption
+    <2>2 accounts \in [Transfer -> EAccounts] BY EmptyAssumption
         DEF EmptyAccounts, EAccounts, EAccount
-    <2> QED BY <2>1, <2>2, <2>3
+    <2> QED BY <2>1, <2>2
 <1>2 MoneyTotalPreserved
     <2>1 \A a \in Account: accBal(a) = 0 BY DEF accBal
     <2>2 \A t \in transPending: transAmount(t) = 0 BY DEF transPending, transAmount,
@@ -70,9 +69,9 @@ PROVE AmountPendingTotal' = AmountPendingTotal
     transPending, AmountIsPending, choose_amount, IndInv, TypeOK
 <1>5 \A t \in transPending: amount[t]' = amount[t] BY
     DEF transPending, AmountIsPending, choose_amount, IndInv, TypeOK
-<1>6 \A t \in transPending: accounts[t]' = accounts[t] BY <1>3 DEF transPending, AmountIsPending,
-    choose_amount, IndInv, TypeOK
-<1>7 (CHOOSE iter :
+<1>6 \A t \in Transfer: amount[t] \in Nat BY DEF choose_amount, IndInv, TypeOK
+<1>7 \A t \in Transfer: amount[t]' \in Nat BY DEF choose_amount, IndInv, TypeOK, NNat
+<1>8 (CHOOSE iter :
           iter
           = [s \in SUBSET transPending |->
                IF s = {}
@@ -86,10 +85,9 @@ PROVE AmountPendingTotal' = AmountPendingTotal
                  THEN 0
                  ELSE amount[CHOOSE x \in s : TRUE]'
                       + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending]
-    BY <1>5, <1>6 DEF pcLabels, transPending,
-    AmountIsPending, choose_amount, IndInv, TypeOK
-<1>8 MapThenSumSet(transAmount, transPending)' = MapThenSumSet(transAmount, transPending)
-    BY <1>4, <1>7 DEF MapThenSumSet, MapThenFoldSet, transAmount
-<1> QED BY <1>8 DEF AmountPendingTotal
+    BY <1>5, <1>6, <1>7 DEF choose_amount, transPending, AmountIsPending, pcLabels, IndInv, TypeOK
+<1>9 MapThenSumSet(transAmount, transPending)' = MapThenSumSet(transAmount, transPending)
+    BY <1>4, <1>8 DEF MapThenSumSet, MapThenFoldSet, transAmount
+<1> QED BY <1>9 DEF AmountPendingTotal
 
 ====
