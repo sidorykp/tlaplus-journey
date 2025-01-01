@@ -2,6 +2,9 @@
 EXTENDS MoneyTransfer, MoneyTransferCommon, MoneyTransfer_proofsCommon,
 FiniteSetsExt_theorems_ext, FiniteSetTheorems, TLAPS
 
+LEMMA transPendingIsFinite == IsFiniteSet(transPending)
+BY transSetIsFinite, FS_Subset, NTransferAssumption DEF transPending
+
 LEMMA transAmountInNat == ASSUME TypeOK, NEW self \in Transfer
 PROVE transAmount(self) \in Nat
 BY DEF TypeOK, transAmount
@@ -10,13 +13,9 @@ LEMMA AmountPendingTotalInNat == ASSUME IndInv
 PROVE AmountPendingTotal \in Nat
 <1>1 IsFiniteSet(Transfer) BY transSetIsFinite
 <1>2 IsFiniteSet({t \in Transfer : AmountIsPending(t)}) BY <1>1, FS_Subset
-<1>3 IsFiniteSet(transPending) BY <1>2, FS_Image DEF IndInv, TypeOK, transPending
+<1>3 IsFiniteSet(transPending) BY transPendingIsFinite
 <1>4 \A t \in transPending: transAmount(t) \in Nat BY DEF transPending, transAmount, IndInv, TypeOK
 <1> QED BY <1>3, <1>4, MapThenSumSetType DEF AmountPendingTotal
-
-
-LEMMA transPendingIsFinite == IsFiniteSet(transPending)
-BY transSetIsFinite, FS_Subset, NTransferAssumption DEF transPending
 
 LEMMA transPendingAmountNat == ASSUME IndInv
 PROVE \A am \in transPending: transAmount(am) \in Nat
