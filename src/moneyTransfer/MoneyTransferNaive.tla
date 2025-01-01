@@ -26,10 +26,8 @@ EmptyAccounts == [from |-> Empty, to |-> Empty]
                 accounts[self] := [from |-> account1, to |-> account2];
 
         choose_amount:
-            with (am \in NNat) {
-                await am <= amountAvail(accounts[self].from);
+            with (am \in 1..amountAvail(accounts[self].from))
                 amount[self] := am;
-        };
 
         debit:
             with (a = accounts[self].from)
@@ -41,7 +39,7 @@ EmptyAccounts == [from |-> Empty, to |-> Empty]
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "9739c675" /\ chksum(tla) = "7dd5600f")
+\* BEGIN TRANSLATION (chksum(pcal) = "b987fb2f" /\ chksum(tla) = "a9d5f214")
 VARIABLES debits, credits, amount, accounts, pc
 
 (* define statement *)
@@ -71,9 +69,8 @@ choose_accounts(self) == /\ pc[self] = "choose_accounts"
                          /\ UNCHANGED << debits, credits, amount >>
 
 choose_amount(self) == /\ pc[self] = "choose_amount"
-                       /\ \E am \in NNat:
-                            /\ am <= amountAvail(accounts[self].from)
-                            /\ amount' = [amount EXCEPT ![self] = am]
+                       /\ \E am \in 1..amountAvail(accounts[self].from):
+                            amount' = [amount EXCEPT ![self] = am]
                        /\ pc' = [pc EXCEPT ![self] = "debit"]
                        /\ UNCHANGED << debits, credits, accounts >>
 
@@ -150,6 +147,7 @@ NatSmall == 0..1
 StateConstraint ==
     /\ debits \in [Account -> NatSmall]
     /\ credits \in [Account -> NatSmall]
+    /\ amount \in [Transfer -> NatSmall]
 
 
 ====
