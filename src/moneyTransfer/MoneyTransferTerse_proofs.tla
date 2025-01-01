@@ -1,5 +1,5 @@
 ---- MODULE MoneyTransferTerse_proofs ----
-EXTENDS MoneyTransferTerse, MoneyTransfer_proofsCommon, FiniteSetsExt_theorems, FiniteSetTheorems, TLAPS
+EXTENDS MoneyTransferTerse, MoneyTransfer_proofsCommon, FiniteSetsExt_theorems_ext, FiniteSetTheorems, TLAPS
 
 
 LEMMA init_Imbalance == ASSUME Init
@@ -58,33 +58,36 @@ PROVE AmountPendingTotal' = AmountPendingTotal
 
 THEOREM choose_amount_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, choose_amount(self)
 PROVE AmountPendingTotal' = AmountPendingTotal
-<1>1 debitPrecond(self) BY DEF choose_amount, IndInv
-<1>2 self \notin transPending BY DEF transPending, AmountIsPending, choose_amount
-<1>3 ~AmountIsPending(self)' BY DEF AmountIsPending, creditPrecond, debitPrecond, choose_amount, IndInv, TypeOK,
+<1>1 self \notin transPending BY DEF transPending, AmountIsPending, choose_amount
+<1>2 ~AmountIsPending(self)' BY DEF AmountIsPending, creditPrecond, debitPrecond, choose_amount, IndInv, TypeOK,
     pcLabels, isTransKnown, AT
-<1>4 self \notin transPending' BY <1>3 DEF transPending
-<1>5 transPending' = transPending BY <1>2, <1>4 DEF pcLabels,
+<1>3 self \notin transPending' BY <1>2 DEF transPending
+<1>4 transPending' = transPending BY <1>1, <1>3 DEF pcLabels,
     transPending, AmountIsPending, creditPrecond, isTransKnown, choose_amount, IndInv, TypeOK
-<1>6 \A t \in transPending: amount[t]' = amount[t] BY
-    DEF transPending, AmountIsPending, choose_amount, IndInv, TypeOK
-<1>7 (CHOOSE iter :
+<1>5 \A t \in transPending: transAmount(t)' = transAmount(t) BY
+    DEF transPending, transAmount, AmountIsPending, choose_amount, IndInv, TypeOK
+<1>6 \A t \in transPending: transAmount(t) \in Nat BY DEF choose_amount, IndInv, TypeOK,
+    transAmount, transPending
+<1>7 \A t \in transPending: transAmount(t)' \in Nat BY DEF choose_amount, IndInv, TypeOK, NNat,
+    transAmount, transPending
+<1>8 IsFiniteSet(transPending) BY transSetIsFinite, FS_Subset DEF transPending
+<1>9 (CHOOSE iter :
           iter
           = [s \in SUBSET transPending |->
                IF s = {}
                  THEN 0
-                 ELSE amount[CHOOSE x \in s : TRUE]
+                 ELSE transAmount(CHOOSE x \in s : TRUE)
                       + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending]
     = (CHOOSE iter :
           iter
           = [s \in SUBSET transPending |->
                IF s = {}
                  THEN 0
-                 ELSE amount[CHOOSE x \in s : TRUE]'
+                 ELSE transAmount(CHOOSE x \in s : TRUE)'
                       + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending]
-    BY <1>1, <1>6 DEF pcLabels, transPending,
-    AmountIsPending, debitPrecond, choose_amount, IndInv, TypeOK
-<1>8 MapThenSumSet(transAmount, transPending)' = MapThenSumSet(transAmount, transPending)
-    BY <1>5, <1>7 DEF MapThenSumSet, MapThenFoldSet, transAmount
-<1> QED BY <1>8 DEF AmountPendingTotal
+    BY <1>5, <1>6, <1>7, <1>8, MapThenSumSetEqual DEF choose_amount, MapThenSumSet, MapThenFoldSet
+<1>10 MapThenSumSet(transAmount, transPending)' = MapThenSumSet(transAmount, transPending)
+    BY <1>4, <1>9 DEF MapThenSumSet, MapThenFoldSet, transAmount
+<1> QED BY <1>10 DEF AmountPendingTotal
 
 ====
