@@ -113,10 +113,12 @@ LEMMA MapThenSumSetEqual ==
 <1> QED BY <1>3, <1>4, CardSumEqual
 
 
-THEOREM recur_sum == ASSUME NEW S \in SUBSET Transfer, NEW op1(_), NEW op2(_),
-\A s \in S: op1(s) = op2(s),
-\A s \in S: op1(s) \in Nat,
-\A s \in S: op2(s) \in Nat
+THEOREM RecurSumEqual ==
+    ASSUME NEW S \in SUBSET Transfer,
+        NEW op1(_), NEW op2(_),
+        \A s \in S: op1(s) = op2(s),
+        \A s \in S: op1(s) \in Nat,
+        \A s \in S: op2(s) \in Nat
 PROVE 
     (CHOOSE iter :
           iter
@@ -132,7 +134,6 @@ PROVE
                  THEN 0
                  ELSE op2(CHOOSE x \in s : TRUE)
                       + iter[s \ {CHOOSE x \in s : TRUE}]])[S]
-<1> DEFINE opDiff(s) == op1(s) - op2(s)
 <1>1 IsFiniteSet(S) BY transSetIsFinite, FS_Subset
 <1>2 (CHOOSE iter :
           iter
@@ -152,12 +153,8 @@ PROVE
     BY DEF MapThenSumSet, MapThenFoldSet
 <1>4 MapThenSumSet(op1, S) \in Nat BY <1>1, MapThenSumSetType
 <1>5 MapThenSumSet(op2, S) \in Nat BY <1>1, MapThenSumSetType
-<1>6 \A s \in S: opDiff(s) = 0 OBVIOUS
-<1>7 MapThenSumSet(opDiff, S) = 0 BY <1>1, <1>6, MapThenSumSetZeros
-<1>8 \A s \in S: opDiff(s) \in Nat BY <1>6
-<1>9 MapThenSumSet(op1, S) = MapThenSumSet(op2, S) BY <1>1, <1>4, <1>5, <1>7, <1>8
-    DEF MapThenSumSet, MapThenFoldSet
-<1> QED BY <1>9 DEF MapThenSumSet, MapThenFoldSet
+<1>6 MapThenSumSet(op1, S) = MapThenSumSet(op2, S) BY <1>1, <1>4, <1>5, MapThenSumSetEqual
+<1> QED BY <1>6 DEF MapThenSumSet, MapThenFoldSet
 
 
 THEOREM choose_amount_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, choose_amount(self)
@@ -189,10 +186,9 @@ PROVE AmountPendingTotal' = AmountPendingTotal
                  THEN 0
                  ELSE transAmount(CHOOSE x \in s : TRUE)'
                       + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending]
-    BY <1>5, <1>6, <1>7, <1>8, recur_sum DEF choose_amount, transPending, AmountIsPending,
-    pcLabels, IndInv, TypeOK, NNat
+    BY <1>5, <1>6, <1>7, <1>8, RecurSumEqual DEF choose_amount
 <1>10 MapThenSumSet(transAmount, transPending)' = MapThenSumSet(transAmount, transPending)
-    BY <1>4, <1>9 DEF MapThenSumSet, MapThenFoldSet, transAmount
+    BY <1>4, <1>9 DEF MapThenSumSet, MapThenFoldSet
 <1> QED BY <1>10 DEF AmountPendingTotal
 
 ====
