@@ -5,6 +5,9 @@ FiniteSetsExt_theorems_ext, FiniteSetTheorems, TLAPS
 THEOREM ImplicationProperty == IndInv => MoneyTotalPreserved
 BY DEF MoneyTotalPreserved, IndInv
 
+LEMMA transPendingIsFinite ==
+IsFiniteSet(transPending) BY transSetIsFinite, FS_Subset DEF transPending
+
 THEOREM InitProperty == ASSUME Init
 PROVE IndInv
 <1> USE DEF Init, IndInv, TypeOK
@@ -14,17 +17,17 @@ PROVE IndInv
         DEF EmptyAccounts, EAccounts, EAccount
     <2> QED BY <2>1, <2>2
 <1>2 MoneyTotalPreserved
-    <2>1 \A a \in Account: accBal(a) = 0 BY DEF accBal
-    <2>2 \A t \in transPending: transAmount(t) = 0 BY DEF transPending, transAmount,
+    <2>1 \A a \in Account: creditBal(a) = 0 BY DEF creditBal
+    <2>2 \A a \in Account: debitBal(a) = 0 BY DEF debitBal
+    <2>3 IsFiniteSet(Account) BY accountSetIsFinite
+    <2>4 CreditTotal = 0 BY <2>1, <2>3, MapThenSumSetZeros DEF CreditTotal
+    <2>5 DebitTotal = 0 BY <2>2, <2>3, MapThenSumSetZeros DEF DebitTotal
+    <2>6 \A t \in transPending: transAmount(t) = 0 BY DEF transPending, transAmount,
         pcLabels, AmountIsPending
-    <2>3 IsFiniteSet(Transfer) BY transSetIsFinite
-    <2>4 IsFiniteSet(transPending) BY <2>3, FS_Subset
-        DEF transPending, NNat
-    <2>5 AmountPendingTotal = 0 BY <2>2, <2>4, MapThenSumSetZeros
+    <2>7 IsFiniteSet(transPending) BY transPendingIsFinite
+    <2>8 AmountPendingTotal = 0 BY <2>6, <2>7, MapThenSumSetZeros
         DEF AmountPendingTotal, transAmount
-    <2>6 IsFiniteSet(Account) BY accountSetIsFinite
-    <2>7 BalanceTotal = 0 BY <2>1, <2>6, MapThenSumSetZeros DEF BalanceTotal
-    <2> QED BY <2>5, <2>7 DEF MoneyTotalPreserved, Imbalance
+    <2> QED BY <2>4, <2>5, <2>8 DEF MoneyTotalPreserved, Imbalance
 <1>3 \A t \in Transfer: pc[t] \notin {"choose_accounts"} <=> NonEmptyAccounts(t)
     BY EmptyAssumption DEF pcLabels, ProcSet, NonEmptyAccounts, EmptyAccounts
 <1> QED BY <1>1, <1>2, <1>3
@@ -59,6 +62,28 @@ PROVE AmountPendingTotal' = AmountPendingTotal
 <1> QED BY <1>7 DEF AmountPendingTotal
 
 
+THEOREM choose_accounts_IndInv == ASSUME IndInv, NEW self \in Transfer, choose_accounts(self)
+PROVE IndInv'
+<1> USE DEF choose_accounts, IndInv, TypeOK
+<1>1 TypeOK'
+    <2>1 pcLabels' BY DEF pcLabels
+    <2>2 accounts' \in [Transfer -> EAccounts] BY EmptyAssumption
+        DEF EmptyAccounts, EAccounts, EAccount
+    <2> QED BY <2>1, <2>2
+<1>2 MoneyTotalPreserved' = MoneyTotalPreserved
+    <2>1 CreditTotal' = CreditTotal BY DEF CreditTotal, creditBal, MapThenSumSet, MapThenFoldSet
+    <2>2 DebitTotal' = DebitTotal BY DEF DebitTotal, debitBal, MapThenSumSet, MapThenFoldSet
+    <2> QED BY <2>1, <2>2, choose_accounts_AmountPendingTotal DEF MoneyTotalPreserved, Imbalance
+<1>3 (pc[self] \notin {"choose_accounts"})' <=> NonEmptyAccounts(self)'
+    <2>1 pc[self]' \notin {"choose_accounts"} BY DEF pcLabels
+    <2>2 NonEmptyAccounts(self)' BY EmptyAssumption, NAccountAssumption, AccountAssumption
+        DEF NonEmptyAccounts
+    <2> QED BY <2>1, <2>2
+<1>4 \A t \in Transfer \ {self}: (pc[t] \notin {"choose_accounts"})' <=> NonEmptyAccounts(t)'
+    BY DEF pcLabels, NonEmptyAccounts
+<1> QED BY <1>1, <1>2, <1>3, <1>4
+
+
 THEOREM choose_amount_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, choose_amount(self)
 PROVE AmountPendingTotal' = AmountPendingTotal
 <1>1 self \notin transPending BY DEF transPending, AmountIsPending, choose_amount
@@ -73,7 +98,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal
     transAmount, transPending
 <1>7 \A t \in transPending: transAmount(t)' \in Nat BY DEF choose_amount, IndInv, TypeOK, NNat,
     transAmount, transPending
-<1>8 IsFiniteSet(transPending) BY transSetIsFinite, FS_Subset DEF transPending
+<1>8 IsFiniteSet(transPending) BY transPendingIsFinite
 <1>9 (CHOOSE iter :
           iter
           = [s \in SUBSET transPending |->
