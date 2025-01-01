@@ -16,25 +16,23 @@ LEMMA CardSumEqual ==
     <2> SUFFICES ASSUME T \subseteq S, x \in S PROVE P(T \cup {x}) BY DEF P
     <2>1 CardSum(T, op1) = CardSum(T, op2) BY <1>3 DEF P
     <2>2 T \cup {x} \subseteq S OBVIOUS
-    <2>3 CardSum(T \cup {x}, op1) = CardSum(T, op1) + op1(x)
-        <3> IsFiniteSet(T) BY FS_Subset
-        <3> \A s \in T : op1(s) \in Nat OBVIOUS
-        <3> x \notin T BY <1>3
-        <3> QED BY CardSumAddElem
-    <2>4 CardSum(T \cup {x}, op2) = CardSum(T, op2) + op2(x)
-        <3> IsFiniteSet(T) BY FS_Subset
+    <2>3 IsFiniteSet(T) BY FS_Subset
+    <2>4 x \notin T BY <1>3
+    <2>5 CardSum(T \cup {x}, op1) = CardSum(T, op1) + op1(x)
+        <3> \A s \in T : op1(s) \in Nat OBVIOUS       
+        <3> QED BY CardSumAddElem, <2>3, <2>4
+    <2>6 CardSum(T \cup {x}, op2) = CardSum(T, op2) + op2(x)
         <3> \A s \in T : op2(s) \in Nat OBVIOUS
-        <3> x \notin T BY <1>3
-        <3> QED BY CardSumAddElem
-    <2>5 op1(x) = op2(x) OBVIOUS
-    <2>6 CardSum(T \cup {x}, op1) = CardSum(T \cup {x}, op2)
+        <3> QED BY CardSumAddElem, <2>3, <2>4
+    <2>7 op1(x) = op2(x) OBVIOUS
+    <2>8 CardSum(T \cup {x}, op1) = CardSum(T \cup {x}, op2)
         <3>1 IsFiniteSet(T \cup {x}) BY <1>3, FS_Union, FS_Singleton
         <3>2 \A s \in T \cup {x} : op1(s) \in Nat OBVIOUS
         <3>3 CardSum(T \cup {x}, op1) \in Nat BY <3>1, <3>2, CardSumType
         <3>4 \A s \in T \cup {x} : op2(s) \in Nat OBVIOUS
         <3>5 CardSum(T \cup {x}, op2) \in Nat BY <3>1, <3>4, CardSumType
-        <3> QED BY ONLY <2>1, <2>3, <2>4, <2>5, <3>3, <3>5
-    <2> QED BY <2>6 DEF P
+        <3> QED BY ONLY <2>1, <2>5, <2>6, <2>7, <3>3, <3>5
+    <2> QED BY <2>8 DEF P
 <1>4 P(S) BY ONLY <1>1, <1>2, <1>3, FS_Induction
 <1> QED BY <1>4 DEF P
 
