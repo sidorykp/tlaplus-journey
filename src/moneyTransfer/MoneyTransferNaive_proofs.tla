@@ -113,50 +113,6 @@ LEMMA MapThenSumSetEqual ==
 <1> QED BY <1>3, <1>4, CardSumEqual
 
 
-THEOREM RecurSumEqual ==
-    ASSUME NEW S \in SUBSET Transfer,
-        NEW op1(_), NEW op2(_),
-        \A s \in S: op1(s) = op2(s),
-        \A s \in S: op1(s) \in Nat,
-        \A s \in S: op2(s) \in Nat
-PROVE 
-    (CHOOSE iter :
-          iter
-          = [s \in SUBSET S |->
-               IF s = {}
-                 THEN 0
-                 ELSE op1(CHOOSE x \in s : TRUE)
-                      + iter[s \ {CHOOSE x \in s : TRUE}]])[S]
-    = (CHOOSE iter :
-          iter
-          = [s \in SUBSET S |->
-               IF s = {}
-                 THEN 0
-                 ELSE op2(CHOOSE x \in s : TRUE)
-                      + iter[s \ {CHOOSE x \in s : TRUE}]])[S]
-<1>1 IsFiniteSet(S) BY transSetIsFinite, FS_Subset
-<1>2 (CHOOSE iter :
-          iter
-          = [s \in SUBSET S |->
-               IF s = {}
-                 THEN 0
-                 ELSE op1(CHOOSE x \in s : TRUE)
-                      + iter[s \ {CHOOSE x \in s : TRUE}]])[S] = MapThenSumSet(op1, S)
-    BY DEF MapThenSumSet, MapThenFoldSet
-<1>3 (CHOOSE iter :
-          iter
-          = [s \in SUBSET S |->
-               IF s = {}
-                 THEN 0
-                 ELSE op2(CHOOSE x \in s : TRUE)
-                      + iter[s \ {CHOOSE x \in s : TRUE}]])[S] = MapThenSumSet(op2, S)
-    BY DEF MapThenSumSet, MapThenFoldSet
-<1>4 MapThenSumSet(op1, S) \in Nat BY <1>1, MapThenSumSetType
-<1>5 MapThenSumSet(op2, S) \in Nat BY <1>1, MapThenSumSetType
-<1>6 MapThenSumSet(op1, S) = MapThenSumSet(op2, S) BY <1>1, <1>4, <1>5, MapThenSumSetEqual
-<1> QED BY <1>6 DEF MapThenSumSet, MapThenFoldSet
-
-
 THEOREM choose_amount_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, choose_amount(self)
 PROVE AmountPendingTotal' = AmountPendingTotal
 <1>1 self \notin transPending BY DEF transPending, AmountIsPending, choose_amount
@@ -171,7 +127,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal
     transAmount, transPending
 <1>7 \A t \in transPending: transAmount(t)' \in Nat BY DEF choose_amount, IndInv, TypeOK, NNat,
     transAmount, transPending
-<1>8 transPending \in SUBSET Transfer BY DEF transPending
+<1>8 IsFiniteSet(transPending) BY transSetIsFinite, FS_Subset DEF transPending
 <1>9 (CHOOSE iter :
           iter
           = [s \in SUBSET transPending |->
@@ -186,7 +142,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal
                  THEN 0
                  ELSE transAmount(CHOOSE x \in s : TRUE)'
                       + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending]
-    BY <1>5, <1>6, <1>7, <1>8, RecurSumEqual DEF choose_amount
+    BY <1>5, <1>6, <1>7, <1>8, MapThenSumSetEqual DEF choose_amount, MapThenSumSet, MapThenFoldSet
 <1>10 MapThenSumSet(transAmount, transPending)' = MapThenSumSet(transAmount, transPending)
     BY <1>4, <1>9 DEF MapThenSumSet, MapThenFoldSet
 <1> QED BY <1>10 DEF AmountPendingTotal
