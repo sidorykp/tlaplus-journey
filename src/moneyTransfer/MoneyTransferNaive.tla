@@ -12,9 +12,11 @@ EmptyAccounts == [from |-> Empty, to |-> Empty]
         accounts = [t \in Transfer |-> EmptyAccounts]
 
     define {
-        accBal(a) == credits[a] - debits[a]
+        creditBal(a) == credits[a]
         
-        amountAvail(a) == Avail + accBal(a)
+        debitBal(a) == debits[a]
+        
+        amountAvail(a) == Avail + creditBal(a) - debitBal(a)
 
         transAmount(t) == amount[t]
     }
@@ -39,13 +41,15 @@ EmptyAccounts == [from |-> Empty, to |-> Empty]
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "b987fb2f" /\ chksum(tla) = "a9d5f214")
+\* BEGIN TRANSLATION (chksum(pcal) = "3b2ff5ff" /\ chksum(tla) = "75c5026")
 VARIABLES debits, credits, amount, accounts, pc
 
 (* define statement *)
-accBal(a) == credits[a] - debits[a]
+creditBal(a) == credits[a]
 
-amountAvail(a) == Avail + accBal(a)
+debitBal(a) == debits[a]
+
+amountAvail(a) == Avail + creditBal(a) - debitBal(a)
 
 transAmount(t) == amount[t]
 
@@ -108,9 +112,11 @@ transPending == {t \in Transfer: AmountIsPending(t)}
 
 AmountPendingTotal == MapThenSumSet(transAmount, transPending)
 
-BalanceTotal == MapThenSumSet(accBal, Account)
+CreditTotal == MapThenSumSet(creditBal, Account)
 
-Imbalance == BalanceTotal + AmountPendingTotal
+DebitTotal == MapThenSumSet(debitBal, Account)
+
+Imbalance == CreditTotal - DebitTotal + AmountPendingTotal
 
 MoneyTotalPreserved == Imbalance = 0
 

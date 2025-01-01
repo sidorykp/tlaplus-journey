@@ -1,6 +1,9 @@
 ---- MODULE MoneyTransfer_proofs ----
 EXTENDS MoneyTransfer, MoneyTransferCommon, MoneyTransfer_proofsCommon,
-FiniteSetsExt_theorems, FiniteSetTheorems, TLAPS
+FiniteSetsExt_theorems_ext, FiniteSetTheorems, TLAPS
+
+LEMMA transPendingIsFinite == IsFiniteSet(transPending)
+BY transSetIsFinite, FS_Subset, NTransferAssumption DEF transPending
 
 LEMMA transAmountInNat == ASSUME TypeOK, NEW self \in Transfer
 PROVE transAmount(self) \in Nat
@@ -10,13 +13,9 @@ LEMMA AmountPendingTotalInNat == ASSUME IndInv
 PROVE AmountPendingTotal \in Nat
 <1>1 IsFiniteSet(Transfer) BY transSetIsFinite
 <1>2 IsFiniteSet({t \in Transfer : AmountIsPending(t)}) BY <1>1, FS_Subset
-<1>3 IsFiniteSet(transPending) BY <1>2, FS_Image DEF IndInv, TypeOK, transPending
+<1>3 IsFiniteSet(transPending) BY transPendingIsFinite
 <1>4 \A t \in transPending: transAmount(t) \in Nat BY DEF transPending, transAmount, IndInv, TypeOK
 <1> QED BY <1>3, <1>4, MapThenSumSetType DEF AmountPendingTotal
-
-
-LEMMA transPendingIsFinite == IsFiniteSet(transPending)
-BY transSetIsFinite, FS_Subset, NTransferAssumption DEF transPending
 
 LEMMA transPendingAmountNat == ASSUME IndInv
 PROVE \A am \in transPending: transAmount(am) \in Nat
@@ -136,30 +135,31 @@ PROVE AmountPendingTotal' = AmountPendingTotal
 <1>3 self \notin transPending' BY <1>2 DEF transPending
 <1>4 transPending' = transPending BY <1>1, <1>3 DEF pcLabels,
     transPending, AmountIsPending, creditPrecond, isTransKnown, init, IndInv, TypeOK
-<1>5 \A t \in transPending: amount[t]' = amount[t] BY
-    DEF transPending, AmountIsPending, init, IndInv, TypeOK
-<1>6 \A t \in transPending: accounts[t]' = accounts[t] BY <1>4 DEF transPending, AmountIsPending,
-    init, IndInv, TypeOK
-\* it works with amount, does not work with transAmount which is surprising
-<1>7 (CHOOSE iter :
+<1>5 \A t \in transPending: transAmount(t)' = transAmount(t) BY
+    DEF transPending, transAmount, AmountIsPending, init, IndInv, TypeOK
+<1>6 \A t \in transPending: transAmount(t) \in Nat BY DEF init, IndInv, TypeOK,
+    transAmount, transPending
+<1>7 \A t \in transPending: transAmount(t)' \in Nat BY DEF init, IndInv, TypeOK, NNat,
+    transAmount, transPending
+<1>8 IsFiniteSet(transPending) BY transSetIsFinite, FS_Subset DEF transPending
+<1>9 (CHOOSE iter :
           iter
           = [s \in SUBSET transPending |->
                IF s = {}
                  THEN 0
-                 ELSE amount[CHOOSE x \in s : TRUE]
+                 ELSE transAmount(CHOOSE x \in s : TRUE)
                       + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending]
     = (CHOOSE iter :
           iter
           = [s \in SUBSET transPending |->
                IF s = {}
                  THEN 0
-                 ELSE amount[CHOOSE x \in s : TRUE]'
+                 ELSE transAmount(CHOOSE x \in s : TRUE)'
                       + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending]
-    BY <1>5, <1>6 DEF pcLabels, transPending,
-    AmountIsPending, initPrecond, init, IndInv, TypeOK
-<1>8 MapThenSumSet(transAmount, transPending)' = MapThenSumSet(transAmount, transPending)
-    BY <1>4, <1>7 DEF MapThenSumSet, MapThenFoldSet, transAmount
-<1> QED BY <1>8 DEF AmountPendingTotal
+    BY <1>5, <1>6, <1>7, <1>8, MapThenSumSetEqual DEF init, MapThenSumSet, MapThenFoldSet
+<1>10 MapThenSumSet(transAmount, transPending)' = MapThenSumSet(transAmount, transPending)
+    BY <1>4, <1>9 DEF MapThenSumSet, MapThenFoldSet, transAmount
+<1> QED BY <1>10 DEF AmountPendingTotal
 
 
 THEOREM init_IndInv == ASSUME IndInv, NEW self \in Transfer, init(self)
@@ -216,7 +216,7 @@ LEMMA debit_AmountPendingTotal_debitPrecond == ASSUME IndInv, NEW self \in Trans
 debitPrecond(self), ~(UNCHANGED debits)
 PROVE AmountPendingTotal' = AmountPendingTotal + amount[self]
 <1>1 transPending' = transPending \cup {self}
-    BY DEF transPending, debit
+    BY DEF transPending, debit, AmountIsPending, isTransKnown, creditPrecond
 <1> USE DEF IndInv, TypeOK
 <1>2 self \notin transPending
     BY DEF transPending, AmountIsPending, isTransKnown, debitPrecond, creditPrecond, AT

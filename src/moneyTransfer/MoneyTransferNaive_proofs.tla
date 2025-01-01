@@ -1,9 +1,12 @@
 ---- MODULE MoneyTransferNaive_proofs ----
 EXTENDS MoneyTransferNaive, MoneyTransfer_proofsCommon,
-FiniteSetsExt_theorems_proofs, FiniteSetTheorems, TLAPS
+FiniteSetsExt_theorems_ext, FiniteSetTheorems, TLAPS
 
 THEOREM ImplicationProperty == IndInv => MoneyTotalPreserved
 BY DEF MoneyTotalPreserved, IndInv
+
+LEMMA transPendingIsFinite ==
+IsFiniteSet(transPending) BY transSetIsFinite, FS_Subset DEF transPending
 
 THEOREM InitProperty == ASSUME Init
 PROVE IndInv
@@ -14,17 +17,17 @@ PROVE IndInv
         DEF EmptyAccounts, EAccounts, EAccount
     <2> QED BY <2>1, <2>2
 <1>2 MoneyTotalPreserved
-    <2>1 \A a \in Account: accBal(a) = 0 BY DEF accBal
-    <2>2 \A t \in transPending: transAmount(t) = 0 BY DEF transPending, transAmount,
+    <2>1 \A a \in Account: creditBal(a) = 0 BY DEF creditBal
+    <2>2 \A a \in Account: debitBal(a) = 0 BY DEF debitBal
+    <2>3 IsFiniteSet(Account) BY accountSetIsFinite
+    <2>4 CreditTotal = 0 BY <2>1, <2>3, MapThenSumSetZeros DEF CreditTotal
+    <2>5 DebitTotal = 0 BY <2>2, <2>3, MapThenSumSetZeros DEF DebitTotal
+    <2>6 \A t \in transPending: transAmount(t) = 0 BY DEF transPending, transAmount,
         pcLabels, AmountIsPending
-    <2>3 IsFiniteSet(Transfer) BY transSetIsFinite
-    <2>4 IsFiniteSet(transPending) BY <2>3, FS_Subset
-        DEF transPending, NNat
-    <2>5 AmountPendingTotal = 0 BY <2>2, <2>4, MapThenSumSetZeros
+    <2>7 IsFiniteSet(transPending) BY transPendingIsFinite
+    <2>8 AmountPendingTotal = 0 BY <2>6, <2>7, MapThenSumSetZeros
         DEF AmountPendingTotal, transAmount
-    <2>6 IsFiniteSet(Account) BY accountSetIsFinite
-    <2>7 BalanceTotal = 0 BY <2>1, <2>6, MapThenSumSetZeros DEF BalanceTotal
-    <2> QED BY <2>5, <2>7 DEF MoneyTotalPreserved, Imbalance
+    <2> QED BY <2>4, <2>5, <2>8 DEF MoneyTotalPreserved, Imbalance
 <1>3 \A t \in Transfer: pc[t] \notin {"choose_accounts"} <=> NonEmptyAccounts(t)
     BY EmptyAssumption DEF pcLabels, ProcSet, NonEmptyAccounts, EmptyAccounts
 <1> QED BY <1>1, <1>2, <1>3
@@ -59,54 +62,26 @@ PROVE AmountPendingTotal' = AmountPendingTotal
 <1> QED BY <1>7 DEF AmountPendingTotal
 
 
-LEMMA CardSumEqual ==
-    ASSUME NEW S, IsFiniteSet(S),
-           NEW op1(_), NEW op2(_),
-           \A e \in S: op1(e) = op2(e),
-           \A e \in S: op1(e) \in Nat,
-           \A e \in S: op2(e) \in Nat
-    PROVE CardSum(S, op1) = CardSum(S, op2)
-<1> DEFINE P(s) == s \subseteq S => CardSum(s, op1) = CardSum(s, op2)
-<1> HIDE DEF P
-<1>1 IsFiniteSet(S) OBVIOUS
-<1>2 P({}) BY CardSumEmpty DEF P
-<1>3 ASSUME NEW T, NEW x, IsFiniteSet(T), P(T), x \notin T PROVE P(T \cup {x})
-    <2> SUFFICES ASSUME T \subseteq S, x \in S PROVE P(T \cup {x}) BY DEF P
-    <2>1 CardSum(T, op1) = CardSum(T, op2) BY <1>3 DEF P
-    <2>2 T \cup {x} \subseteq S OBVIOUS
-    <2>3 CardSum(T \cup {x}, op1) = CardSum(T, op1) + op1(x)
-        <3> IsFiniteSet(T) BY FS_Subset
-        <3> \A s \in T : op1(s) \in Nat OBVIOUS
-        <3> x \notin T BY <1>3
-        <3> QED BY CardSumAddElem
-    <2>4 CardSum(T \cup {x}, op2) = CardSum(T, op2) + op2(x)
-        <3> IsFiniteSet(T) BY FS_Subset
-        <3> \A s \in T : op2(s) \in Nat OBVIOUS
-        <3> x \notin T BY <1>3
-        <3> QED BY CardSumAddElem
-    <2>5 op1(x) = op2(x) OBVIOUS
-    <2>6 CardSum(T \cup {x}, op1) = CardSum(T \cup {x}, op2)
-        <3>1 IsFiniteSet(T \cup {x}) BY <1>3, FS_Union, FS_Singleton
-        <3>2 \A s \in T \cup {x} : op1(s) \in Nat OBVIOUS
-        <3>3 CardSum(T \cup {x}, op1) \in Nat BY <3>1, <3>2, CardSumType
-        <3>4 \A s \in T \cup {x} : op2(s) \in Nat OBVIOUS
-        <3>5 CardSum(T \cup {x}, op2) \in Nat BY <3>1, <3>4, CardSumType
-        <3> QED BY ONLY <2>1, <2>3, <2>4, <2>5, <3>3, <3>5
-    <2> QED BY <2>6 DEF P
-<1>4 P(S) BY ONLY <1>1, <1>2, <1>3, FS_Induction
-<1> QED BY <1>4 DEF P
-
-
-LEMMA MapThenSumSetEqual ==
-    ASSUME NEW S, IsFiniteSet(S),
-           NEW op1(_), NEW op2(_),
-           \A e \in S: op1(e) = op2(e),
-           \A e \in S: op1(e) \in Nat,
-           \A e \in S: op2(e) \in Nat
-    PROVE MapThenSumSet(op1, S) = MapThenSumSet(op2, S)
-<1>1 MapThenSumSet(op1, S) = CardSum(S, op1) BY MapThenSumSetDefined
-<1>2 MapThenSumSet(op2, S) = CardSum(S, op2) BY MapThenSumSetDefined
-<1> QED BY <1>1, <1>2, CardSumEqual
+THEOREM choose_accounts_IndInv == ASSUME IndInv, NEW self \in Transfer, choose_accounts(self)
+PROVE IndInv'
+<1> USE DEF choose_accounts, IndInv, TypeOK
+<1>1 TypeOK'
+    <2>1 pcLabels' BY DEF pcLabels
+    <2>2 accounts' \in [Transfer -> EAccounts] BY EmptyAssumption
+        DEF EmptyAccounts, EAccounts, EAccount
+    <2> QED BY <2>1, <2>2
+<1>2 MoneyTotalPreserved' = MoneyTotalPreserved
+    <2>1 CreditTotal' = CreditTotal BY DEF CreditTotal, creditBal, MapThenSumSet, MapThenFoldSet
+    <2>2 DebitTotal' = DebitTotal BY DEF DebitTotal, debitBal, MapThenSumSet, MapThenFoldSet
+    <2> QED BY <2>1, <2>2, choose_accounts_AmountPendingTotal DEF MoneyTotalPreserved, Imbalance
+<1>3 (pc[self] \notin {"choose_accounts"})' <=> NonEmptyAccounts(self)'
+    <2>1 pc[self]' \notin {"choose_accounts"} BY DEF pcLabels
+    <2>2 NonEmptyAccounts(self)' BY EmptyAssumption, NAccountAssumption, AccountAssumption
+        DEF NonEmptyAccounts
+    <2> QED BY <2>1, <2>2
+<1>4 \A t \in Transfer \ {self}: (pc[t] \notin {"choose_accounts"})' <=> NonEmptyAccounts(t)'
+    BY DEF pcLabels, NonEmptyAccounts
+<1> QED BY <1>1, <1>2, <1>3, <1>4
 
 
 THEOREM choose_amount_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, choose_amount(self)
@@ -123,7 +98,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal
     transAmount, transPending
 <1>7 \A t \in transPending: transAmount(t)' \in Nat BY DEF choose_amount, IndInv, TypeOK, NNat,
     transAmount, transPending
-<1>8 IsFiniteSet(transPending) BY transSetIsFinite, FS_Subset DEF transPending
+<1>8 IsFiniteSet(transPending) BY transPendingIsFinite
 <1>9 (CHOOSE iter :
           iter
           = [s \in SUBSET transPending |->
