@@ -106,11 +106,9 @@ LEMMA MapThenSumSetEqual ==
            \A e \in S: op1(e) \in Nat,
            \A e \in S: op2(e) \in Nat
     PROVE MapThenSumSet(op1, S) = MapThenSumSet(op2, S)
-<1>1 \A e \in S: op1(e) \in Nat OBVIOUS
-<1>2 \A e \in S: op2(e) \in Nat OBVIOUS
-<1>3 MapThenSumSet(op1, S) = CardSum(S, op1) BY <1>1, MapThenSumSetDefined
-<1>4 MapThenSumSet(op2, S) = CardSum(S, op2) BY <1>2, MapThenSumSetDefined
-<1> QED BY <1>3, <1>4, CardSumEqual
+<1>1 MapThenSumSet(op1, S) = CardSum(S, op1) BY MapThenSumSetDefined
+<1>2 MapThenSumSet(op2, S) = CardSum(S, op2) BY MapThenSumSetDefined
+<1> QED BY <1>1, <1>2, CardSumEqual
 
 
 THEOREM choose_amount_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, choose_amount(self)
