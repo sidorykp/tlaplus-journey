@@ -78,13 +78,11 @@ LEMMA CardSumEqual ==
         <3> IsFiniteSet(T) BY FS_Subset
         <3> \A s \in T : op1(s) \in Nat OBVIOUS
         <3> x \notin T BY <1>3
-        <3> op1(x) \in Nat OBVIOUS
         <3> QED BY CardSumAddElem
     <2>4 CardSum(T \cup {x}, op2) = CardSum(T, op2) + op2(x)
         <3> IsFiniteSet(T) BY FS_Subset
         <3> \A s \in T : op2(s) \in Nat OBVIOUS
         <3> x \notin T BY <1>3
-        <3> op2(x) \in Nat OBVIOUS
         <3> QED BY CardSumAddElem
     <2>5 op1(x) = op2(x) OBVIOUS
     <2>6 CardSum(T \cup {x}, op1) = CardSum(T \cup {x}, op2)
