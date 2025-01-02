@@ -118,4 +118,26 @@ PROVE AmountPendingTotal' = AmountPendingTotal
     BY <1>4, <1>9 DEF MapThenSumSet, MapThenFoldSet
 <1> QED BY <1>10 DEF AmountPendingTotal
 
+
+THEOREM choose_amount_IndInv == ASSUME IndInv, NEW self \in Transfer, choose_amount(self)
+PROVE IndInv'
+<1> USE DEF choose_amount, IndInv, TypeOK
+<1>1 TypeOK'
+    <2>1 pcLabels' BY DEF pcLabels
+    <2>2 accounts' \in [Transfer -> EAccounts] BY EmptyAssumption
+        DEF EmptyAccounts, EAccounts, EAccount
+    <2> QED BY <2>1, <2>2
+<1>2 MoneyTotalPreserved' = MoneyTotalPreserved
+    <2>1 CreditTotal' = CreditTotal BY DEF CreditTotal, creditBal, MapThenSumSet, MapThenFoldSet
+    <2>2 DebitTotal' = DebitTotal BY DEF DebitTotal, debitBal, MapThenSumSet, MapThenFoldSet
+    <2> QED BY <2>1, <2>2, choose_amount_AmountPendingTotal DEF MoneyTotalPreserved, Imbalance
+<1>3 (pc[self] \notin {"choose_accounts"})' <=> NonEmptyAccounts(self)'
+    <2>1 pc[self]' \notin {"choose_accounts"} BY DEF pcLabels
+    <2>2 NonEmptyAccounts(self)' BY EmptyAssumption, NAccountAssumption, AccountAssumption
+        DEF NonEmptyAccounts
+    <2> QED BY <2>1, <2>2
+<1>4 \A t \in Transfer \ {self}: (pc[t] \notin {"choose_accounts"})' <=> NonEmptyAccounts(t)'
+    BY DEF pcLabels, NonEmptyAccounts
+<1> QED BY <1>1, <1>2, <1>3, <1>4
+
 ====
