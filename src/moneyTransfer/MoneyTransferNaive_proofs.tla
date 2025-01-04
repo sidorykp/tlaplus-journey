@@ -177,6 +177,7 @@ THEOREM debit_IndInv == ASSUME IndInv, NEW self \in Transfer, debit(self)
 PROVE IndInv'
 <1> USE DEF debit, IndInv, TypeOK
 <1> DEFINE selfAccount == accounts[self].from
+<1> DEFINE otherAccounts == Account \ {selfAccount}
 <1>1 TypeOK'
     <2>1 pcLabels' BY DEF pcLabels
     <2>2 accounts' \in [Transfer -> EAccounts] BY EmptyAssumption
@@ -193,7 +194,55 @@ PROVE IndInv'
         <3>1 DebitTotal' = DebitTotal + amount[self]
             <4>1 selfAccount \in Account BY DEF NonEmptyAccounts, EAccounts, EAccount
             <4>2 debits[selfAccount]' = debits[selfAccount] + amount[self] BY <4>1
-            <4> QED BY MapThenSumSetAddElem DEF DebitTotal, debitBal
+            <4>3 \A a \in otherAccounts: debitBal(a)' = debitBal(a) BY DEF debitBal
+            <4>4 \A a \in otherAccounts: debitBal(a) \in Nat BY DEF debitBal
+            <4>5 \A a \in otherAccounts: debitBal(a)' \in Nat BY DEF debitBal
+            <4>6 IsFiniteSet(otherAccounts) BY accountSetIsFinite, FS_Subset
+            <4>7 MapThenSumSet(debitBal, otherAccounts)' = MapThenSumSet(debitBal, otherAccounts)
+                BY <4>3, <4>4, <4>5, <4>6, MapThenSumSetEqual DEF MapThenSumSet, MapThenFoldSet, debitBal
+            <4>8 selfAccount \notin otherAccounts OBVIOUS
+            <4>9 debitBal(selfAccount) \in Nat BY <4>1 DEF debitBal
+            <4>10 MapThenSumSet(debitBal, otherAccounts \cup {selfAccount}) = MapThenSumSet(debitBal, otherAccounts) + debitBal(selfAccount)
+                BY MapThenSumSetAddElem, <4>4, <4>6, <4>8, <4>9
+            <4>11 Account = otherAccounts \cup {selfAccount} BY <4>1
+            <4>12 MapThenSumSet(debitBal, Account) = MapThenSumSet(debitBal, otherAccounts) + debitBal(selfAccount)
+                BY <4>10, <4>11
+            <4>13 MapThenSumSet(debitBal, Account) = MapThenSumSet(debitBal, otherAccounts)' + debitBal(selfAccount)
+                BY <4>7, <4>12
+            <4>14 debitBal(selfAccount)' \in Nat BY <4>1, <4>2 DEF debitBal
+            <4>15 MapThenSumSet(debitBal, otherAccounts \cup {selfAccount})' = (MapThenSumSet(debitBal, otherAccounts) + debitBal(selfAccount))'
+                BY MapThenSumSetAddElem, <4>5, <4>6, <4>8, <4>14 DEF MapThenSumSet, MapThenFoldSet, debitBal
+            <4>17 MapThenSumSet(debitBal, Account)' = MapThenSumSet(debitBal, otherAccounts)' + debitBal(selfAccount)'
+                BY <4>15, <4>11
+            <4>18 MapThenSumSet(debitBal, Account) \in Nat BY accountSetIsFinite, MapThenSumSetType DEF debitBal
+            <4>19 MapThenSumSet(debitBal, otherAccounts)' \in Nat
+                <5>1 MapThenSumSet(debitBal, otherAccounts) \in Nat BY <4>4, <4>6, MapThenSumSetType
+                <5> QED BY <5>1, <4>7
+            <4>20 MapThenSumSet(debitBal, Account)' \in Nat
+                <5>1  MapThenSumSet(debitBal, otherAccounts)' + debitBal(selfAccount)' \in Nat BY <4>19, <4>14, <4>1 DEF debitBal
+                <5> QED BY <5>1, <4>17
+            <4>21 debitBal(selfAccount)' - debitBal(selfAccount) = amount[self] BY <4>1, <4>2, <4>9, <4>14 DEF debitBal
+            <4>22 MapThenSumSet(debitBal, Account)' - debitBal(selfAccount)' = MapThenSumSet(debitBal, otherAccounts)'
+                BY <4>17, <4>20, <4>14, <4>19 DEF debitBal
+            <4>23 MapThenSumSet(debitBal, Account) - debitBal(selfAccount) = MapThenSumSet(debitBal, otherAccounts)'
+                BY <4>13, <4>18, <4>9, <4>19 DEF debitBal
+            <4>24 MapThenSumSet(debitBal, Account)' - debitBal(selfAccount)' = MapThenSumSet(debitBal, Account) - debitBal(selfAccount)
+                BY <4>22, <4>23
+            <4>25 MapThenSumSet(debitBal, Account)' - debitBal(selfAccount)' + debitBal(selfAccount)' =
+                 MapThenSumSet(debitBal, Account) - debitBal(selfAccount) + debitBal(selfAccount)'
+                BY <4>24, <4>20, <4>18, <4>9, <4>14
+            <4>26 MapThenSumSet(debitBal, Account)' = MapThenSumSet(debitBal, Account) - debitBal(selfAccount) + debitBal(selfAccount)'
+                BY <4>25, <4>20, <4>18, <4>9, <4>14 DEF debitBal
+            <4>30 - debitBal(selfAccount) + debitBal(selfAccount)' = debitBal(selfAccount)' - debitBal(selfAccount)
+                BY <4>1, <4>2, <4>9, <4>14 DEF debitBal
+            <4>31 MapThenSumSet(debitBal, Account) - debitBal(selfAccount) + debitBal(selfAccount)' =
+                MapThenSumSet(debitBal, Account) + debitBal(selfAccount)' - debitBal(selfAccount)
+                BY <4>30, <4>18, <4>9, <4>14
+            <4>27 MapThenSumSet(debitBal, Account)' = MapThenSumSet(debitBal, Account) + debitBal(selfAccount)' - debitBal(selfAccount)
+                BY <4>26, <4>31, <4>20, <4>18, <4>9, <4>14
+            <4>28 MapThenSumSet(debitBal, Account)' = MapThenSumSet(debitBal, Account) + amount[self]
+                BY <4>27, <4>21, <4>20, <4>18, <4>9, <4>14
+            <4> QED BY <4>28 DEF DebitTotal
         <3>2 AmountPendingTotal' = AmountPendingTotal + amount[self]
              /\ AmountPendingTotal' \in Nat
             <4>1 transPending' = transPending \cup {self} BY DEF transPending, AmountIsPending, pcLabels
