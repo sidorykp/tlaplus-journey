@@ -102,4 +102,16 @@ PROVE AmountPendingTotal' = AmountPendingTotal
     BY <1>4, <1>9 DEF MapThenSumSet, MapThenFoldSet, transAmount
 <1> QED BY <1>10 DEF AmountPendingTotal
 
+
+THEOREM choose_amount_IndInv == ASSUME IndInv, NEW self \in Transfer, choose_amount(self)
+PROVE IndInv
+<1> USE DEF choose_amount, IndInv, TypeOK
+<1>1 accounts' \in [Transfer -> EAccounts] BY DEF EAccounts, EAccount, EmptyAccounts
+<1>2 pcLabels' BY DEF pcLabels
+<1>3 \A t \in Transfer: pc[t]' \in {"choose_accounts", "choose_amount"} => debitPrecond(t)'
+    BY DEF pcLabels, debitPrecond, isTransKnown
+<1>4 \A t \in Transfer \ {self}: (pc[t] \notin {"choose_accounts"}) <=> NonEmptyAccounts(t)'
+    BY DEF pcLabels, NonEmptyAccounts
+<1> QED BY <1>1, <1>2, <1>3, <1>4, choose_amount_AmountPendingTotal
+
 ====
