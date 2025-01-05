@@ -230,6 +230,7 @@ PROVE DebitTotal' = DebitTotal + amount[self]
     <2> QED BY <2>1, <1>8, <1>16, <1>15, <1>3, <1>4
 <1> QED BY <1>18 DEF DebitTotal
 
+
 THEOREM debit_IndInv == ASSUME IndInv, NEW self \in Transfer, debit(self)
 PROVE IndInv'
 <1> USE DEF debit, IndInv, TypeOK
@@ -279,6 +280,64 @@ PROVE IndInv'
 <1> QED BY <1>1, <1>2, <1>3, <1>4
 
 
+THEOREM creditTotalProperty == ASSUME IndInv, NEW self \in Transfer, credit(self)
+PROVE CreditTotal' = CreditTotal + amount[self]
+<1> USE DEF credit, IndInv, TypeOK
+<1> DEFINE selfAccount == accounts[self].to
+<1> DEFINE otherAccounts == Account \ {selfAccount}
+<1>1 selfAccount \in Account BY DEF NonEmptyAccounts, EAccounts, EAccount
+<1>2 credits[selfAccount]' = credits[selfAccount] + amount[self] BY <1>1
+<1>3 creditBal(selfAccount) \in Nat BY <1>1 DEF creditBal
+<1>4 creditBal(selfAccount)' \in Nat BY <1>1, <1>2 DEF creditBal
+<1>5 \A a \in otherAccounts: creditBal(a)' = creditBal(a) BY DEF creditBal
+<1>6 \A a \in otherAccounts: creditBal(a) \in Nat BY DEF creditBal
+<1>7 \A a \in otherAccounts: creditBal(a)' \in Nat BY DEF creditBal
+<1>8 creditBal(selfAccount)' - creditBal(selfAccount) = amount[self] BY <1>1, <1>2, <1>3, <1>4 DEF creditBal
+<1>9 IsFiniteSet(otherAccounts) BY accountSetIsFinite, FS_Subset
+<1>10 selfAccount \notin otherAccounts OBVIOUS
+<1>11 Account = otherAccounts \cup {selfAccount} BY <1>1
+<1>12 MapThenSumSet(creditBal, otherAccounts)' = MapThenSumSet(creditBal, otherAccounts)
+    BY <1>5, <1>6, <1>7, <1>9, MapThenSumSetEqual DEF MapThenSumSet, MapThenFoldSet, creditBal
+<1>13 MapThenSumSet(creditBal, Account)' = MapThenSumSet(creditBal, otherAccounts)' + creditBal(selfAccount)'
+    <2>1 MapThenSumSet(creditBal, otherAccounts \cup {selfAccount})' = (MapThenSumSet(creditBal, otherAccounts) + creditBal(selfAccount))'
+        BY MapThenSumSetAddElem, <1>7, <1>9, <1>10, <1>4 DEF MapThenSumSet, MapThenFoldSet, creditBal
+    <2> QED BY <2>1, <1>11
+<1>14 MapThenSumSet(creditBal, otherAccounts)' \in Nat
+    <2>1 MapThenSumSet(creditBal, otherAccounts) \in Nat BY <1>6, <1>9, MapThenSumSetType
+    <2> QED BY <2>1, <1>12
+<1>15 MapThenSumSet(creditBal, Account) \in Nat BY accountSetIsFinite, MapThenSumSetType DEF creditBal
+<1>16 MapThenSumSet(creditBal, Account)' \in Nat
+    <2>1  MapThenSumSet(creditBal, otherAccounts)' + creditBal(selfAccount)' \in Nat BY <1>14, <1>4, <1>1 DEF creditBal
+    <2> QED BY <2>1, <1>13
+<1>17 MapThenSumSet(creditBal, Account) = MapThenSumSet(creditBal, otherAccounts)' + creditBal(selfAccount)
+    <2>1 MapThenSumSet(creditBal, Account) = MapThenSumSet(creditBal, otherAccounts) + creditBal(selfAccount)
+        <3>1 MapThenSumSet(creditBal, otherAccounts \cup {selfAccount}) = MapThenSumSet(creditBal, otherAccounts) + creditBal(selfAccount)
+            BY MapThenSumSetAddElem, <1>6, <1>9, <1>10, <1>3
+        <3> QED BY <3>1, <1>11
+    <2> QED BY <2>1, <1>12
+<1>18 MapThenSumSet(creditBal, Account)' = MapThenSumSet(creditBal, Account) + amount[self]
+    <2>1 MapThenSumSet(creditBal, Account)' = MapThenSumSet(creditBal, Account) + creditBal(selfAccount)' - creditBal(selfAccount)
+        <3>1 MapThenSumSet(creditBal, Account) - creditBal(selfAccount) + creditBal(selfAccount)' =
+            MapThenSumSet(creditBal, Account) + creditBal(selfAccount)' - creditBal(selfAccount)
+            <4>1 - creditBal(selfAccount) + creditBal(selfAccount)' = creditBal(selfAccount)' - creditBal(selfAccount)
+                BY <1>1, <1>2, <1>3, <1>4 DEF creditBal
+            <4> QED BY <4>1, <1>15, <1>3, <1>4
+        <3>2 MapThenSumSet(creditBal, Account)' = MapThenSumSet(creditBal, Account) - creditBal(selfAccount) + creditBal(selfAccount)'
+            <4>1 MapThenSumSet(creditBal, Account)' - creditBal(selfAccount)' + creditBal(selfAccount)' =
+                 MapThenSumSet(creditBal, Account) - creditBal(selfAccount) + creditBal(selfAccount)'
+                <5>1 MapThenSumSet(creditBal, Account)' - creditBal(selfAccount)' = MapThenSumSet(creditBal, Account) - creditBal(selfAccount)
+                    <6>1 MapThenSumSet(creditBal, Account)' - creditBal(selfAccount)' = MapThenSumSet(creditBal, otherAccounts)'
+                        BY <1>13, <1>16, <1>4, <1>14 DEF creditBal
+                    <6>2 MapThenSumSet(creditBal, Account) - creditBal(selfAccount) = MapThenSumSet(creditBal, otherAccounts)'
+                        BY <1>17, <1>15, <1>3, <1>14 DEF creditBal
+                    <6> QED BY <6>1, <6>2
+                <5> QED BY <5>1, <1>16, <1>15, <1>3, <1>4
+            <4> QED BY <4>1, <1>16, <1>15, <1>3, <1>4 DEF creditBal
+        <3> QED BY <3>2, <3>1, <1>16, <1>15, <1>3, <1>4
+    <2> QED BY <2>1, <1>8, <1>16, <1>15, <1>3, <1>4
+<1> QED BY <1>18 DEF CreditTotal
+
+
 THEOREM credit_IndInv == ASSUME IndInv, NEW self \in Transfer, credit(self)
 PROVE IndInv'
 <1> USE DEF credit, IndInv, TypeOK
@@ -296,10 +355,7 @@ PROVE IndInv'
     <2>2 /\ AmountPendingTotal' + CreditTotal' = AmountPendingTotal + CreditTotal
          /\ AmountPendingTotal' \in Nat
          /\ CreditTotal' \in Nat
-        <3>1 CreditTotal' = CreditTotal + amount[self]
-            <4>1 selfAccount \in Account BY DEF NonEmptyAccounts, EAccounts, EAccount
-            <4>2 credits[selfAccount]' = credits[selfAccount] + amount[self] BY <4>1
-            <4> QED BY MapThenSumSetAddElem DEF DebitTotal, creditBal
+        <3>1 CreditTotal' = CreditTotal + amount[self] BY creditTotalProperty
         <3>2 /\ AmountPendingTotal = AmountPendingTotal' + amount[self]
              /\ AmountPendingTotal' \in Nat
             <4>1 transPending' = transPending \ {self} BY DEF transPending, AmountIsPending, pcLabels
