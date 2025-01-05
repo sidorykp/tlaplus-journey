@@ -9,18 +9,17 @@ LEMMA transAmountInNat == ASSUME TypeOK, NEW self \in Transfer
 PROVE transAmount(self) \in Nat
 BY DEF TypeOK, transAmount
 
+LEMMA transPendingAmountNat == ASSUME IndInv
+PROVE \A am \in transPending: transAmount(am) \in Nat
+BY DEF AmountIsPending, isTransKnown, transAmount, transPending, IndInv, TypeOK
+
 LEMMA AmountPendingTotalInNat == ASSUME IndInv
 PROVE AmountPendingTotal \in Nat
 <1>1 IsFiniteSet(Transfer) BY transSetIsFinite
 <1>2 IsFiniteSet({t \in Transfer : AmountIsPending(t)}) BY <1>1, FS_Subset
 <1>3 IsFiniteSet(transPending) BY transPendingIsFinite
-<1>4 \A t \in transPending: transAmount(t) \in Nat BY DEF transPending, transAmount, IndInv, TypeOK
+<1>4 \A t \in transPending: transAmount(t) \in Nat BY transPendingAmountNat
 <1> QED BY <1>3, <1>4, MapThenSumSetType DEF AmountPendingTotal
-
-LEMMA transPendingAmountNat == ASSUME IndInv
-PROVE \A am \in transPending: transAmount(am) \in Nat
-BY DEF AmountIsPending, isTransKnown, transAmount, transPending, IndInv, TypeOK
-
 
 LEMMA init_Imbalance == ASSUME Init
 PROVE Imbalance = 0
