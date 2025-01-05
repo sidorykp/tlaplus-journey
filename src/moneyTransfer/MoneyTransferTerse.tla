@@ -241,6 +241,8 @@ CommonIndInv ==
     /\ \A t \in Transfer:
         pc[t] \notin {"choose_accounts"} <=> NonEmptyAccounts(t)
 
+IndNat == 0..2
+
 IndInvInteractiveStateConstraints ==
     /\ \A c \in credits: \E d \in debits: 
         /\ d.t = c.t
