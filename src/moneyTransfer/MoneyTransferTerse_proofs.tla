@@ -165,32 +165,33 @@ PROVE
 <1> DEFINE selfAccount == accounts[self].from
 <1> DEFINE nadd == [a |-> selfAccount, t |-> self]
 <1>1 accounts[self].from \in Account BY DEF NonEmptyAccounts, EAccounts, EAccount
-<1>2 accounts[self].to \in Account BY DEF NonEmptyAccounts, EAccounts, EAccount
-<1>3 ~creditPrecond(self) BY <1>1 DEF creditPrecond, debitPrecond, isTransKnown
-<1>4 creditPrecond(self)'
-    <2>1 ~\E a \in Account: isTransKnown(self, a, credits') BY DEF debitPrecond
-    <2>2 ~isTransKnown(self, accounts[self].to, debits) BY <1>2 DEF debitPrecond,
+<1>2 ~creditPrecond(self) BY <1>1 DEF creditPrecond, debitPrecond, isTransKnown
+<1>3 creditPrecond(self)'
+    <2>1 accounts[self].to \in Account BY DEF NonEmptyAccounts, EAccounts, EAccount
+    <2>2 ~\E a \in Account: isTransKnown(self, a, credits') BY DEF debitPrecond
+    <2>3 ~isTransKnown(self, accounts[self].to, debits) BY <2>1 DEF debitPrecond,
         isTransKnown
-    <2>3 ~isTransKnown(self, accounts[self].to, {nadd})
-        <3>1 NonEmptyAccounts(self) BY <1>1, <1>2
+    <2>4 ~isTransKnown(self, accounts[self].to, {nadd})
+        <3>1 NonEmptyAccounts(self) BY <1>1, <2>1
         <3>2 accounts[self] # EmptyAccounts BY <3>1 DEF EmptyAccounts, NonEmptyAccounts
         <3>3 accounts[self].from # accounts[self].to BY <3>2 DEF DifferentAccounts
         <3> QED BY <3>3 DEF debitPrecond, isTransKnown
-    <2>4 ~isTransKnown(self, accounts[self].to, debits') BY <2>2, <2>3 DEF isTransKnown
-    <2>5 isTransKnown(self, accounts[self].from, debits') BY <1>1 DEF debitPrecond, isTransKnown
-    <2> QED BY <2>1, <2>4, <2>5 DEF creditPrecond
-<1>5 transPending' = transPending \cup {self} BY <1>3, <1>4 DEF transPending, AmountIsPending,
+    <2>5 ~isTransKnown(self, accounts[self].to, debits') BY <2>3, <2>4 DEF isTransKnown
+    <2>6 isTransKnown(self, accounts[self].from, debits') BY <1>1 DEF debitPrecond, isTransKnown
+    <2> QED BY <2>2, <2>5, <2>6 DEF creditPrecond
+<1>4 transPending' = transPending \cup {self} BY <1>2, <1>3 DEF transPending, AmountIsPending,
     creditPrecond, isTransKnown, pcLabels
-<1>6 self \notin transPending BY <1>3 DEF transPending, AmountIsPending
-<1>7 IsFiniteSet(transPending) BY transPendingIsFinite
-<1>8 \A t \in transPending: transAmount(t) \in Nat BY transPendingAmountNat
-<1>9 transAmount(self) \in Nat BY DEF transAmount
-<1>10 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) + transAmount(self)
-    BY <1>5, <1>6, <1>7, <1>8, <1>9, MapThenSumSetAddElem
-<1>11 IsFiniteSet(transPending') BY <1>5, <1>7, FS_AddElement
-<1>12 \A t \in transPending': transAmount(t) \in Nat BY <1>5, <1>8, <1>9
-<1>13 MapThenSumSet(transAmount, transPending') \in Nat BY <1>11, <1>12, MapThenSumSetType
-<1>14 AmountPendingTotal' \in Nat BY <1>13 DEF AmountPendingTotal, transAmount, MapThenSumSet, MapThenFoldSet
-<1> QED BY <1>10, <1>14 DEF AmountPendingTotal, transAmount, MapThenSumSet, MapThenFoldSet
+<1>5 IsFiniteSet(transPending) BY transPendingIsFinite
+<1>6 \A t \in transPending: transAmount(t) \in Nat BY transPendingAmountNat
+<1>7 transAmount(self) \in Nat BY DEF transAmount
+<1>8 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) + transAmount(self)
+    <2>1 self \notin transPending BY <1>2 DEF transPending, AmountIsPending
+    <2> QED BY <1>4, <2>1, <1>5, <1>6, <1>7, MapThenSumSetAddElem
+<1>9 AmountPendingTotal' \in Nat
+    <2>1 IsFiniteSet(transPending') BY <1>4, <1>5, FS_AddElement
+    <2>2 \A t \in transPending': transAmount(t) \in Nat BY <1>4, <1>6, <1>7
+    <2>3 MapThenSumSet(transAmount, transPending') \in Nat BY <2>1, <2>2, MapThenSumSetType
+    <2> QED BY <2>3 DEF AmountPendingTotal, transAmount, MapThenSumSet, MapThenFoldSet
+<1> QED BY <1>8, <1>9 DEF AmountPendingTotal, transAmount, MapThenSumSet, MapThenFoldSet
 
 ====
