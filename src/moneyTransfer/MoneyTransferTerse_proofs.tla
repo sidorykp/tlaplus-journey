@@ -5,6 +5,13 @@ LEMMA transAmountInNat == ASSUME TypeOK, NEW self \in Transfer
 PROVE transAmount(self) \in Nat
 BY DEF TypeOK, transAmount
 
+LEMMA transPendingIsFinite ==
+IsFiniteSet(transPending) BY transSetIsFinite, FS_Subset DEF transPending
+
+LEMMA transPendingAmountNat == ASSUME IndInv
+PROVE \A am \in transPending: transAmount(am) \in Nat
+BY DEF AmountIsPending, transAmount, transPending, IndInv, TypeOK
+
 
 LEMMA init_Imbalance == ASSUME Init
 PROVE Imbalance = 0
@@ -147,5 +154,43 @@ PROVE DebitTotal' = DebitTotal + amount[self]
         <3> QED BY <3>1
     <2> QED BY <1>2, <2>1 DEF opAmount
 <1> QED BY <1>3 DEF DebitTotal
+
+
+LEMMA debit_AmountPendingTotal_debitPrecond == ASSUME IndInv, NEW self \in Transfer, debit(self),
+debitPrecond(self), ~(UNCHANGED debits)
+PROVE
+    /\ AmountPendingTotal' = AmountPendingTotal + amount[self]
+    /\ AmountPendingTotal' \in Nat
+<1> USE DEF debit, IndInv, TypeOK
+<1> DEFINE selfAccount == accounts[self].from
+<1> DEFINE nadd == [a |-> selfAccount, t |-> self]
+<1>1 accounts[self].from \in Account BY DEF NonEmptyAccounts, EAccounts, EAccount
+<1>2 accounts[self].to \in Account BY DEF NonEmptyAccounts, EAccounts, EAccount
+<1>3 ~creditPrecond(self) BY <1>1 DEF creditPrecond, debitPrecond, isTransKnown
+<1>4 creditPrecond(self)'
+    <2>1 ~\E a \in Account: isTransKnown(self, a, credits') BY DEF debitPrecond
+    <2>2 ~isTransKnown(self, accounts[self].to, debits) BY <1>2 DEF debitPrecond,
+        isTransKnown
+    <2>3 ~isTransKnown(self, accounts[self].to, {nadd})
+        <3>1 NonEmptyAccounts(self) BY <1>1, <1>2
+        <3>2 accounts[self] # EmptyAccounts BY <3>1 DEF EmptyAccounts, NonEmptyAccounts
+        <3>3 accounts[self].from # accounts[self].to BY <3>2 DEF DifferentAccounts
+        <3> QED BY <3>3 DEF debitPrecond, isTransKnown
+    <2>4 ~isTransKnown(self, accounts[self].to, debits') BY <2>2, <2>3 DEF isTransKnown
+    <2>5 isTransKnown(self, accounts[self].from, debits') BY <1>1 DEF debitPrecond, isTransKnown
+    <2> QED BY <2>1, <2>4, <2>5 DEF creditPrecond
+<1>5 transPending' = transPending \cup {self} BY <1>3, <1>4 DEF transPending, AmountIsPending,
+    creditPrecond, isTransKnown, pcLabels
+<1>6 self \notin transPending BY <1>3 DEF transPending, AmountIsPending
+<1>7 IsFiniteSet(transPending) BY transPendingIsFinite
+<1>8 \A t \in transPending: transAmount(t) \in Nat BY transPendingAmountNat
+<1>9 transAmount(self) \in Nat BY DEF transAmount
+<1>10 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) + transAmount(self)
+    BY <1>5, <1>6, <1>7, <1>8, <1>9, MapThenSumSetAddElem
+<1>11 IsFiniteSet(transPending') BY <1>5, <1>7, FS_AddElement
+<1>12 \A t \in transPending': transAmount(t) \in Nat BY <1>5, <1>8, <1>9
+<1>13 MapThenSumSet(transAmount, transPending') \in Nat BY <1>11, <1>12, MapThenSumSetType
+<1>14 AmountPendingTotal' \in Nat BY <1>13 DEF AmountPendingTotal, transAmount, MapThenSumSet, MapThenFoldSet
+<1> QED BY <1>10, <1>14 DEF AmountPendingTotal, transAmount, MapThenSumSet, MapThenFoldSet
 
 ====
