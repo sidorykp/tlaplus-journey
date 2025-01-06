@@ -367,22 +367,18 @@ PROVE AmountPendingTotal' = AmountPendingTotal - amount[self]
 <1> QED BY <1>15, <1>10 DEF AmountPendingTotal, transAmount
 
 
-\* practically a copy of init_AmountPendingTotal
 THEOREM credit_AmountPendingTotal_notCreditPrecond == ASSUME IndInv, NEW self \in Transfer, credit(self),
 ~creditPrecond(self) \/ UNCHANGED credits
 PROVE AmountPendingTotal' = AmountPendingTotal
-<1>1 self \notin transPending BY DEF credit, pcLabels, transPending, AmountIsPending
-<1>2 ~AmountIsPending(self)' BY <1>1 DEF credit, pcLabels, transPending
-<1>3 self \notin transPending' BY <1>2 DEF transPending
-<1>4 transPending' = transPending BY <1>1, <1>3 DEF credit, pcLabels, IndInv, TypeOK,
-    transPending, AmountIsPending, creditPrecond, isTransKnown
-<1>5 \A t \in transPending: transAmount(t)' = transAmount(t) BY DEF credit, transAmount, IndInv, TypeOK,
+<1> USE DEF credit, IndInv, TypeOK
+<1>1 transPending' = transPending BY DEF transPending, AmountIsPending, creditPrecond, isTransKnown, pcLabels
+<1>2 \A t \in transPending: transAmount(t)' = transAmount(t) BY DEF transAmount,
     creditPrecond, isTransKnown
-<1>6 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) BY <1>4, <1>5
-<1>7 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') BY <1>4, <1>5 DEF credit,
+<1>3 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) BY <1>1, <1>2
+<1>4 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') BY <1>1, <1>2 DEF
     transPending, transAmount, AmountIsPending, creditPrecond,
     isTransKnown, MapThenSumSet, MapThenFoldSet, AmountPendingTotal
-<1> QED BY <1>6, <1>7 DEF AmountPendingTotal
+<1> QED BY <1>3, <1>4 DEF AmountPendingTotal
 
 
 \* practically a copy of debit_DebitTotal_debitPrecond
