@@ -124,13 +124,12 @@ PROVE AmountPendingTotal' = AmountPendingTotal
 THEOREM choose_amount_IndInv == ASSUME IndInv, NEW self \in Transfer, choose_amount(self)
 PROVE IndInv
 <1> USE DEF choose_amount, IndInv, TypeOK
-<1>1 accounts' \in [Transfer -> EAccounts] BY DEF EAccounts, EAccount, EmptyAccounts
-<1>2 pcLabels' BY DEF pcLabels
-<1>3 \A t \in Transfer: pc[t]' \in {"choose_accounts", "choose_amount"} => debitPrecond(t)'
+<1>1 pcLabels' BY DEF pcLabels
+<1>2 \A t \in Transfer: pc[t]' \in {"choose_accounts", "choose_amount"} => debitPrecond(t)'
     BY DEF pcLabels, debitPrecond, isTransKnown
-<1>4 \A t \in Transfer \ {self}: (pc[t] \notin {"choose_accounts"}) <=> NonEmptyAccounts(t)'
+<1>3 \A t \in Transfer \ {self}: (pc[t] \notin {"choose_accounts"}) <=> NonEmptyAccounts(t)'
     BY DEF pcLabels, NonEmptyAccounts
-<1> QED BY <1>1, <1>2, <1>3, <1>4, choose_amount_AmountPendingTotal
+<1> QED BY <1>1, <1>2, <1>3, choose_amount_AmountPendingTotal
 
 
 LEMMA debit_DebitTotal_debitPrecond_success == ASSUME IndInv, NEW self \in Transfer, debit(self),
@@ -202,6 +201,12 @@ PROVE
 <1> QED BY <1>8, <1>9 DEF AmountPendingTotal, transAmount, MapThenSumSet, MapThenFoldSet
 
 
+LEMMA CreditTotalInNat == ASSUME IndInv
+PROVE CreditTotal \in Nat
+<1> USE DEF IndInv, TypeOK
+<1>2 \A c \in credits: opAmount(c) \in Nat BY DEF opAmount, AT
+<1> QED BY <1>2, MapThenSumSetType DEF CreditTotal
+
 LEMMA DebitTotalInNat == ASSUME IndInv
 PROVE DebitTotal \in Nat
 <1> USE DEF IndInv, TypeOK
@@ -221,5 +226,94 @@ PROVE AmountPendingTotal' - DebitTotal' = AmountPendingTotal - DebitTotal
 <1>3 DebitTotal' \in Nat BY <1>2, <1>1
 <1>4 AmountPendingTotal \in Nat BY AmountPendingTotalInNat
 <1> QED BY <1>2, <1>4, <1>1, <1>3, debit_AmountPendingTotal_debitPrecond
+
+
+LEMMA debit_AmountPendingTotal_notDebitPrecond_or_retryDebit == ASSUME IndInv, NEW self \in Transfer, debit(self),
+~debitPrecond(self) \/ UNCHANGED debits
+PROVE AmountPendingTotal' = AmountPendingTotal
+<1> USE DEF debit, IndInv, TypeOK
+<1>1 transPending' = transPending BY DEF transPending, AmountIsPending, creditPrecond, isTransKnown, pcLabels
+<1>2 MapThenSumSet(transAmount, transPending') = MapThenSumSet(transAmount, transPending) 
+    BY <1>1 DEF transAmount
+<1>3 \A t \in transPending: accounts[t] = accounts[t]' BY <1>1 DEF pcLabels,
+    transPending, AmountIsPending, creditPrecond, isTransKnown
+<1>4 (CHOOSE iter :
+          iter
+          = [s \in SUBSET transPending |->
+               IF s = {}
+                 THEN 0
+                 ELSE amount[CHOOSE x \in s : TRUE]
+                      + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending]
+    = (CHOOSE iter :
+          iter
+          = [s \in SUBSET transPending |->
+               IF s = {}
+                 THEN 0
+                 ELSE amount[CHOOSE x \in s : TRUE]'
+                      + iter[s \ {CHOOSE x \in s : TRUE}]])[transPending]
+    BY <1>3 DEF pcLabels, transPending, AmountIsPending, creditPrecond,
+    isTransKnown
+<1>5 MapThenSumSet(transAmount, transPending)' = MapThenSumSet(transAmount, transPending)
+    BY <1>2, <1>4, <1>1 DEF transAmount, MapThenSumSet, MapThenFoldSet
+<1> QED BY <1>5 DEF AmountPendingTotal
+
+
+THEOREM debit_IndInv == ASSUME IndInv, NEW self \in Transfer, debit(self)
+PROVE IndInv'
+<1> DEFINE selfAccount == accounts[self].from
+<1> DEFINE nadd == [a |-> selfAccount, t |-> self]
+<1> USE DEF debit, IndInv, TypeOK
+<1>1 TypeOK'
+    <2>1 pcLabels' BY DEF pcLabels
+    <2>2 /\ debits' \in SUBSET AT
+         /\ IsFiniteSet(debits')
+         <3>1 CASE debitPrecond(self) /\ ~(UNCHANGED debits) 
+            <4>1 debits' = debits \cup {nadd} BY <3>1
+            <4>2 selfAccount \in Account BY DEF NonEmptyAccounts, EAccounts, EAccount
+            <4>3 nadd \in AT BY <4>2 DEF AT
+            <4>4 IsFiniteSet(debits') BY <4>1, FS_AddElement
+            <4>5 debits' \in SUBSET AT BY <4>1, <4>3
+            <4> QED BY <4>4, <4>5
+         <3>2 CASE ~debitPrecond(self) \/ UNCHANGED debits
+            <4>1 debits' = debits BY <3>2
+            <4> QED BY <4>1
+         <3> QED BY <3>1, <3>2
+    <2> QED BY <2>1, <2>2
+<1>2 (Imbalance = 0)' = (Imbalance = 0)
+    <2>1 CreditTotal' = CreditTotal BY DEF CreditTotal, opAmount, MapThenSumSet, MapThenFoldSet
+    <2>3 CreditTotal \in Nat BY CreditTotalInNat
+    <2>4 DebitTotal \in Nat BY DebitTotalInNat
+    <2>5 AmountPendingTotal \in Nat BY AmountPendingTotalInNat
+    <2>2 AmountPendingTotal' - DebitTotal' = AmountPendingTotal - DebitTotal
+         /\ AmountPendingTotal' \in Nat
+         /\ DebitTotal' \in Nat
+        <3>1 CASE debitPrecond(self) /\ ~(UNCHANGED debits)
+            BY <3>1, debit_AmountPendingDebitTotal_debitPrecond
+        <3>2 CASE ~debitPrecond(self) \/ UNCHANGED debits
+            <4>1 DebitTotal' = DebitTotal BY <3>2 DEF DebitTotal, opAmount, MapThenSumSet, MapThenFoldSet
+            <4>2 AmountPendingTotal' = AmountPendingTotal BY <3>2, debit_AmountPendingTotal_notDebitPrecond_or_retryDebit
+            <4> QED BY <4>1, <4>2, AmountPendingTotalInNat, DebitTotalInNat
+        <3> QED BY <3>1, <3>2
+    <2>6 (CreditTotal - DebitTotal + AmountPendingTotal)' = CreditTotal - DebitTotal + AmountPendingTotal
+        BY <2>1, <2>2, <2>3, <2>4, <2>5
+    <2>7 CreditTotal - DebitTotal + AmountPendingTotal = 0 BY DEF Imbalance
+    <2>8 (CreditTotal  - DebitTotal + AmountPendingTotal)' = 0 BY <2>3, <2>4, <2>5, <2>6, <2>7
+    <2> QED BY <2>6 DEF Imbalance
+<1>3 \A t \in Transfer:
+        \/ accounts[t]' = EmptyAccounts
+        \/ (DifferentAccounts(t) /\ NonEmptyAccounts(t))'
+    BY DEF DifferentAccounts, NonEmptyAccounts
+<1>4 \A t \in Transfer: pc[t]' \in {"choose_accounts", "choose_amount"} => debitPrecond(t)'
+    BY DEF pcLabels, debitPrecond, isTransKnown
+<1>5 (pc[self] \notin {"choose_accounts"})' <=> NonEmptyAccounts(self)'
+    <2>1 pc[self]' \notin {"choose_accounts"} BY DEF pcLabels
+    <2>2 NonEmptyAccounts(self)' BY EmptyAssumption, NAccountAssumption, AccountAssumption
+        DEF NonEmptyAccounts
+    <2> QED BY <2>1, <2>2
+<1>6 \A t \in Transfer \ {self}: (pc[t] \notin {"choose_accounts"})' <=> NonEmptyAccounts(t)'
+    BY DEF pcLabels, NonEmptyAccounts
+<1>7 \A t \in Transfer: (pc[t] \notin {"choose_accounts"})' <=> NonEmptyAccounts(t)'
+    BY <1>5, <1>6
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>7, <1>3
         
 ====
