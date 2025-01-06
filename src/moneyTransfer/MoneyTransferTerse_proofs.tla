@@ -12,6 +12,13 @@ LEMMA transPendingAmountNat == ASSUME IndInv
 PROVE \A am \in transPending: transAmount(am) \in Nat
 BY DEF AmountIsPending, transAmount, transPending, IndInv, TypeOK
 
+LEMMA AmountPendingTotalInNat == ASSUME IndInv
+PROVE AmountPendingTotal \in Nat
+<1>1 IsFiniteSet(Transfer) BY transSetIsFinite
+<1>2 IsFiniteSet({t \in Transfer : AmountIsPending(t)}) BY <1>1, FS_Subset
+<1>3 IsFiniteSet(transPending) BY transPendingIsFinite
+<1>4 \A t \in transPending: transAmount(t) \in Nat BY transPendingAmountNat
+<1> QED BY <1>3, <1>4, MapThenSumSetType DEF AmountPendingTotal
 
 LEMMA init_Imbalance == ASSUME Init
 PROVE Imbalance = 0
@@ -194,4 +201,25 @@ PROVE
     <2> QED BY <2>3 DEF AmountPendingTotal, transAmount, MapThenSumSet, MapThenFoldSet
 <1> QED BY <1>8, <1>9 DEF AmountPendingTotal, transAmount, MapThenSumSet, MapThenFoldSet
 
+
+LEMMA DebitTotalInNat == ASSUME IndInv
+PROVE DebitTotal \in Nat
+<1> USE DEF IndInv, TypeOK
+<1>2 \A d \in debits: opAmount(d) \in Nat BY DEF opAmount, AT
+<1> QED BY <1>2, MapThenSumSetType DEF DebitTotal
+
+
+LEMMA debit_AmountPendingDebitTotal_debitPrecond == ASSUME IndInv, NEW self \in Transfer, debit(self),
+debitPrecond(self), ~(UNCHANGED debits)
+PROVE AmountPendingTotal' - DebitTotal' = AmountPendingTotal - DebitTotal
+    /\ AmountPendingTotal' \in Nat
+    /\ DebitTotal' \in Nat
+<1> USE DEF debit, IndInv, TypeOK
+<1>1 DebitTotal' = DebitTotal + amount[self]
+    BY debit_DebitTotal_debitPrecond_success
+<1>2 DebitTotal \in Nat BY DebitTotalInNat
+<1>3 DebitTotal' \in Nat BY <1>2, <1>1
+<1>4 AmountPendingTotal \in Nat BY AmountPendingTotalInNat
+<1> QED BY <1>2, <1>4, <1>1, <1>3, debit_AmountPendingTotal_debitPrecond
+        
 ====
