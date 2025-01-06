@@ -1,6 +1,10 @@
 ---- MODULE MoneyTransferTerse_proofs ----
 EXTENDS MoneyTransferTerse, MoneyTransfer_proofsCommon, FiniteSetsExt_theorems_ext, FiniteSetTheorems, TLAPS
 
+LEMMA transAmountInNat == ASSUME TypeOK, NEW self \in Transfer
+PROVE transAmount(self) \in Nat
+BY DEF TypeOK, transAmount
+
 
 LEMMA init_Imbalance == ASSUME Init
 PROVE Imbalance = 0
@@ -113,5 +117,36 @@ PROVE IndInv
 <1>4 \A t \in Transfer \ {self}: (pc[t] \notin {"choose_accounts"}) <=> NonEmptyAccounts(t)'
     BY DEF pcLabels, NonEmptyAccounts
 <1> QED BY <1>1, <1>2, <1>3, <1>4, choose_amount_AmountPendingTotal
+
+
+LEMMA debit_DebitTotal_debitPrecond_success == ASSUME IndInv, NEW self \in Transfer, debit(self),
+debitPrecond(self), ~(UNCHANGED debits)
+PROVE DebitTotal' = DebitTotal + amount[self]
+<1> USE DEF debit, IndInv, TypeOK
+<1> DEFINE selfAccount == accounts[self].from
+<1> DEFINE nadd == [a |-> selfAccount, t |-> self]
+<1> DEFINE otherDebits == debits \ {nadd}
+<1>1 nadd \notin debits BY DEF isTransKnown, AT
+<1>2 opAmount(nadd) \in Nat BY transAmountInNat DEF opAmount
+<1>3 \A at \in otherDebits: opAmount(at) \in Nat BY DEF opAmount, AT
+<1>4 MapThenSumSet(opAmount, otherDebits)' = MapThenSumSet(opAmount, otherDebits)
+    <2>1 \A at \in otherDebits: opAmount(at)' = opAmount(at) BY DEF opAmount
+    <2>2 \A at \in otherDebits: opAmount(at)' \in Nat BY DEF opAmount, AT
+    <2> QED BY <2>1, <1>3, <2>2, MapThenSumSetEqual DEF MapThenSumSet, MapThenFoldSet, opAmount
+<1>5 MapThenSumSet(opAmount, debits)' = MapThenSumSet(opAmount, otherDebits)' + opAmount(nadd)'
+    <2>1 MapThenSumSet(opAmount, otherDebits \cup {nadd})' = (MapThenSumSet(opAmount, otherDebits) + opAmount(nadd))'
+        <3>1 IsFiniteSet(otherDebits) BY FS_Subset
+        <3>2 MapThenSumSet(opAmount, otherDebits \cup {nadd}) = MapThenSumSet(opAmount, otherDebits) + opAmount(nadd)
+            BY <3>1, <1>3, <1>2, <1>1, MapThenSumSetAddElem
+        <3> QED BY <3>2 DEF MapThenSumSet, MapThenFoldSet, opAmount
+    <2> QED BY <2>1
+<1>6 MapThenSumSet(opAmount, debits)' = MapThenSumSet(opAmount, otherDebits) + opAmount(nadd)'
+    BY <1>5, <1>4
+<1>7 MapThenSumSet(opAmount, otherDebits) = MapThenSumSet(opAmount, debits)
+    <2>1 otherDebits = debits BY <1>1
+    <2> QED BY <2>1
+<1>8 MapThenSumSet(opAmount, debits)' = MapThenSumSet(opAmount, debits) + amount[self]
+    BY <1>6, <1>7 DEF opAmount
+<1> QED BY <1>8 DEF DebitTotal
 
 ====
