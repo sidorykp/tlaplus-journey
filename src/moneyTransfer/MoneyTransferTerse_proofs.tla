@@ -127,25 +127,25 @@ PROVE DebitTotal' = DebitTotal + amount[self]
 <1> DEFINE nadd == [a |-> selfAccount, t |-> self]
 <1> DEFINE otherDebits == debits \ {nadd}
 <1>1 nadd \notin debits BY DEF isTransKnown, AT
-<1>2 \A at \in otherDebits: opAmount(at) \in Nat BY DEF opAmount, AT
-<1>3 MapThenSumSet(opAmount, debits)' = MapThenSumSet(opAmount, otherDebits) + opAmount(nadd)'
-    <2>1 MapThenSumSet(opAmount, otherDebits)' = MapThenSumSet(opAmount, otherDebits)
+<1>2 MapThenSumSet(opAmount, debits)' = MapThenSumSet(opAmount, otherDebits) + opAmount(nadd)'
+    <2>1 \A at \in otherDebits: opAmount(at) \in Nat BY DEF opAmount, AT
+    <2>2 MapThenSumSet(opAmount, otherDebits)' = MapThenSumSet(opAmount, otherDebits)
         <3>1 \A at \in otherDebits: opAmount(at)' \in Nat BY DEF opAmount, AT
-        <3> QED BY <1>2, <3>1, MapThenSumSetEqual DEF MapThenSumSet, MapThenFoldSet, opAmount
-    <2>2 MapThenSumSet(opAmount, debits)' = MapThenSumSet(opAmount, otherDebits)' + opAmount(nadd)'
+        <3> QED BY <2>1, <3>1, MapThenSumSetEqual DEF MapThenSumSet, MapThenFoldSet, opAmount
+    <2>3 MapThenSumSet(opAmount, debits)' = MapThenSumSet(opAmount, otherDebits)' + opAmount(nadd)'
         <3>1 MapThenSumSet(opAmount, otherDebits \cup {nadd})' = (MapThenSumSet(opAmount, otherDebits) + opAmount(nadd))'
             <4>1 IsFiniteSet(otherDebits) BY FS_Subset
             <4>2 opAmount(nadd) \in Nat BY transAmountInNat DEF opAmount
             <4>3 MapThenSumSet(opAmount, otherDebits \cup {nadd}) = MapThenSumSet(opAmount, otherDebits) + opAmount(nadd)
-                BY <4>1, <1>2, <4>2, <1>1, MapThenSumSetAddElem
+                BY <4>1, <2>1, <4>2, <1>1, MapThenSumSetAddElem
             <4> QED BY <4>3 DEF MapThenSumSet, MapThenFoldSet, opAmount
         <3> QED BY <3>1
-    <2> QED BY <2>1, <2>2
-<1>4 MapThenSumSet(opAmount, debits)' = MapThenSumSet(opAmount, debits) + amount[self]
+    <2> QED BY <2>2, <2>3
+<1>3 MapThenSumSet(opAmount, debits)' = MapThenSumSet(opAmount, debits) + amount[self]
     <2>1 MapThenSumSet(opAmount, otherDebits) = MapThenSumSet(opAmount, debits)
         <3>1 otherDebits = debits BY <1>1
         <3> QED BY <3>1
-    <2> QED BY <1>3, <2>1 DEF opAmount
-<1> QED BY <1>4 DEF DebitTotal
+    <2> QED BY <1>2, <2>1 DEF opAmount
+<1> QED BY <1>3 DEF DebitTotal
 
 ====
