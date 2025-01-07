@@ -523,4 +523,40 @@ PROVE IndInv'
     BY DEF pcLabels, NonEmptyAccounts
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6
 
+
+THEOREM unchangedVarsProperty == IndInv /\ UNCHANGED vars => IndInv'
+<1> SUFFICES ASSUME IndInv, UNCHANGED vars
+    PROVE IndInv'
+    OBVIOUS
+<1> USE DEF vars
+<1>1 TypeOK' = TypeOK BY DEF TypeOK, pcLabels
+<1>2 (/\ \A t \in Transfer:
+        \/ accounts[t] = EmptyAccounts
+        \/ DifferentAccounts(t) /\ NonEmptyAccounts(t))' =
+      /\ \A t \in Transfer:
+        \/ accounts[t] = EmptyAccounts
+        \/ DifferentAccounts(t) /\ NonEmptyAccounts(t)
+    BY DEF DifferentAccounts, NonEmptyAccounts
+<1>3 (/\ \A t \in Transfer: pc[t] \in {"choose_accounts", "choose_amount"} => debitPrecond(t))' =
+      /\ \A t \in Transfer: pc[t] \in {"choose_accounts", "choose_amount"} => debitPrecond(t)
+    BY DEF debitPrecond
+<1>4 (/\ \A t \in Transfer:
+        pc[t] \notin {"choose_accounts"} <=> NonEmptyAccounts(t))' =
+      /\ \A t \in Transfer:
+        pc[t] \notin {"choose_accounts"} <=> NonEmptyAccounts(t)
+    BY DEF NonEmptyAccounts
+<1>5 CreditTotal' = CreditTotal BY DEF CreditTotal, opAmount, MapThenSumSet, MapThenFoldSet
+<1>6 DebitTotal' = DebitTotal BY DEF DebitTotal, opAmount, MapThenSumSet, MapThenFoldSet
+<1>7 \A t \in Transfer: transAmount(t)' = transAmount(t) BY DEF transAmount, creditPrecond, debitPrecond
+<1>8 transPending' = transPending BY DEF transPending, AmountIsPending,
+    creditPrecond, isTransKnown
+<1>9 MapThenSumSet(transAmount, transPending) = MapThenSumSet(transAmount, transPending') BY <1>7, <1>8
+<1>10 AmountPendingTotal' = MapThenSumSet(transAmount, transPending)' BY DEF AmountPendingTotal
+<1>11 AmountPendingTotal' = MapThenSumSet(transAmount, transPending') BY DEF AmountPendingTotal,
+    transAmount, transPending, AmountIsPending, creditPrecond, isTransKnown,
+    MapThenSumSet, MapThenFoldSet
+<1>12 AmountPendingTotal' = AmountPendingTotal BY <1>9, <1>10, <1>11 DEF AmountPendingTotal
+<1>13 (Imbalance = 0)' = (Imbalance = 0) BY <1>5, <1>6, <1>12 DEF Imbalance
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>13 DEF IndInv
+
 ====
