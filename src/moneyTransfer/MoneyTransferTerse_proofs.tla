@@ -651,4 +651,22 @@ THEOREM unchangedVarsProperty == IndInv /\ UNCHANGED vars => IndInv'
 <1>13 (Imbalance = 0)' = (Imbalance = 0) BY <1>5, <1>6, <1>12 DEF Imbalance
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>13 DEF IndInv
 
+
+THEOREM nextProperty == IndInv /\ Next => IndInv'
+<1> SUFFICES ASSUME IndInv, Next
+    PROVE IndInv'
+    OBVIOUS
+<1> USE DEF IndInv, Next, Terminating
+<1>1 CASE ~Terminating
+    <2> QED BY <1>1, nextNonTerminating
+<1>2 CASE Terminating
+    <2> QED BY <1>2, unchangedVarsProperty 
+<1> QED BY <1>1, <1>2
+
+
+THEOREM IndInvPreserved == Spec => []IndInv
+<1>1 IndInv /\ UNCHANGED vars => IndInv'
+    BY unchangedVarsProperty
+<1> QED BY PTL, initProperty, nextProperty, <1>1 DEF Spec
+
 ====
