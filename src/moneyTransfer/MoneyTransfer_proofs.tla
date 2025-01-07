@@ -82,7 +82,7 @@ PROVE IndInv'
     BY <1>5, <1>7 DEF pcLabels
 <1> QED BY <1>1, <1>3, <1>4, <1>6, <1>8
 
-\* a copy of retryDebit_IndInv
+\* TODO retryCredit_AmountPendingTotal from MoneyTransferTerse_proofs looks cleaner
 THEOREM retryCredit_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, retryCredit(self)
 PROVE AmountPendingTotal' = AmountPendingTotal
 <1> USE DEF retryCredit, IndInv, TypeOK
@@ -93,12 +93,12 @@ PROVE AmountPendingTotal' = AmountPendingTotal
         <3>2 self \in transPending' BY <3>1 DEF transPending, AmountIsPending, creditPrecond,
         isTransKnown, pcLabels
         <3> QED BY <3>1, <3>2 DEF pcLabels,
-                transPending, AmountIsPending, creditPrecond
+            transPending, AmountIsPending, creditPrecond
     <2>2 CASE ~creditPrecond(self)
         <3>1 ~self \in transPending BY <2>2 DEF transPending, AmountIsPending, creditPrecond
         <3>2 ~(self \in transPending)' BY <2>2 DEF transPending, AmountIsPending, creditPrecond
         <3> QED BY <3>1, <3>2 DEF pcLabels,
-                transPending, AmountIsPending, creditPrecond
+            transPending, AmountIsPending, creditPrecond
     <2> QED BY <2>1, <2>2
 <1>2 \A t \in Transfer: transAmount(t)' = transAmount(t) BY DEF transAmount,
     creditPrecond, debitPrecond
