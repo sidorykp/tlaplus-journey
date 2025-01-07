@@ -47,9 +47,7 @@ Transfer -> amount
             };
             
         choose_amount:
-            with (a = accounts[self].from; am \in NNat) {
-                await amountAvail(a) > 0;
-                await am <= amountAvail(a);
+            with (a = accounts[self].from; am \in 1..amountAvail(accounts[self].from)) {
                 amount[self] := am;
             };
             
@@ -75,7 +73,7 @@ Transfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "3de6b2fb" /\ chksum(tla) = "e3bd1c37")
+\* BEGIN TRANSLATION (chksum(pcal) = "da9cb679" /\ chksum(tla) = "cbe5d37b")
 VARIABLES credits, debits, amount, accounts, pc
 
 (* define statement *)
@@ -121,10 +119,8 @@ choose_accounts(self) == /\ pc[self] = "choose_accounts"
 
 choose_amount(self) == /\ pc[self] = "choose_amount"
                        /\ LET a == accounts[self].from IN
-                            \E am \in NNat:
-                              /\ amountAvail(a) > 0
-                              /\ am <= amountAvail(a)
-                              /\ amount' = [amount EXCEPT ![self] = am]
+                            \E am \in 1..amountAvail(accounts[self].from):
+                              amount' = [amount EXCEPT ![self] = am]
                        /\ pc' = [pc EXCEPT ![self] = "debit"]
                        /\ UNCHANGED << credits, debits, accounts >>
 

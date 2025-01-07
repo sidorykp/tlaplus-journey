@@ -115,7 +115,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal
     DEF transPending, transAmount, AmountIsPending, choose_amount, IndInv, TypeOK
 <1>6 \A t \in transPending: transAmount(t) \in Nat BY DEF choose_amount, IndInv, TypeOK,
     transAmount, transPending
-<1>7 \A t \in transPending: transAmount(t)' \in Nat BY DEF choose_amount, IndInv, TypeOK, NNat,
+<1>7 \A t \in transPending: transAmount(t)' \in Nat BY DEF choose_amount, IndInv, TypeOK,
     transAmount, transPending
 <1>8 IsFiniteSet(transPending) BY transSetIsFinite, FS_Subset DEF transPending
 <1>9 (CHOOSE iter :
@@ -143,7 +143,7 @@ PROVE IndInv'
 <1> USE DEF choose_amount, IndInv, TypeOK
 <1>1 accounts' \in [Transfer -> EAccounts] BY DEF EAccounts, EAccount, EmptyAccounts
 <1>2 pcLabels' BY DEF pcLabels
-<1>3 amount' \in [Transfer -> Nat] BY DEF NNat
+<1>3 amount' \in [Transfer -> Nat] OBVIOUS
 <1>4 \A t \in Transfer:
         \/ accounts[t]' = EmptyAccounts
         \/ (DifferentAccounts(t) /\ NonEmptyAccounts(t))'
@@ -160,7 +160,7 @@ PROVE IndInv'
         <3>2 debits' = debits OBVIOUS
         <3>3 \A d \in debits: opAmount(d)' = opAmount(d) BY <3>1 DEF opAmount, isTransKnown, AT
         <3>4 \A d \in debits: opAmount(d) \in Nat BY DEF opAmount, AT
-        <3>5 \A d \in debits: opAmount(d)' \in Nat BY DEF opAmount, AT, NNat
+        <3>5 \A d \in debits: opAmount(d)' \in Nat BY DEF opAmount, AT
         <3>6 IsFiniteSet(debits) OBVIOUS
         <3>7 (CHOOSE iter :
                   iter
@@ -185,7 +185,7 @@ PROVE IndInv'
         <3>2 credits' = credits OBVIOUS
         <3>3 \A c \in credits: opAmount(c)' = opAmount(c) BY <3>1 DEF opAmount, isTransKnown, AT
         <3>4 \A c \in credits: opAmount(c) \in Nat BY DEF opAmount, AT
-        <3>5 \A c \in credits: opAmount(c)' \in Nat BY DEF opAmount, AT, NNat
+        <3>5 \A c \in credits: opAmount(c)' \in Nat BY DEF opAmount, AT
         <3>6 IsFiniteSet(credits) OBVIOUS
         <3>7 (CHOOSE iter :
                   iter
