@@ -447,4 +447,43 @@ PROVE IndInv'
     BY <1>5, <1>6
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>7, <1>3
 
+    
+THEOREM retryDebit_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, retryDebit(self)
+PROVE AmountPendingTotal' = AmountPendingTotal
+<1> USE DEF retryDebit, IndInv, TypeOK
+<1>1 transPending' = transPending
+    <2>1 CASE ~debitPrecond(self)
+        <3> QED BY <2>1 DEF transPending, AmountIsPending, creditPrecond, isTransKnown, pcLabels
+    <2>2 CASE debitPrecond(self)
+        <3>1 self \notin transPending BY <2>2 DEF transPending, AmountIsPending, creditPrecond,
+            debitPrecond, isTransKnown, pcLabels, AT
+        <3> QED BY <3>1 DEF pcLabels, transPending, AmountIsPending, creditPrecond
+    <2> QED BY <2>1, <2>2
+<1>2 \A t \in Transfer: transAmount(t)' = transAmount(t) BY DEF transAmount,
+    creditPrecond, debitPrecond
+<1> QED BY <1>1, <1>2 DEF transPending, transAmount, AmountIsPending, creditPrecond,
+    isTransKnown, MapThenSumSet, MapThenFoldSet, AmountPendingTotal
+    
+
+THEOREM retryDebit_IndInv == ASSUME IndInv, NEW self \in Transfer, retryDebit(self)
+PROVE IndInv'
+<1> USE DEF retryDebit, IndInv, TypeOK
+<1>1 accounts' \in [Transfer -> EAccounts] BY DEF EAccounts, EAccount, EmptyAccounts
+<1>2 pcLabels' BY DEF pcLabels
+<1>3 Imbalance' = 0
+    <2>1 AmountPendingTotal' = AmountPendingTotal BY retryDebit_AmountPendingTotal
+    <2>2 DebitTotal' = DebitTotal BY DEF DebitTotal, opAmount, MapThenSumSet, MapThenFoldSet
+    <2>3 CreditTotal' = CreditTotal BY DEF CreditTotal, opAmount, MapThenSumSet, MapThenFoldSet
+    <2>4 Imbalance' = Imbalance BY <2>1, <2>2, <2>3 DEF Imbalance
+    <2> QED BY <2>4
+<1>4 \A t \in Transfer:
+        \/ accounts[t]' = EmptyAccounts
+        \/ (DifferentAccounts(t) /\ NonEmptyAccounts(t))'
+    BY DEF DifferentAccounts, NonEmptyAccounts
+<1>5 \A t \in Transfer: pc[t]' \in {"choose_accounts", "choose_amount"} => debitPrecond(t)'
+    BY DEF pcLabels, debitPrecond, isTransKnown
+<1>6 \A t \in Transfer: (pc[t] \notin {"choose_accounts"})' <=> NonEmptyAccounts(t)'
+    BY DEF pcLabels, NonEmptyAccounts
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6
+
 ====

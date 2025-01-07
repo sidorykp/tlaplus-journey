@@ -44,7 +44,7 @@ THEOREM initProperty == ASSUME Init PROVE IndInv
     BY DEF ProcSet, NonEmptyAccounts, EmptyAccounts
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, init_Imbalance
 
-
+\* TODO retryDebit_AmountPendingTotal from MoneyTransferTerse_proofs looks cleaner
 THEOREM retryDebit_AmountPendingTotal == ASSUME IndInv, NEW self \in Transfer, retryDebit(self)
 PROVE AmountPendingTotal' = AmountPendingTotal
 <1> USE DEF retryDebit, IndInv, TypeOK
@@ -54,7 +54,7 @@ PROVE AmountPendingTotal' = AmountPendingTotal
     <2>2 self \in transPending' BY <2>1 DEF transPending, AmountIsPending, creditPrecond,
     isTransKnown, pcLabels
     <2> QED BY <2>1, <2>2 DEF pcLabels,
-            transPending, AmountIsPending, creditPrecond
+        transPending, AmountIsPending, creditPrecond
 <1>2 \A t \in Transfer: transAmount(t)' = transAmount(t) BY DEF transAmount,
     creditPrecond, debitPrecond
 <1> QED BY <1>1, <1>2 DEF transPending, transAmount, AmountIsPending, creditPrecond,
