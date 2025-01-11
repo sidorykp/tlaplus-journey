@@ -1,5 +1,5 @@
----- MODULE MoneyTransfer_proofs ----
-EXTENDS MoneyTransfer, MoneyTransferCommon, MoneyTransfer_proofsCommon,
+---- MODULE MoneyTransferAmountExplicit_proofs ----
+EXTENDS MoneyTransferAmountExplicit, MoneyTransferCommon, MoneyTransfer_proofsCommon,
 FiniteSetsExt_theorems_ext, FiniteSetTheorems, TLAPS
 
 LEMMA transPendingIsFinite == IsFiniteSet(transPending)

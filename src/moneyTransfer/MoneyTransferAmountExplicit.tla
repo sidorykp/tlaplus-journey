@@ -1,4 +1,4 @@
----- MODULE MoneyTransfer ----
+---- MODULE MoneyTransferAmountExplicit ----
 EXTENDS MoneyTransferCommon, FiniteSets, FiniteSetsExt
 
 EmptyAccounts == [from |-> Empty, to |-> Empty]
@@ -9,7 +9,7 @@ Transfer -> amount
 ***************************************)
 
 (***************************************************************************
---algorithm MoneyTransfer {
+--algorithm MoneyTransferAmountExplicit {
     variables
        credits = {},
        debits = {},
@@ -73,7 +73,7 @@ Transfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "86cb898b" /\ chksum(tla) = "3813d60f")
+\* BEGIN TRANSLATION (chksum(pcal) = "5320ce1e" /\ chksum(tla) = "3813d60f")
 VARIABLES credits, debits, amount, accounts, pc
 
 (* define statement *)
