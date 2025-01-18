@@ -1,17 +1,17 @@
 # tlaplus-journey
 TLA+ algorithms with TLAPS proofs
 
-# [MoneyTransfer](src/moneyTransfer/MoneyTransfer.tla)
+# [MoneyTransferReference](src/moneyTransfer/MoneyTransferReference.tla)
 A simple (but not trivial) algorithm modeling money transfer between accounts.
 
 What makes the algorithm non-trivial:
 1. It is **fault-tolerant**.
 1. It models any number of accounts and money transfers.
-1. It is [fully proved](src/moneyTransfer/MoneyTransfer_proofs.tla) using the TLA+ Proof System (TLAPS).
+1. It is [fully proved](src/moneyTransfer/MoneyTransferReference_proofs.tla) using the TLA+ Proof System (TLAPS).
 1. The main invariant that is proved is a **global invariant**: the global amount of money present in the model.
 1. It requires atomic operations on individual entities only (neither distributed transactions nor multi-row transactions are required)
 
-# MoneyTransfer Proof
+# [MoneyTransferReference Proof](src/moneyTransfer/MoneyTransferReference_proofs.tla)
 
 The inductive invariant **IndInv** is defined in the MoneyTransfer module. The main goal of the proof is to prove that IndInv is:
 1. true in the initial state Init
