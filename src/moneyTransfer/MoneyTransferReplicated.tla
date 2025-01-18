@@ -43,7 +43,7 @@ EmptyEccounts == [from |-> Empty, to |-> Empty]
             /\ ~isTransKnown(t, accounts[t].to, debits)
             /\ isTransKnown(t, accounts[t].from, debits)
 
-        dransAmount(t) == emount[t]
+        dransEmount(t) == emount[t]
 
         opEmount(dc) == emount[dc.t]
 
@@ -130,7 +130,7 @@ EmptyEccounts == [from |-> Empty, to |-> Empty]
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "993a186e" /\ chksum(tla) = "95514516")
+\* BEGIN TRANSLATION (chksum(pcal) = "edbfb4a1" /\ chksum(tla) = "a89fa5fe")
 VARIABLES credits, debits, amount, accounts, kredits, bebits, emount, 
           eccounts, pc
 
@@ -156,7 +156,7 @@ creditPrecond(t) ==
     /\ ~isTransKnown(t, accounts[t].to, debits)
     /\ isTransKnown(t, accounts[t].from, debits)
 
-dransAmount(t) == emount[t]
+dransEmount(t) == emount[t]
 
 opEmount(dc) == emount[dc.t]
 
@@ -322,37 +322,41 @@ Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 \* END TRANSLATION 
 
 CreditTotal == MapThenSumSet(opAmount, credits)
+KreditTotal == MapThenSumSet(opEmount, kredits)
 
 DebitTotal == MapThenSumSet(opAmount, debits)
+BebitTotal == MapThenSumSet(opEmount, bebits)
 
 AmountIsPending(t) ==
     /\ pc[t] \in {"debit", "retryDebit", "credit", "retryCredit"}
     /\ creditPrecond(t)
+EmountIsPending(t) ==
+    /\ pc[t] \in {"bebit", "retryBebit", "kredit", "retryKredit"}
+    /\ kreditPrecond(t)
 
 transPending == {t \in Transfer: AmountIsPending(t)}
+dransPending == {t \in Dransfer: EmountIsPending(t)}
 
 AmountPendingTotal == MapThenSumSet(transAmount, transPending)
+EmountPendingTotal == MapThenSumSet(dransEmount, dransPending)
 
 Imbalance == CreditTotal - DebitTotal + AmountPendingTotal
+Ymbalance == KreditTotal - BebitTotal + EmountPendingTotal
 
 NonEmptyAccounts(t) ==
     /\ accounts[t].from # Empty
     /\ accounts[t].to # Empty
-
 NonEmptyEccounts(t) ==
     /\ eccounts[t].from # Empty
     /\ eccounts[t].to # Empty
     
 DifferentAccounts(t) == accounts[t].from # accounts[t].to
-
 DifferentEccounts(t) == eccounts[t].from # eccounts[t].to
 
 EAccounts == [from: EAccount, to: EAccount]
-
 EEccounts == [from: EEccount, to: EEccount]
 
 AT == [a: Account, t: Transfer]
-
 ED == [a: Eccount, t: Dransfer]
 
 pcLabels == pc \in
@@ -379,10 +383,12 @@ TypeOK ==
 Inv ==
     /\ TypeOK
     /\ Imbalance = 0
+    /\ Ymbalance = 0
     
 IndInv ==
     /\ TypeOK
     /\ Imbalance = 0
+    /\ Ymbalance = 0
     /\ \A t \in Transfer:
         \/ accounts[t] = EmptyAccounts
         \/ DifferentAccounts(t) /\ NonEmptyAccounts(t)
