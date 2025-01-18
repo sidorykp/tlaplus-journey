@@ -338,12 +338,22 @@ Imbalance == CreditTotal - DebitTotal + AmountPendingTotal
 NonEmptyAccounts(t) ==
     /\ accounts[t].from # Empty
     /\ accounts[t].to # Empty
+
+NonEmptyEccounts(t) ==
+    /\ eccounts[t].from # Empty
+    /\ eccounts[t].to # Empty
     
 DifferentAccounts(t) == accounts[t].from # accounts[t].to
 
+DifferentEccounts(t) == eccounts[t].from # eccounts[t].to
+
 EAccounts == [from: EAccount, to: EAccount]
 
+EEccounts == [from: EEccount, to: EEccount]
+
 AT == [a: Account, t: Transfer]
+
+ED == [a: Eccount, t: Dransfer]
 
 pcLabels == pc \in
     [Transfer \cup Dransfer ->
@@ -358,6 +368,12 @@ TypeOK ==
     /\ IsFiniteSet(debits)
     /\ amount \in [Transfer -> Nat]
     /\ accounts \in [Transfer -> EAccounts]
+    /\ kredits \in SUBSET ED
+    /\ IsFiniteSet(kredits)
+    /\ bebits \in SUBSET ED
+    /\ IsFiniteSet(bebits)
+    /\ emount \in [Dransfer -> Nat]
+    /\ eccounts \in [Dransfer -> EEccounts]
     /\ pcLabels
 
 Inv ==
@@ -370,9 +386,15 @@ IndInv ==
     /\ \A t \in Transfer:
         \/ accounts[t] = EmptyAccounts
         \/ DifferentAccounts(t) /\ NonEmptyAccounts(t)
+    /\ \A t \in Dransfer:
+        \/ eccounts[t] = EmptyEccounts
+        \/ DifferentEccounts(t) /\ NonEmptyEccounts(t)
     /\ \A t \in Transfer: pc[t] \in {"choose_accounts", "choose_amount"} => debitPrecond(t)
+    /\ \A t \in Dransfer: pc[t] \in {"choose_eccounts", "choose_emount"} => bebitPrecond(t)
     /\ \A t \in Transfer:
         pc[t] \notin {"choose_accounts"} <=> NonEmptyAccounts(t)
+    /\ \A t \in Dransfer:
+        pc[t] \notin {"choose_eccounts"} <=> NonEmptyEccounts(t)
 
 IndSpec == IndInv /\ [][Next]_vars
 
