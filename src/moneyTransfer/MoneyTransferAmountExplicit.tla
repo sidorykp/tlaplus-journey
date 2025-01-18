@@ -44,9 +44,7 @@ Transfer -> amount
     process (trans \in Transfer)    
     {
         init:
-            with (account1 \in Account; account2 \in Account \ {account1}; am \in NNat) {
-                await amountAvail(account1) > 0;
-                await am <= amountAvail(account1);
+            with (account1 \in Account; account2 \in Account \ {account1}; am \in 1..amountAvail(account1)) {
                 accounts[self] := [from |-> account1, to |-> account2];
                 amount[self] := am;
             };
@@ -73,7 +71,7 @@ Transfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "5320ce1e" /\ chksum(tla) = "3813d60f")
+\* BEGIN TRANSLATION (chksum(pcal) = "c9ddc7f2" /\ chksum(tla) = "389b2257")
 VARIABLES credits, debits, amount, accounts, pc
 
 (* define statement *)
@@ -115,9 +113,7 @@ Init == (* Global variables *)
 init(self) == /\ pc[self] = "init"
               /\ \E account1 \in Account:
                    \E account2 \in Account \ {account1}:
-                     \E am \in NNat:
-                       /\ amountAvail(account1) > 0
-                       /\ am <= amountAvail(account1)
+                     \E am \in 1..amountAvail(account1):
                        /\ accounts' = [accounts EXCEPT ![self] = [from |-> account1, to |-> account2]]
                        /\ amount' = [amount EXCEPT ![self] = am]
               /\ pc' = [pc EXCEPT ![self] = "debit"]

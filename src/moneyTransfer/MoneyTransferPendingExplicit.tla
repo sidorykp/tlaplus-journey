@@ -58,9 +58,7 @@ Dransfer -> amount
     process (trans \in Dransfer)
     {
         init:
-            with (account1 \in Eccount; account2 \in Eccount \ {account1}; am \in NNat) {
-                await amountAvail(account1) > 0;
-                await am <= amountAvail(account1);
+            with (account1 \in Eccount; account2 \in Eccount \ {account1}; am \in 1..amountAvail(account1)) {
                 eccounts[self] := [from |-> account1, to |-> account2];
                 emount[self] := am;
             };
@@ -91,7 +89,7 @@ Dransfer -> amount
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "f66f726b" /\ chksum(tla) = "60726b2e")
+\* BEGIN TRANSLATION (chksum(pcal) = "bd63ea88" /\ chksum(tla) = "2feb3d17")
 VARIABLES kredits, bebits, emount, eccounts, pendingDrans, pc
 
 (* define statement *)
@@ -134,9 +132,7 @@ Init == (* Global variables *)
 init(self) == /\ pc[self] = "init"
               /\ \E account1 \in Eccount:
                    \E account2 \in Eccount \ {account1}:
-                     \E am \in NNat:
-                       /\ amountAvail(account1) > 0
-                       /\ am <= amountAvail(account1)
+                     \E am \in 1..amountAvail(account1):
                        /\ eccounts' = [eccounts EXCEPT ![self] = [from |-> account1, to |-> account2]]
                        /\ emount' = [emount EXCEPT ![self] = am]
               /\ pc' = [pc EXCEPT ![self] = "debit"]
