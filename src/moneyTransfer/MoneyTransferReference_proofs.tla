@@ -1,5 +1,5 @@
----- MODULE MoneyTransferTerse_proofs ----
-EXTENDS MoneyTransferTerse, MoneyTransfer_proofsCommon, FiniteSetsExt_theorems_ext, FiniteSetTheorems, TLAPS
+---- MODULE MoneyTransferReference_proofs ----
+EXTENDS MoneyTransferReference, MoneyTransfer_proofsCommon, FiniteSetsExt_theorems_ext, FiniteSetTheorems, TLAPS
 
 LEMMA transAmountInNat == ASSUME TypeOK, NEW self \in Transfer
 PROVE transAmount(self) \in Nat
