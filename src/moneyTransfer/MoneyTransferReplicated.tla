@@ -320,4 +320,82 @@ Spec == Init /\ [][Next]_vars
 Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
 \* END TRANSLATION 
+
+CreditTotal == MapThenSumSet(opAmount, credits)
+
+DebitTotal == MapThenSumSet(opAmount, debits)
+
+AmountIsPending(t) ==
+    /\ pc[t] \in {"debit", "retryDebit", "credit", "retryCredit"}
+    /\ creditPrecond(t)
+
+transPending == {t \in Transfer: AmountIsPending(t)}
+
+AmountPendingTotal == MapThenSumSet(transAmount, transPending)
+
+Imbalance == CreditTotal - DebitTotal + AmountPendingTotal
+
+NonEmptyAccounts(t) ==
+    /\ accounts[t].from # Empty
+    /\ accounts[t].to # Empty
+    
+DifferentAccounts(t) == accounts[t].from # accounts[t].to
+
+EAccounts == [from: EAccount, to: EAccount]
+
+AT == [a: Account, t: Transfer]
+
+pcLabels == pc \in
+    [Transfer \cup Dransfer ->
+        {"choose_accounts", "choose_amount", "debit", "retryDebit", "credit", "retryCredit", "Done"}
+        \cup
+        {"choose_eccounts", "choose_emount", "bebit", "retryBebit", "kredit", "retryKredit", "Done"}]
+
+TypeOK ==
+    /\ credits \in SUBSET AT
+    /\ IsFiniteSet(credits)
+    /\ debits \in SUBSET AT
+    /\ IsFiniteSet(debits)
+    /\ amount \in [Transfer -> Nat]
+    /\ accounts \in [Transfer -> EAccounts]
+    /\ pcLabels
+
+Inv ==
+    /\ TypeOK
+    /\ Imbalance = 0
+    
+IndInv ==
+    /\ TypeOK
+    /\ Imbalance = 0
+    /\ \A t \in Transfer:
+        \/ accounts[t] = EmptyAccounts
+        \/ DifferentAccounts(t) /\ NonEmptyAccounts(t)
+    /\ \A t \in Transfer: pc[t] \in {"choose_accounts", "choose_amount"} => debitPrecond(t)
+    /\ \A t \in Transfer:
+        pc[t] \notin {"choose_accounts"} <=> NonEmptyAccounts(t)
+
+IndSpec == IndInv /\ [][Next]_vars
+
+CommonIndInv ==
+    /\ amount \in [Transfer -> Nat]
+    /\ accounts \in [Transfer -> EAccounts]
+    /\ pcLabels
+    /\ Imbalance = 0
+    /\ \A t \in Transfer:
+        \/ accounts[t] = EmptyAccounts
+        \/ DifferentAccounts(t) /\ NonEmptyAccounts(t)
+    /\ \A t \in Transfer: pc[t] \in {"choose_accounts", "choose_amount"} => debitPrecond(t)
+    /\ \A t \in Transfer:
+        pc[t] \notin {"choose_accounts"} <=> NonEmptyAccounts(t)
+
+IndNat == 0..2
+
+IndInvInteractiveStateConstraints ==
+    /\ \A c \in credits: \E d \in debits: 
+        /\ d.t = c.t
+        /\ d.a # c.a
+        /\ opAmount(d) = opAmount(c)
+    /\ \A t \in Transfer:
+        amount[t] = 0 <=> pc[t] = "choose_amount"
+
 ====
