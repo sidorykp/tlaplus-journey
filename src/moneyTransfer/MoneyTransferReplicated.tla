@@ -2,9 +2,7 @@
 EXTENDS MoneyTransferCommon, FiniteSets, FiniteSetsExt,
 Sequences, SequencesExt, TLC
 
-CONSTANTS Eccount, Dransfer, NAE
-
-NAESet == 1..NAE
+CONSTANTS Dransfer, Eccount, account(_), eccount(_)
 
 EmptyAccounts == [from |-> Empty, to |-> Empty]
 
@@ -89,7 +87,7 @@ ED == [a: Eccount, t: Dransfer]
                 with (message = Head(kueueBebit)) {
                     assert message \in ED;
                     either {
-                        debits := debits \cup {[a |-> message.a, t |-> self]};
+                        debits := debits \cup {[a |-> account(message.a), t |-> self]};
                         kueueBebit := Tail(kueueBebit);
                     } or skip;
                 }
@@ -109,7 +107,7 @@ ED == [a: Eccount, t: Dransfer]
                 with (message = Head(kueueKredit)) {
                     assert message \in ED;
                     either {
-                        credits := credits \cup {[a |-> message.a, t |-> self]};
+                        credits := credits \cup {[a |-> account(message.a), t |-> self]};
                         kueueKredit := Tail(kueueKredit);
                     } or skip;
                 }
@@ -132,7 +130,7 @@ ED == [a: Eccount, t: Dransfer]
                 await Len(queueAccount) > 0;
                 with (message = Head(queueAccount)) {
                     assert message \in EAccounts;
-                    eccounts[self] := message;
+                    eccounts[self] := [from |-> eccount(message.from), to |-> eccount(message.to)];
                     queueAccount := Tail(queueAccount);
                 }
             };
@@ -177,7 +175,7 @@ ED == [a: Eccount, t: Dransfer]
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "9f82ee41" /\ chksum(tla) = "fe5c259")
+\* BEGIN TRANSLATION (chksum(pcal) = "7e874d22" /\ chksum(tla) = "53e9edb1")
 VARIABLES credits, debits, amount, accounts, kredits, bebits, emount, 
           eccounts, queueAccount, queueAmount, kueueBebit, kueueKredit, pc
 
@@ -263,8 +261,8 @@ debit(self) == /\ pc[self] = "debit"
                /\ IF Len(kueueBebit) > 0
                      THEN /\ LET message == Head(kueueBebit) IN
                                /\ Assert(message \in ED, 
-                                         "Failure of assertion at line 90, column 21.")
-                               /\ \/ /\ debits' = (debits \cup {[a |-> message.a, t |-> self]})
+                                         "Failure of assertion at line 88, column 21.")
+                               /\ \/ /\ debits' = (debits \cup {[a |-> account(message.a), t |-> self]})
                                      /\ kueueBebit' = Tail(kueueBebit)
                                   \/ /\ TRUE
                                      /\ UNCHANGED <<debits, kueueBebit>>
@@ -293,8 +291,8 @@ credit(self) == /\ pc[self] = "credit"
                 /\ IF Len(kueueKredit) > 0
                       THEN /\ LET message == Head(kueueKredit) IN
                                 /\ Assert(message \in ED, 
-                                          "Failure of assertion at line 110, column 21.")
-                                /\ \/ /\ credits' = (credits \cup {[a |-> message.a, t |-> self]})
+                                          "Failure of assertion at line 108, column 21.")
+                                /\ \/ /\ credits' = (credits \cup {[a |-> account(message.a), t |-> self]})
                                       /\ kueueKredit' = Tail(kueueKredit)
                                    \/ /\ TRUE
                                       /\ UNCHANGED <<credits, kueueKredit>>
@@ -327,8 +325,8 @@ choose_eccounts(self) == /\ pc[self] = "choose_eccounts"
                          /\ Len(queueAccount) > 0
                          /\ LET message == Head(queueAccount) IN
                               /\ Assert(message \in EAccounts, 
-                                        "Failure of assertion at line 134, column 21.")
-                              /\ eccounts' = [eccounts EXCEPT ![self] = message]
+                                        "Failure of assertion at line 132, column 21.")
+                              /\ eccounts' = [eccounts EXCEPT ![self] = [from |-> eccount(message.from), to |-> eccount(message.to)]]
                               /\ queueAccount' = Tail(queueAccount)
                          /\ pc' = [pc EXCEPT ![self] = "choose_emount"]
                          /\ UNCHANGED << credits, debits, amount, accounts, 
@@ -339,7 +337,7 @@ choose_emount(self) == /\ pc[self] = "choose_emount"
                        /\ Len(queueAmount) > 0
                        /\ LET message == Head(queueAmount) IN
                             /\ Assert(message \in NNat, 
-                                      "Failure of assertion at line 144, column 21.")
+                                      "Failure of assertion at line 142, column 21.")
                             /\ emount' = [emount EXCEPT ![self] = message]
                             /\ queueAmount' = Tail(queueAmount)
                        /\ pc' = [pc EXCEPT ![self] = "bebit"]
