@@ -1,5 +1,6 @@
 ---- MODULE MoneyTransferReplicated ----
-EXTENDS MoneyTransferCommon, FiniteSets, FiniteSetsExt, Sequences, TLC
+EXTENDS MoneyTransferCommon, FiniteSets, FiniteSetsExt,
+Sequences, SequencesExt, TLC
 
 CONSTANTS Eccount, Dransfer, NAE
 
@@ -176,7 +177,7 @@ ED == [a: Eccount, t: Dransfer]
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "9f82ee41" /\ chksum(tla) = "c9b0e62a")
+\* BEGIN TRANSLATION (chksum(pcal) = "9f82ee41" /\ chksum(tla) = "fe5c259")
 VARIABLES credits, debits, amount, accounts, kredits, bebits, emount, 
           eccounts, queueAccount, queueAmount, kueueBebit, kueueKredit, pc
 
@@ -262,7 +263,7 @@ debit(self) == /\ pc[self] = "debit"
                /\ IF Len(kueueBebit) > 0
                      THEN /\ LET message == Head(kueueBebit) IN
                                /\ Assert(message \in ED, 
-                                         "Failure of assertion at line 89, column 21.")
+                                         "Failure of assertion at line 90, column 21.")
                                /\ \/ /\ debits' = (debits \cup {[a |-> message.a, t |-> self]})
                                      /\ kueueBebit' = Tail(kueueBebit)
                                   \/ /\ TRUE
@@ -292,7 +293,7 @@ credit(self) == /\ pc[self] = "credit"
                 /\ IF Len(kueueKredit) > 0
                       THEN /\ LET message == Head(kueueKredit) IN
                                 /\ Assert(message \in ED, 
-                                          "Failure of assertion at line 109, column 21.")
+                                          "Failure of assertion at line 110, column 21.")
                                 /\ \/ /\ credits' = (credits \cup {[a |-> message.a, t |-> self]})
                                       /\ kueueKredit' = Tail(kueueKredit)
                                    \/ /\ TRUE
@@ -326,7 +327,7 @@ choose_eccounts(self) == /\ pc[self] = "choose_eccounts"
                          /\ Len(queueAccount) > 0
                          /\ LET message == Head(queueAccount) IN
                               /\ Assert(message \in EAccounts, 
-                                        "Failure of assertion at line 133, column 21.")
+                                        "Failure of assertion at line 134, column 21.")
                               /\ eccounts' = [eccounts EXCEPT ![self] = message]
                               /\ queueAccount' = Tail(queueAccount)
                          /\ pc' = [pc EXCEPT ![self] = "choose_emount"]
@@ -338,7 +339,7 @@ choose_emount(self) == /\ pc[self] = "choose_emount"
                        /\ Len(queueAmount) > 0
                        /\ LET message == Head(queueAmount) IN
                             /\ Assert(message \in NNat, 
-                                      "Failure of assertion at line 143, column 21.")
+                                      "Failure of assertion at line 144, column 21.")
                             /\ emount' = [emount EXCEPT ![self] = message]
                             /\ queueAmount' = Tail(queueAmount)
                        /\ pc' = [pc EXCEPT ![self] = "bebit"]
@@ -461,10 +462,10 @@ TypeOK ==
     /\ IsFiniteSet(bebits)
     /\ emount \in [Dransfer -> Nat]
     /\ eccounts \in [Dransfer -> EEccounts]
-    /\ queueAccount \in Seq(EAccounts)
-    /\ queueAmount \in Seq(NNat)
-    /\ kueueBebit \in Seq(ED)
-    /\ kueueKredit \in Seq(ED)
+    /\ queueAccount \in SeqOf(EAccounts, 1)
+    /\ queueAmount \in SeqOf(NNat, 1)
+    /\ kueueBebit \in SeqOf(ED, 1)
+    /\ kueueKredit \in SeqOf(ED, 1)
     /\ pcLabels
 
 Inv ==
@@ -510,7 +511,13 @@ IndInvInteractiveStateConstraints ==
         /\ d.t = c.t
         /\ d.a # c.a
         /\ opAmount(d) = opAmount(c)
+    /\ \A c \in kredits: \E d \in bebits: 
+        /\ d.t = c.t
+        /\ d.a # c.a
+        /\ opEmount(d) = opEmount(c)
     /\ \A t \in Transfer:
-        amount[t] = 0 <=> pc[t] = "choose_amount"
+        amount[t] = 0 <=> pc[t] \in {"choose_accounts", "choose_amount"}
+    /\ \A t \in Dransfer:
+        emount[t] = 0 <=> pc[t] \in {"choose_eccounts", "choose_emount"}
 
 ====
