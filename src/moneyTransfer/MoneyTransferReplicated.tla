@@ -2,7 +2,7 @@
 EXTENDS MoneyTransferCommon, FiniteSets, FiniteSetsExt,
 Sequences, SequencesExt, TLC
 
-CONSTANTS Dransfer, Eccount, account(_), eccount(_)
+CONSTANTS Dransfer, Eccount, account(_), eccount(_), transfer(_), dransfer(_)
 
 EmptyAccounts == [from |-> Empty, to |-> Empty]
 
@@ -27,10 +27,10 @@ ED == [a: Eccount, t: Dransfer]
        bebits = {},
        emount = [t \in Dransfer |-> 0],
        eccounts = [t \in Dransfer |-> EmptyEccounts],
-       queueAccount = <<>>,
-       queueAmount = <<>>,
-       kueueBebit = <<>>,
-       kueueKredit = <<>>
+       queueAccount = [t \in Transfer |-> EmptyAccounts],
+       queueAmount = [t \in Transfer |-> 0],
+       kueueBebit = [t \in Dransfer |-> Empty],
+       kueueKredit = [t \in Dransfer |-> Empty]
 
     define {
         transAmount(t) == amount[t]
@@ -73,22 +73,22 @@ ED == [a: Eccount, t: Dransfer]
         choose_accounts:
             with (account1 \in Account; account2 \in Account \ {account1}) {
                 accounts[self] := [from |-> account1, to |-> account2];
-                queueAccount := Append(queueAccount, [from |-> account1, to |-> account2]);
+                queueAccount[self] := [from |-> account1, to |-> account2];
             };
 
         choose_amount:
             with (a = accounts[self].from; am \in 1..amountAvail(accounts[self].from)) {
                 amount[self] := am;
-                queueAmount := Append(queueAmount, am);
+                queueAmount[self] := am;
             };
 
         debit:
-            if (Len(kueueBebit) > 0) {
-                with (message = Head(kueueBebit)) {
-                    assert message \in ED;
+            if (kueueBebit[dransfer(self)] # Empty) {
+                with (message = kueueBebit[dransfer(self)]) {
+                    assert message \in Eccount;
                     either {
-                        debits := debits \cup {[a |-> account(message.a), t |-> self]};
-                        kueueBebit := Tail(kueueBebit);
+                        debits := debits \cup {[a |-> account(message), t |-> self]};
+                        kueueBebit[dransfer(self)] := Empty;
                     } or skip;
                 }
             } else {
@@ -103,12 +103,12 @@ ED == [a: Eccount, t: Dransfer]
         retryDebit: if (debitPrecond(self)) goto debit;
 
         credit:
-            if (Len(kueueKredit) > 0) {
-                with (message = Head(kueueKredit)) {
-                    assert message \in ED;
+            if (kueueKredit[dransfer(self)] # Empty) {
+                with (message = kueueKredit[dransfer(self)]) {
+                    assert message \in Eccount;
                     either {
-                        credits := credits \cup {[a |-> account(message.a), t |-> self]};
-                        kueueKredit := Tail(kueueKredit);
+                        credits := credits \cup {[a |-> account(message), t |-> self]};
+                        kueueKredit[dransfer(self)] := Empty;
                     } or skip;
                 }
             } else {
@@ -127,21 +127,21 @@ ED == [a: Eccount, t: Dransfer]
     {
         choose_eccounts:
             {
-                await Len(queueAccount) > 0;
-                with (message = Head(queueAccount)) {
+                await queueAccount[transfer(self)] # EmptyAccounts;
+                with (message = queueAccount[transfer(self)]) {
                     assert message \in EAccounts;
                     eccounts[self] := [from |-> eccount(message.from), to |-> eccount(message.to)];
-                    queueAccount := Tail(queueAccount);
+                    queueAccount[transfer(self)] := EmptyAccounts;
                 }
             };
 
         choose_emount:
             {
-                await Len(queueAmount) > 0;
-                with (message = Head(queueAmount)) {
+                await queueAmount[transfer(self)] # 0;
+                with (message = queueAmount[transfer(self)]) {
                     assert message \in NNat;
                     emount[self] := message;
-                    queueAmount := Tail(queueAmount);
+                    queueAmount[transfer(self)] := 0;
                 }
             };
 
@@ -151,7 +151,7 @@ ED == [a: Eccount, t: Dransfer]
                     with (bebit = [a |-> a, t |-> self]) {
                         either {
                             bebits := bebits \cup {bebit};
-                            kueueBebit := Append(kueueBebit, bebit);
+                            kueueBebit[self] := a;
                         } or skip;
                     }
                 }
@@ -165,7 +165,7 @@ ED == [a: Eccount, t: Dransfer]
                     with (kredit = [a |-> a, t |-> self]) {
                         either {
                             kredits := kredits \cup {kredit};
-                            kueueKredit := Append(kueueKredit, kredit);
+                            kueueKredit[self] := a;
                         } or skip;
                     }
                 }
@@ -175,7 +175,7 @@ ED == [a: Eccount, t: Dransfer]
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "7e874d22" /\ chksum(tla) = "53e9edb1")
+\* BEGIN TRANSLATION (chksum(pcal) = "505848fa" /\ chksum(tla) = "b9c10bcb")
 VARIABLES credits, debits, amount, accounts, kredits, bebits, emount, 
           eccounts, queueAccount, queueAmount, kueueBebit, kueueKredit, pc
 
@@ -230,10 +230,10 @@ Init == (* Global variables *)
         /\ bebits = {}
         /\ emount = [t \in Dransfer |-> 0]
         /\ eccounts = [t \in Dransfer |-> EmptyEccounts]
-        /\ queueAccount = <<>>
-        /\ queueAmount = <<>>
-        /\ kueueBebit = <<>>
-        /\ kueueKredit = <<>>
+        /\ queueAccount = [t \in Transfer |-> EmptyAccounts]
+        /\ queueAmount = [t \in Transfer |-> 0]
+        /\ kueueBebit = [t \in Dransfer |-> Empty]
+        /\ kueueKredit = [t \in Dransfer |-> Empty]
         /\ pc = [self \in ProcSet |-> CASE self \in Transfer -> "choose_accounts"
                                         [] self \in Dransfer -> "choose_eccounts"]
 
@@ -241,7 +241,7 @@ choose_accounts(self) == /\ pc[self] = "choose_accounts"
                          /\ \E account1 \in Account:
                               \E account2 \in Account \ {account1}:
                                 /\ accounts' = [accounts EXCEPT ![self] = [from |-> account1, to |-> account2]]
-                                /\ queueAccount' = Append(queueAccount, [from |-> account1, to |-> account2])
+                                /\ queueAccount' = [queueAccount EXCEPT ![self] = [from |-> account1, to |-> account2]]
                          /\ pc' = [pc EXCEPT ![self] = "choose_amount"]
                          /\ UNCHANGED << credits, debits, amount, kredits, 
                                          bebits, emount, eccounts, queueAmount, 
@@ -251,19 +251,19 @@ choose_amount(self) == /\ pc[self] = "choose_amount"
                        /\ LET a == accounts[self].from IN
                             \E am \in 1..amountAvail(accounts[self].from):
                               /\ amount' = [amount EXCEPT ![self] = am]
-                              /\ queueAmount' = Append(queueAmount, am)
+                              /\ queueAmount' = [queueAmount EXCEPT ![self] = am]
                        /\ pc' = [pc EXCEPT ![self] = "debit"]
                        /\ UNCHANGED << credits, debits, accounts, kredits, 
                                        bebits, emount, eccounts, queueAccount, 
                                        kueueBebit, kueueKredit >>
 
 debit(self) == /\ pc[self] = "debit"
-               /\ IF Len(kueueBebit) > 0
-                     THEN /\ LET message == Head(kueueBebit) IN
-                               /\ Assert(message \in ED, 
+               /\ IF kueueBebit[dransfer(self)] # Empty
+                     THEN /\ LET message == kueueBebit[dransfer(self)] IN
+                               /\ Assert(message \in Eccount, 
                                          "Failure of assertion at line 88, column 21.")
-                               /\ \/ /\ debits' = (debits \cup {[a |-> account(message.a), t |-> self]})
-                                     /\ kueueBebit' = Tail(kueueBebit)
+                               /\ \/ /\ debits' = (debits \cup {[a |-> account(message), t |-> self]})
+                                     /\ kueueBebit' = [kueueBebit EXCEPT ![dransfer(self)] = Empty]
                                   \/ /\ TRUE
                                      /\ UNCHANGED <<debits, kueueBebit>>
                      ELSE /\ LET a == accounts[self].from IN
@@ -288,12 +288,12 @@ retryDebit(self) == /\ pc[self] = "retryDebit"
                                     queueAmount, kueueBebit, kueueKredit >>
 
 credit(self) == /\ pc[self] = "credit"
-                /\ IF Len(kueueKredit) > 0
-                      THEN /\ LET message == Head(kueueKredit) IN
-                                /\ Assert(message \in ED, 
+                /\ IF kueueKredit[dransfer(self)] # Empty
+                      THEN /\ LET message == kueueKredit[dransfer(self)] IN
+                                /\ Assert(message \in Eccount, 
                                           "Failure of assertion at line 108, column 21.")
-                                /\ \/ /\ credits' = (credits \cup {[a |-> account(message.a), t |-> self]})
-                                      /\ kueueKredit' = Tail(kueueKredit)
+                                /\ \/ /\ credits' = (credits \cup {[a |-> account(message), t |-> self]})
+                                      /\ kueueKredit' = [kueueKredit EXCEPT ![dransfer(self)] = Empty]
                                    \/ /\ TRUE
                                       /\ UNCHANGED <<credits, kueueKredit>>
                       ELSE /\ LET a == accounts[self].to IN
@@ -322,24 +322,24 @@ trans(self) == choose_accounts(self) \/ choose_amount(self) \/ debit(self)
                   \/ retryDebit(self) \/ credit(self) \/ retryCredit(self)
 
 choose_eccounts(self) == /\ pc[self] = "choose_eccounts"
-                         /\ Len(queueAccount) > 0
-                         /\ LET message == Head(queueAccount) IN
+                         /\ queueAccount[transfer(self)] # EmptyAccounts
+                         /\ LET message == queueAccount[transfer(self)] IN
                               /\ Assert(message \in EAccounts, 
                                         "Failure of assertion at line 132, column 21.")
                               /\ eccounts' = [eccounts EXCEPT ![self] = [from |-> eccount(message.from), to |-> eccount(message.to)]]
-                              /\ queueAccount' = Tail(queueAccount)
+                              /\ queueAccount' = [queueAccount EXCEPT ![transfer(self)] = EmptyAccounts]
                          /\ pc' = [pc EXCEPT ![self] = "choose_emount"]
                          /\ UNCHANGED << credits, debits, amount, accounts, 
                                          kredits, bebits, emount, queueAmount, 
                                          kueueBebit, kueueKredit >>
 
 choose_emount(self) == /\ pc[self] = "choose_emount"
-                       /\ Len(queueAmount) > 0
-                       /\ LET message == Head(queueAmount) IN
+                       /\ queueAmount[transfer(self)] # 0
+                       /\ LET message == queueAmount[transfer(self)] IN
                             /\ Assert(message \in NNat, 
                                       "Failure of assertion at line 142, column 21.")
                             /\ emount' = [emount EXCEPT ![self] = message]
-                            /\ queueAmount' = Tail(queueAmount)
+                            /\ queueAmount' = [queueAmount EXCEPT ![transfer(self)] = 0]
                        /\ pc' = [pc EXCEPT ![self] = "bebit"]
                        /\ UNCHANGED << credits, debits, amount, accounts, 
                                        kredits, bebits, eccounts, queueAccount, 
@@ -350,7 +350,7 @@ bebit(self) == /\ pc[self] = "bebit"
                     IF bebitPrecond(self)
                        THEN /\ LET bebit == [a |-> a, t |-> self] IN
                                  \/ /\ bebits' = (bebits \cup {bebit})
-                                    /\ kueueBebit' = Append(kueueBebit, bebit)
+                                    /\ kueueBebit' = [kueueBebit EXCEPT ![self] = a]
                                  \/ /\ TRUE
                                     /\ UNCHANGED <<bebits, kueueBebit>>
                        ELSE /\ TRUE
@@ -373,7 +373,7 @@ kredit(self) == /\ pc[self] = "kredit"
                      IF kreditPrecond(self)
                         THEN /\ LET kredit == [a |-> a, t |-> self] IN
                                   \/ /\ kredits' = (kredits \cup {kredit})
-                                     /\ kueueKredit' = Append(kueueKredit, kredit)
+                                     /\ kueueKredit' = [kueueKredit EXCEPT ![self] = a]
                                   \/ /\ TRUE
                                      /\ UNCHANGED <<kredits, kueueKredit>>
                         ELSE /\ TRUE
@@ -460,10 +460,10 @@ TypeOK ==
     /\ IsFiniteSet(bebits)
     /\ emount \in [Dransfer -> Nat]
     /\ eccounts \in [Dransfer -> EEccounts]
-    /\ queueAccount \in SeqOf(EAccounts, 1)
-    /\ queueAmount \in SeqOf(NNat, 1)
-    /\ kueueBebit \in SeqOf(ED, 1)
-    /\ kueueKredit \in SeqOf(ED, 1)
+    /\ queueAccount \in [Transfer -> EAccounts]
+    /\ queueAmount \in [Transfer -> Nat]
+    /\ kueueBebit \in [Dransfer -> EEccount]
+    /\ kueueKredit \in [Dransfer -> EEccount]
     /\ pcLabels
 
 Inv ==
@@ -502,7 +502,7 @@ CommonIndInv ==
     /\ \A t \in Transfer:
         pc[t] \notin {"choose_accounts"} <=> NonEmptyAccounts(t)
 
-IndNat == 0..2
+IndNat == 0..1
 
 IndInvInteractiveStateConstraints ==
     /\ \A c \in credits: \E d \in debits: 
