@@ -22,6 +22,25 @@ AT == [a: Account, t: Transfer]
 ED == [a: Eccount, t: Dransfer]
 
 (***************************************************************************
+IndInv violation found after 11:30 hours
+Imbalance became 1 after "credit"
+kueueKredit contained d1 :> e1
+59869 distinct states found
+
+Retry logic removed
+IndInv violation found after 2:50 hours
+Imbalance became 1 after "credit"
+kueueKredit contained d1 :> e1
+22825 distinct states found
+
+Credit removed
+IndInv violation found after 1:30 hours
+Imbalance became 1 after "debit"
+kueueBebit contained d1 :> e2
+11977 distinct states found
+ ***************************************************************************)
+
+(***************************************************************************
 --algorithm MoneyTransferReplicated {
     variables
        credits = {},
@@ -48,9 +67,12 @@ ED == [a: Eccount, t: Dransfer]
 
         isTransKnown(t, a, bal) == \E dc \in bal: dc.a = a /\ dc.t = t
 
-        debitPrecond(t) == ~\E a \in Account:
-            \/ isTransKnown(t, a, debits)
-            \/ isTransKnown(t, a, credits)
+        debitPrecond(t) ==
+            /\ ~\E a \in Account:
+                \/ isTransKnown(t, a, debits)
+                \/ isTransKnown(t, a, credits)
+            /\ ~\E a \in Eccount:
+                \/ kueueBebit.t = a
 
         creditPrecond(t) ==
             /\ ~\E a \in Account: isTransKnown(t, a, credits)
@@ -88,41 +110,43 @@ ED == [a: Eccount, t: Dransfer]
             if (kueueBebit[dransfer(self)] # Empty) {
                 with (message = kueueBebit[dransfer(self)]) {
                     assert message \in Eccount;
-                    either {
+\*                    either {
                         debits := debits \cup {[a |-> account(message), t |-> self]};
                         kueueBebit[dransfer(self)] := Empty;
-                    } or skip;
+\*                    } or skip;
                 }
             } else {
                 with (a = accounts[self].from) {
                     if (debitPrecond(self)) {
-                        either debits := debits \cup {[a |-> a, t |-> self]};
-                        or skip;
+\*                        either
+                        debits := debits \cup {[a |-> a, t |-> self]};
+\*                        or skip;
                     }
                 }
             };
 
-        retryDebit: if (debitPrecond(self)) goto debit;
+\*        retryDebit: if (debitPrecond(self)) goto debit;
 
-        credit:
-            if (kueueKredit[dransfer(self)] # Empty) {
-                with (message = kueueKredit[dransfer(self)]) {
-                    assert message \in Eccount;
-                    either {
-                        credits := credits \cup {[a |-> account(message), t |-> self]};
-                        kueueKredit[dransfer(self)] := Empty;
-                    } or skip;
-                }
-            } else {
-                with (a = accounts[self].to) {
-                    if (creditPrecond(self)) {
-                        either credits := credits \cup {[a |-> a, t |-> self]};
-                        or skip;
-                    }
-                }
-            };
+\*        credit:
+\*            if (kueueKredit[dransfer(self)] # Empty) {
+\*                with (message = kueueKredit[dransfer(self)]) {
+\*                    assert message \in Eccount;
+\*\*                    either {
+\*                        credits := credits \cup {[a |-> account(message), t |-> self]};
+\*                        kueueKredit[dransfer(self)] := Empty;
+\*\*                    } or skip;
+\*                }
+\*            } else {
+\*                with (a = accounts[self].to) {
+\*                    if (creditPrecond(self)) {
+\*\*                        either
+\*                        credits := credits \cup {[a |-> a, t |-> self]};
+\*\*                        or skip;
+\*                    }
+\*                }
+\*            };
 
-        retryCredit: if (creditPrecond(self)) goto credit;
+\*        retryCredit: if (creditPrecond(self)) goto credit;
     }
 
     process (drans \in Dransfer)
@@ -144,33 +168,33 @@ ED == [a: Eccount, t: Dransfer]
             with (a = eccountsEmount[self].from) {
                 if (bebitPrecond(self)) {
                     with (bebit = [a |-> a, t |-> self]) {
-                        either {
+\*                        either {
                             bebits := bebits \cup {bebit};
                             kueueBebit[self] := a;
-                        } or skip;
+\*                        } or skip;
                     }
                 }
             };
 
-        retryBebit: if (bebitPrecond(self)) goto bebit;
+\*        retryBebit: if (bebitPrecond(self)) goto bebit;
 
-        kredit:
-            with (a = eccountsEmount[self].to) {
-                if (kreditPrecond(self)) {
-                    with (kredit = [a |-> a, t |-> self]) {
-                        either {
-                            kredits := kredits \cup {kredit};
-                            kueueKredit[self] := a;
-                        } or skip;
-                    }
-                }
-            };
+\*        kredit:
+\*            with (a = eccountsEmount[self].to) {
+\*                if (kreditPrecond(self)) {
+\*                    with (kredit = [a |-> a, t |-> self]) {
+\*\*                        either {
+\*                            kredits := kredits \cup {kredit};
+\*                            kueueKredit[self] := a;
+\*\*                        } or skip;
+\*                    }
+\*                }
+\*            };
 
-        retryKredit: if (kreditPrecond(self)) goto kredit;
+\*        retryKredit: if (kreditPrecond(self)) goto kredit;
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "38f530c9" /\ chksum(tla) = "c6c7685d")
+\* BEGIN TRANSLATION (chksum(pcal) = "1bea32e6" /\ chksum(tla) = "b6cef8d3")
 VARIABLES credits, debits, amount, accounts, kredits, bebits, eccountsEmount, 
           queueAccountAmount, kueueBebit, kueueKredit, pc
 
@@ -187,9 +211,12 @@ amountAvail(a) == Avail + accountCredits(a) - accountDebits(a)
 
 isTransKnown(t, a, bal) == \E dc \in bal: dc.a = a /\ dc.t = t
 
-debitPrecond(t) == ~\E a \in Account:
-    \/ isTransKnown(t, a, debits)
-    \/ isTransKnown(t, a, credits)
+debitPrecond(t) ==
+    /\ ~\E a \in Account:
+        \/ isTransKnown(t, a, debits)
+        \/ isTransKnown(t, a, credits)
+    /\ ~\E a \in Eccount:
+        \/ kueueBebit.t = a
 
 creditPrecond(t) ==
     /\ ~\E a \in Account: isTransKnown(t, a, credits)
@@ -253,69 +280,26 @@ debit(self) == /\ pc[self] = "debit"
                /\ IF kueueBebit[dransfer(self)] # Empty
                      THEN /\ LET message == kueueBebit[dransfer(self)] IN
                                /\ Assert(message \in Eccount, 
-                                         "Failure of assertion at line 90, column 21.")
-                               /\ \/ /\ debits' = (debits \cup {[a |-> account(message), t |-> self]})
-                                     /\ kueueBebit' = [kueueBebit EXCEPT ![dransfer(self)] = Empty]
-                                  \/ /\ TRUE
-                                     /\ UNCHANGED <<debits, kueueBebit>>
+                                         "Failure of assertion at line 112, column 21.")
+                               /\ debits' = (debits \cup {[a |-> account(message), t |-> self]})
+                               /\ kueueBebit' = [kueueBebit EXCEPT ![dransfer(self)] = Empty]
                      ELSE /\ LET a == accounts[self].from IN
                                IF debitPrecond(self)
-                                  THEN /\ \/ /\ debits' = (debits \cup {[a |-> a, t |-> self]})
-                                          \/ /\ TRUE
-                                             /\ UNCHANGED debits
+                                  THEN /\ debits' = (debits \cup {[a |-> a, t |-> self]})
                                   ELSE /\ TRUE
                                        /\ UNCHANGED debits
                           /\ UNCHANGED kueueBebit
-               /\ pc' = [pc EXCEPT ![self] = "retryDebit"]
+               /\ pc' = [pc EXCEPT ![self] = "Done"]
                /\ UNCHANGED << credits, amount, accounts, kredits, bebits, 
                                eccountsEmount, queueAccountAmount, kueueKredit >>
 
-retryDebit(self) == /\ pc[self] = "retryDebit"
-                    /\ IF debitPrecond(self)
-                          THEN /\ pc' = [pc EXCEPT ![self] = "debit"]
-                          ELSE /\ pc' = [pc EXCEPT ![self] = "credit"]
-                    /\ UNCHANGED << credits, debits, amount, accounts, kredits, 
-                                    bebits, eccountsEmount, queueAccountAmount, 
-                                    kueueBebit, kueueKredit >>
-
-credit(self) == /\ pc[self] = "credit"
-                /\ IF kueueKredit[dransfer(self)] # Empty
-                      THEN /\ LET message == kueueKredit[dransfer(self)] IN
-                                /\ Assert(message \in Eccount, 
-                                          "Failure of assertion at line 110, column 21.")
-                                /\ \/ /\ credits' = (credits \cup {[a |-> account(message), t |-> self]})
-                                      /\ kueueKredit' = [kueueKredit EXCEPT ![dransfer(self)] = Empty]
-                                   \/ /\ TRUE
-                                      /\ UNCHANGED <<credits, kueueKredit>>
-                      ELSE /\ LET a == accounts[self].to IN
-                                IF creditPrecond(self)
-                                   THEN /\ \/ /\ credits' = (credits \cup {[a |-> a, t |-> self]})
-                                           \/ /\ TRUE
-                                              /\ UNCHANGED credits
-                                   ELSE /\ TRUE
-                                        /\ UNCHANGED credits
-                           /\ UNCHANGED kueueKredit
-                /\ pc' = [pc EXCEPT ![self] = "retryCredit"]
-                /\ UNCHANGED << debits, amount, accounts, kredits, bebits, 
-                                eccountsEmount, queueAccountAmount, kueueBebit >>
-
-retryCredit(self) == /\ pc[self] = "retryCredit"
-                     /\ IF creditPrecond(self)
-                           THEN /\ pc' = [pc EXCEPT ![self] = "credit"]
-                           ELSE /\ pc' = [pc EXCEPT ![self] = "Done"]
-                     /\ UNCHANGED << credits, debits, amount, accounts, 
-                                     kredits, bebits, eccountsEmount, 
-                                     queueAccountAmount, kueueBebit, 
-                                     kueueKredit >>
-
 trans(self) == choose_accounts(self) \/ choose_amount(self) \/ debit(self)
-                  \/ retryDebit(self) \/ credit(self) \/ retryCredit(self)
 
 choose_eccounts_emount(self) == /\ pc[self] = "choose_eccounts_emount"
                                 /\ queueAccountAmount[transfer(self)] # EmptyAccountsAmount
                                 /\ LET message == queueAccountAmount[transfer(self)] IN
                                      /\ Assert(message \in EAccountsAmount, 
-                                               "Failure of assertion at line 134, column 21.")
+                                               "Failure of assertion at line 158, column 21.")
                                      /\ eccountsEmount' = [eccountsEmount EXCEPT ![self] =                     [
                                                                                            from |-> eccount(message.from),
                                                                                            to |-> eccount(message.to),
@@ -330,49 +314,15 @@ bebit(self) == /\ pc[self] = "bebit"
                /\ LET a == eccountsEmount[self].from IN
                     IF bebitPrecond(self)
                        THEN /\ LET bebit == [a |-> a, t |-> self] IN
-                                 \/ /\ bebits' = (bebits \cup {bebit})
-                                    /\ kueueBebit' = [kueueBebit EXCEPT ![self] = a]
-                                 \/ /\ TRUE
-                                    /\ UNCHANGED <<bebits, kueueBebit>>
+                                 /\ bebits' = (bebits \cup {bebit})
+                                 /\ kueueBebit' = [kueueBebit EXCEPT ![self] = a]
                        ELSE /\ TRUE
                             /\ UNCHANGED << bebits, kueueBebit >>
-               /\ pc' = [pc EXCEPT ![self] = "retryBebit"]
+               /\ pc' = [pc EXCEPT ![self] = "Done"]
                /\ UNCHANGED << credits, debits, amount, accounts, kredits, 
                                eccountsEmount, queueAccountAmount, kueueKredit >>
 
-retryBebit(self) == /\ pc[self] = "retryBebit"
-                    /\ IF bebitPrecond(self)
-                          THEN /\ pc' = [pc EXCEPT ![self] = "bebit"]
-                          ELSE /\ pc' = [pc EXCEPT ![self] = "kredit"]
-                    /\ UNCHANGED << credits, debits, amount, accounts, kredits, 
-                                    bebits, eccountsEmount, queueAccountAmount, 
-                                    kueueBebit, kueueKredit >>
-
-kredit(self) == /\ pc[self] = "kredit"
-                /\ LET a == eccountsEmount[self].to IN
-                     IF kreditPrecond(self)
-                        THEN /\ LET kredit == [a |-> a, t |-> self] IN
-                                  \/ /\ kredits' = (kredits \cup {kredit})
-                                     /\ kueueKredit' = [kueueKredit EXCEPT ![self] = a]
-                                  \/ /\ TRUE
-                                     /\ UNCHANGED <<kredits, kueueKredit>>
-                        ELSE /\ TRUE
-                             /\ UNCHANGED << kredits, kueueKredit >>
-                /\ pc' = [pc EXCEPT ![self] = "retryKredit"]
-                /\ UNCHANGED << credits, debits, amount, accounts, bebits, 
-                                eccountsEmount, queueAccountAmount, kueueBebit >>
-
-retryKredit(self) == /\ pc[self] = "retryKredit"
-                     /\ IF kreditPrecond(self)
-                           THEN /\ pc' = [pc EXCEPT ![self] = "kredit"]
-                           ELSE /\ pc' = [pc EXCEPT ![self] = "Done"]
-                     /\ UNCHANGED << credits, debits, amount, accounts, 
-                                     kredits, bebits, eccountsEmount, 
-                                     queueAccountAmount, kueueBebit, 
-                                     kueueKredit >>
-
 drans(self) == choose_eccounts_emount(self) \/ bebit(self)
-                  \/ retryBebit(self) \/ kredit(self) \/ retryKredit(self)
 
 (* Allow infinite stuttering to prevent deadlock on termination. *)
 Terminating == /\ \A self \in ProcSet: pc[self] = "Done"
@@ -395,10 +345,10 @@ DebitTotal == MapThenSumSet(opAmount, debits)
 BebitTotal == MapThenSumSet(opEmount, bebits)
 
 AmountIsPending(t) ==
-    /\ pc[t] \in {"debit", "retryDebit", "credit", "retryCredit"}
+    /\ pc[t] \in {"debit", "retryDebit", "credit", "retryCredit", "Done"}
     /\ creditPrecond(t)
 EmountIsPending(t) ==
-    /\ pc[t] \in {"bebit", "retryBebit", "kredit", "retryKredit"}
+    /\ pc[t] \in {"bebit", "retryBebit", "kredit", "retryKredit", "Done"}
     /\ kreditPrecond(t)
 
 transPending == {t \in Transfer: AmountIsPending(t)}
@@ -429,9 +379,9 @@ DifferentEccounts(t) == eccountsEmount[t].from # eccountsEmount[t].to
 
 pcLabels == pc \in
     [Transfer \cup Dransfer ->
-        {"choose_accounts", "choose_amount", "debit", "retryDebit", "credit", "retryCredit", "Done"}
+        {"choose_accounts", "choose_amount", "debit", "Done"}
         \cup
-        {"choose_eccounts_emount", "bebit", "retryBebit", "kredit", "retryKredit", "Done"}]
+        {"choose_eccounts_emount", "bebit", "Done"}]
 
 TypeOK ==
     /\ credits \in SUBSET AT
