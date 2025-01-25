@@ -38,6 +38,13 @@ IndInv violation found after 1:30 hours
 Imbalance became 1 after "debit"
 kueueBebit contained d1 :> e2
 11977 distinct states found
+
+kueueBebit condition added to debitPrecond
+IndInv violation found after 1:20 hours
+t1 in "choose_amount", this became false after "bebit":
+~\E e \in Eccount: kueueBebit[dransfer(t1)] = e
+the conclusion: d1 should not be in the "bebit" state
+11306 distinct states found
  ***************************************************************************)
 
 (***************************************************************************
@@ -71,8 +78,8 @@ kueueBebit contained d1 :> e2
             /\ ~\E a \in Account:
                 \/ isTransKnown(t, a, debits)
                 \/ isTransKnown(t, a, credits)
-            /\ ~\E a \in Eccount:
-                \/ kueueBebit.t = a
+            /\ ~\E e \in Eccount:
+                \/ kueueBebit[dransfer(t)] = e
 
         creditPrecond(t) ==
             /\ ~\E a \in Account: isTransKnown(t, a, credits)
@@ -194,7 +201,7 @@ kueueBebit contained d1 :> e2
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "1bea32e6" /\ chksum(tla) = "b6cef8d3")
+\* BEGIN TRANSLATION (chksum(pcal) = "ec80edbe" /\ chksum(tla) = "ac46bb92")
 VARIABLES credits, debits, amount, accounts, kredits, bebits, eccountsEmount, 
           queueAccountAmount, kueueBebit, kueueKredit, pc
 
@@ -215,8 +222,8 @@ debitPrecond(t) ==
     /\ ~\E a \in Account:
         \/ isTransKnown(t, a, debits)
         \/ isTransKnown(t, a, credits)
-    /\ ~\E a \in Eccount:
-        \/ kueueBebit.t = a
+    /\ ~\E e \in Eccount:
+        \/ kueueBebit[dransfer(t)] = e
 
 creditPrecond(t) ==
     /\ ~\E a \in Account: isTransKnown(t, a, credits)
