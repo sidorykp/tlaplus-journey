@@ -1,5 +1,5 @@
 ----MODULE MoneyTransferEquivalence----
-EXTENDS MoneyTransfer, TLAPS, FiniteSetsExt_theorems, FiniteSetTheorems
+EXTENDS MoneyTransferAmountExplicit, TLAPS, FiniteSetsExt_theorems, FiniteSetTheorems
 
 pendingTransDerived == {<<t, amount[t]>>: t \in {t \in Transfer: AmountIsPending(t)}}
 
