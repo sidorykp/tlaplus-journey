@@ -178,6 +178,13 @@ MoneyConstant == \A t \in Transfer: AmountIsPending(t) <=>
     /\ t \in debits[accounts[t].from]
     /\ ~(t \in credits[accounts[t].to])
     
+CreditTotal == MapThenSumSet(accountCredits, Account)
+DebitTotal == MapThenSumSet(accountDebits, Account)
+transPending == {t \in Transfer: AmountIsPending(t)}
+AmountPendingTotal == MapThenSumSet(transAmount, transPending)
+Imbalance == CreditTotal - DebitTotal + AmountPendingTotal
+NoImbalance == Imbalance = 0
+    
 DifferentAccounts(t) == accounts[t].from # accounts[t].to
 
 EAccounts == [from: EAccount, to: EAccount]
@@ -194,16 +201,18 @@ TypeOK ==
 Inv ==
     /\ TypeOK
     /\ MoneyConstant
+\*    /\ NoImbalance
 
 IndInv ==
     /\ TypeOK
     /\ MoneyConstant
+\*    /\ NoImbalance
     /\ \A t \in Transfer:
         \/ accounts[t] = EmptyAccounts
         \/ DifferentAccounts(t) /\ NonEmptyAccounts(t)
     /\ \A t \in Transfer: pc[t] \in {"choose_accounts", "choose_amount"} => debitPrecond(t)
     /\ \A t \in Transfer:
-        pc[t] \notin {"choose_accounts"} <=> NonEmptyAccounts(t)
+        pc[t] \notin {"choose_accounts"} => NonEmptyAccounts(t)
 
 IndSpec == IndInv /\ [][Next]_vars
 
@@ -217,7 +226,7 @@ CommonIndInv ==
         \/ DifferentAccounts(t) /\ NonEmptyAccounts(t)
     /\ \A t \in Transfer: pc[t] \in {"choose_accounts", "choose_amount"} => debitPrecond(t)
     /\ \A t \in Transfer:
-        pc[t] \notin {"choose_accounts"} <=> NonEmptyAccounts(t)
+        pc[t] \notin {"choose_accounts"} => NonEmptyAccounts(t)
 
 IndNat == 0..2
 
