@@ -20,7 +20,7 @@ EmptyAccounts == [from |-> Empty, to |-> Empty]
         
         amountAvail(a) == Avail + accountCredits(a) - accountDebits(a)
         
-        isTransKnown(t, a, bal) == a # Empty /\ t \in bal[a]
+        isTransKnown(t, a, balanceComponent) == a # Empty /\ t \in balanceComponent[a]
         
         debitPrecond(t) == ~\E a \in Account:
             \/ isTransKnown(t, a, debits)
@@ -66,7 +66,7 @@ EmptyAccounts == [from |-> Empty, to |-> Empty]
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "d6224a22" /\ chksum(tla) = "9a98938")
+\* BEGIN TRANSLATION (chksum(pcal) = "d4981b31" /\ chksum(tla) = "582b48ad")
 VARIABLES credits, debits, amount, accounts, pc
 
 (* define statement *)
@@ -78,7 +78,7 @@ accountDebits(a) == MapThenSumSet(transAmount, debits[a])
 
 amountAvail(a) == Avail + accountCredits(a) - accountDebits(a)
 
-isTransKnown(t, a, bal) == a # Empty /\ t \in bal[a]
+isTransKnown(t, a, balanceComponent) == a # Empty /\ t \in balanceComponent[a]
 
 debitPrecond(t) == ~\E a \in Account:
     \/ isTransKnown(t, a, debits)
@@ -174,12 +174,13 @@ NonEmptyAccounts(t) ==
     /\ accounts[t].to # Empty
 
 MoneyConstant == \A t \in Transfer: AmountIsPending(t) <=>
-    NonEmptyAccounts(t) /\ (t \in debits[accounts[t].from]) # (t \in credits[accounts[t].to])
+    /\ NonEmptyAccounts(t)
+    /\ t \in debits[accounts[t].from]
+    /\ ~(t \in credits[accounts[t].to])
     
 DifferentAccounts(t) == accounts[t].from # accounts[t].to
 
 EAccounts == [from: EAccount, to: EAccount]
-
 
 pcLabels == pc \in [Transfer -> {"choose_accounts", "choose_amount", "debit", "retryDebit", "credit", "retryCredit", "Done"}]
 
@@ -220,13 +221,6 @@ CommonIndInv ==
 
 IndNat == 0..2
 
-IndInvInteractiveStateConstraints ==
-    /\ \A aF \in Account:
-        \/ credits[aF] = {}
-        \/ \E aT \in Account:
-            /\ aF # aT
-            /\ \E t \in Transfer:
-                /\ t \in debits[aF]
-                /\ t \in credits[aT]
+IndInvInteractiveStateConstraints == \A a \in Account: amountAvail(a) \in IndNat
 
 ====
