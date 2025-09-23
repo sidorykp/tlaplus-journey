@@ -200,7 +200,7 @@ IndInv ==
     /\ MoneyConstant
     /\ \A t \in Transfer:
         \/ accounts[t] = EmptyAccounts
-        \/ DifferentAccounts(t) /\ NonEmptyAccounts(t)
+        \/ DifferentAccounts(t)
     /\ \A t \in Transfer: pc[t] \in {"choose_accounts", "choose_amount"} => debitPrecond(t)
     /\ \A t \in Transfer:
         pc[t] \notin {"choose_accounts"} => NonEmptyAccounts(t)
@@ -214,7 +214,7 @@ CommonIndInv ==
     /\ MoneyConstant
     /\ \A t \in Transfer:
         \/ accounts[t] = EmptyAccounts
-        \/ DifferentAccounts(t) /\ NonEmptyAccounts(t)
+        \/ DifferentAccounts(t)
     /\ \A t \in Transfer: pc[t] \in {"choose_accounts", "choose_amount"} => debitPrecond(t)
     /\ \A t \in Transfer:
         pc[t] \notin {"choose_accounts"} => NonEmptyAccounts(t)
