@@ -20,7 +20,7 @@ EmptyAccounts == [from |-> Empty, to |-> Empty]
         
         amountAvail(a) == Avail + accountCredits(a) - accountDebits(a)
         
-        isTransKnown(t, a, balanceComponent) == a # Empty /\ t \in balanceComponent[a]
+        isTransKnown(t, a, balanceComponent) == t \in balanceComponent[a]
         
         debitPrecond(t) == ~\E a \in Account:
             \/ isTransKnown(t, a, debits)
@@ -66,7 +66,7 @@ EmptyAccounts == [from |-> Empty, to |-> Empty]
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "d4981b31" /\ chksum(tla) = "582b48ad")
+\* BEGIN TRANSLATION (chksum(pcal) = "a7717038" /\ chksum(tla) = "a13efd4f")
 VARIABLES credits, debits, amount, accounts, pc
 
 (* define statement *)
@@ -78,7 +78,7 @@ accountDebits(a) == MapThenSumSet(transAmount, debits[a])
 
 amountAvail(a) == Avail + accountCredits(a) - accountDebits(a)
 
-isTransKnown(t, a, balanceComponent) == a # Empty /\ t \in balanceComponent[a]
+isTransKnown(t, a, balanceComponent) == t \in balanceComponent[a]
 
 debitPrecond(t) == ~\E a \in Account:
     \/ isTransKnown(t, a, debits)
@@ -172,18 +172,11 @@ AmountIsPending(t) ==
 NonEmptyAccounts(t) ==
     /\ accounts[t].from # Empty
     /\ accounts[t].to # Empty
-
-MoneyConstant == \A t \in Transfer: AmountIsPending(t) <=>
-    /\ NonEmptyAccounts(t)
-    /\ t \in debits[accounts[t].from]
-    /\ ~(t \in credits[accounts[t].to])
     
-CreditTotal == MapThenSumSet(accountCredits, Account)
-DebitTotal == MapThenSumSet(accountDebits, Account)
-transPending == {t \in Transfer: AmountIsPending(t)}
-AmountPendingTotal == MapThenSumSet(transAmount, transPending)
-Imbalance == CreditTotal - DebitTotal + AmountPendingTotal
-NoImbalance == Imbalance = 0
+debitAmount(t) == IF NonEmptyAccounts(t) /\ t \in debits[accounts[t].from] THEN amount[t] ELSE 0
+creditAmount(t) == IF NonEmptyAccounts(t) /\ t \in credits[accounts[t].to] THEN amount[t] ELSE 0
+pendingAmount(t) == IF NonEmptyAccounts(t) /\ AmountIsPending(t) THEN amount[t] ELSE 0
+MoneyConstant == \A t \in Transfer: debitAmount(t) = pendingAmount(t) + creditAmount(t)
     
 DifferentAccounts(t) == accounts[t].from # accounts[t].to
 
@@ -201,12 +194,10 @@ TypeOK ==
 Inv ==
     /\ TypeOK
     /\ MoneyConstant
-\*    /\ NoImbalance
 
 IndInv ==
     /\ TypeOK
     /\ MoneyConstant
-\*    /\ NoImbalance
     /\ \A t \in Transfer:
         \/ accounts[t] = EmptyAccounts
         \/ DifferentAccounts(t) /\ NonEmptyAccounts(t)
