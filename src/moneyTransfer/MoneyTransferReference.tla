@@ -176,7 +176,8 @@ NonEmptyAccounts(t) ==
 debitAmount(t) == IF NonEmptyAccounts(t) /\ t \in debits[accounts[t].from] THEN amount[t] ELSE 0
 creditAmount(t) == IF NonEmptyAccounts(t) /\ t \in credits[accounts[t].to] THEN amount[t] ELSE 0
 pendingAmount(t) == IF NonEmptyAccounts(t) /\ AmountIsPending(t) THEN amount[t] ELSE 0
-MoneyConstant == \A t \in Transfer: debitAmount(t) = pendingAmount(t) + creditAmount(t)
+moneyConstantForTrans(t) == debitAmount(t) = pendingAmount(t) + creditAmount(t)
+MoneyConstant == \A t \in Transfer: moneyConstantForTrans(t)
     
 DifferentAccounts(t) == accounts[t].from # accounts[t].to
 
