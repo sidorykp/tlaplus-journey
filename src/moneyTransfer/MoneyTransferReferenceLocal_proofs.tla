@@ -106,4 +106,66 @@ PROVE IndInv'
     <2> QED BY <2>1
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5
 
+
+THEOREM debit_IndInv == ASSUME IndInv, NEW self \in Transfer, debit(self)
+PROVE IndInv'
+<1> USE DEF debit, IndInv, TypeOK
+<1> DEFINE accountFrom == accounts[self].from
+<1> DEFINE accountTo == accounts[self].to
+<1>1 TypeOK' BY DEF pcLabels
+<1>2 MoneyConstant'
+    <2> USE DEF MoneyConstant, debitAmount, pendingAmount, creditAmount, moneyConstantForTrans
+    <2>1 moneyConstantForTrans(self)'
+        <3>1 CASE ~debitPrecond(self)
+            <4> QED BY <3>1 DEF AmountIsPending, creditPrecond, pcLabels
+        <3>2 CASE debitPrecond(self)
+            <4>1 CASE debits' # debits
+                <5>1 (self \in debits[accountFrom])' BY <3>2, <4>1
+                <5>2 (debitAmount(self) = amount[self])' BY <5>1 DEF NonEmptyAccounts
+                <5>3 accountTo \in Account BY DEF NonEmptyAccounts, EmptyAccounts, EAccounts, EAccount
+                <5>4 ~(self \in credits[accountTo])' BY <3>2, <5>3 DEF debitPrecond, isTransKnown
+                <5>5 (creditAmount(self) = 0)' BY <5>4
+                <5>6 ~(self \in debits[accountTo]) BY <3>2, <5>3 DEF debitPrecond, creditPrecond, isTransKnown
+                <5>7 accountTo # accountFrom BY DEF NonEmptyAccounts, DifferentAccounts, EmptyAccounts
+                <5>8 debits[accountTo]' = debits[accountTo] BY <3>2, <5>3, <5>7 DEF debitPrecond
+                <5>9 ~(self \in debits[accountTo])' BY <5>6, <5>8
+                <5>10 (pendingAmount(self) = amount[self])' BY <3>2, <4>1, <5>4, <5>9 DEF NonEmptyAccounts,
+                    AmountIsPending, creditPrecond, debitPrecond, isTransKnown, pcLabels
+                <5> QED BY <5>2, <5>5, <5>10
+            <4>2 CASE debits' = debits
+                <5> QED BY <3>2, <4>2 DEF AmountIsPending, creditPrecond, pcLabels
+            <4> QED BY <4>1, <4>2
+        <3> QED BY <3>1, <3>2
+    <2>2 ASSUME NEW t \in Transfer \ {self} PROVE moneyConstantForTrans(t)' = moneyConstantForTrans(t)
+        <3>1 CASE ~debitPrecond(self)
+            <4> QED BY <3>1 DEF moneyConstantForTrans, NonEmptyAccounts, AmountIsPending, creditPrecond, pcLabels
+        <3>2 CASE debitPrecond(self)
+            <4>1 CASE debits' # debits
+                <5>11 (t \in debits[accountFrom])' <=> t \in debits[accountFrom] BY <2>2, <4>1
+                <5>10 debitAmount(t)' = debitAmount(t) BY <5>11 DEF NonEmptyAccounts,
+                    EmptyAccounts, EAccounts, EAccount
+                <5>12 creditAmount(t)' = creditAmount(t) BY <2>2 DEF NonEmptyAccounts
+                <5>13 pendingAmount(t)' = pendingAmount(t) BY <2>2 DEF NonEmptyAccounts,
+                    AmountIsPending, EmptyAccounts, EAccounts, EAccount, creditPrecond, isTransKnown, pcLabels
+                <5> QED BY <5>10, <5>12, <5>13
+            <4>2 CASE debits' = debits
+                <5> QED BY <4>2 DEF moneyConstantForTrans, NonEmptyAccounts, AmountIsPending, creditPrecond, pcLabels
+            <4> QED BY <4>1, <4>2
+        <3> QED BY <3>1, <3>2
+    <2> QED BY <2>1, <2>2
+<1>3 \A t \in Transfer: (accounts[t] = EmptyAccounts \/ DifferentAccounts(t))'
+    BY DEF DifferentAccounts, EmptyAccounts, EAccounts, EAccount
+<1>4 \A t \in Transfer: (pc[t] \in {"choose_accounts", "choose_amount"} => debitPrecond(t))'
+    BY DEF pcLabels, debitPrecond, isTransKnown
+<1>5 \A t \in Transfer: (pc[t] \notin {"choose_accounts"} => NonEmptyAccounts(t))'
+    <2> USE DEF pcLabels, NonEmptyAccounts
+    <2>1 (pc[self] \notin {"choose_accounts"} => NonEmptyAccounts(self))'
+        <3>1 accountFrom' # Empty BY EmptyAssumption, AccountAssumption
+        <3>2 accountTo' # Empty BY EmptyAssumption, AccountAssumption
+        <3>3 NonEmptyAccounts(self)'
+            BY <3>1, <3>2
+        <3> QED BY <3>3
+    <2> QED BY <2>1
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5
+
 ====
