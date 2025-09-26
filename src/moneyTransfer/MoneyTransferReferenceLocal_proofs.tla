@@ -25,8 +25,11 @@ LEMMA stateConstraints == ASSUME IndInv, NEW self \in Transfer,
     \/ choose_amount(self)
     \/ debit(self)
     \/ retryDebit(self)
+    \/ credit(self)
+    \/ retryCredit(self)
 PROVE StateConstraints'
-<1> USE DEF IndInv, StateConstraints, TypeOK, choose_accounts, choose_amount, debit, retryDebit
+<1> USE DEF IndInv, StateConstraints, TypeOK,
+    choose_accounts, choose_amount, debit, retryDebit, credit, retryCredit
 <1>1 \A t \in Transfer: (accounts[t] = EmptyAccounts \/ DifferentAccounts(t))'
     BY DEF DifferentAccounts, EmptyAccounts, EAccounts, EAccount
 <1>2 \A t \in Transfer: (pc[t] \in {"choose_accounts", "choose_amount"} => debitPrecond(t))'
@@ -48,8 +51,9 @@ LEMMA otherTransfers_moneyConstantForTrans == ASSUME IndInv, NEW self \in Transf
     \/ choose_accounts(self)
     \/ choose_amount(self)
     \/ retryDebit(self)
+    \/ retryCredit(self)
 PROVE moneyConstantForTrans(t)' = moneyConstantForTrans(t)
-<1> USE DEF choose_accounts, choose_amount, retryDebit, IndInv, StateConstraints, TypeOK,
+<1> USE DEF choose_accounts, choose_amount, retryDebit, retryCredit, IndInv, StateConstraints, TypeOK,
      debitAmount, pendingAmount, creditAmount, moneyConstantForTrans
 <1>1 NonEmptyAccounts(t)' = NonEmptyAccounts(t)
     BY DEF NonEmptyAccounts
