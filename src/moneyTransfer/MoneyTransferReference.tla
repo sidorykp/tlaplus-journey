@@ -211,18 +211,6 @@ IndInv ==
 
 IndSpec == IndInv /\ [][Next]_vars
 
-CommonIndInv ==
-    /\ amount \in [Transfer -> Nat]
-    /\ accounts \in [Transfer -> EAccounts]
-    /\ pcLabels
-    /\ MoneyConstant
-    /\ \A t \in Transfer:
-        \/ accounts[t] = EmptyAccounts
-        \/ DifferentAccounts(t)
-    /\ \A t \in Transfer: pc[t] \in {"choose_accounts", "choose_amount"} => debitPrecond(t)
-    /\ \A t \in Transfer:
-        pc[t] \notin {"choose_accounts"} => NonEmptyAccounts(t)
-
 IndNat == 0..2
 
 IndInvInteractiveStateConstraints == \A a \in Account: amountAvail(a) \in IndNat
