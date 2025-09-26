@@ -42,6 +42,24 @@ PROVE StateConstraints'
 <1> QED BY <1>1, <1>2, <1>3
 
 
+LEMMA otherTransfers_moneyConstantForTrans == ASSUME IndInv, NEW self \in Transfer,
+    NEW t \in Transfer \ {self},
+    \/ choose_accounts(self)
+    \/ choose_amount(self)
+PROVE moneyConstantForTrans(t)' = moneyConstantForTrans(t)
+<1> USE DEF choose_accounts, choose_amount, IndInv, StateConstraints, TypeOK,
+     debitAmount, pendingAmount, creditAmount, moneyConstantForTrans
+<1>1 NonEmptyAccounts(t)' = NonEmptyAccounts(t)
+    BY DEF NonEmptyAccounts
+<1>2 debitAmount(t)' = debitAmount(t) BY <1>1
+<1>3 creditAmount(t)' = creditAmount(t) BY <1>1
+<1>4 pc[t]' = pc[t] BY DEF pcLabels
+<1>5 creditPrecond(t)' = creditPrecond(t) BY DEF creditPrecond
+<1>6 pendingAmount(t)' = pendingAmount(t)
+    BY <1>1, <1>4, <1>5 DEF AmountIsPending
+<1> QED BY <1>2, <1>3, <1>6
+
+
 THEOREM choose_accounts_IndInv == ASSUME IndInv, NEW self \in Transfer, choose_accounts(self)
 PROVE IndInv'
 <1> USE DEF choose_accounts, IndInv, StateConstraints, TypeOK
@@ -60,15 +78,7 @@ PROVE IndInv'
         <3>6 pendingAmount(self)' = 0 BY <3>5
         <3> QED BY <3>2, <3>3, <3>6
     <2>2 ASSUME NEW t \in Transfer \ {self} PROVE moneyConstantForTrans(t)' = moneyConstantForTrans(t)
-        <3>1 NonEmptyAccounts(t)' = NonEmptyAccounts(t)
-            BY DEF NonEmptyAccounts
-        <3>2 debitAmount(t)' = debitAmount(t) BY <3>1
-        <3>3 creditAmount(t)' = creditAmount(t) BY <3>1
-        <3>4 pc[t]' = pc[t] BY DEF pcLabels
-        <3>5 creditPrecond(t)' = creditPrecond(t) BY DEF creditPrecond
-        <3>6 pendingAmount(t)' = pendingAmount(t)
-            BY <3>1, <3>4, <3>5 DEF AmountIsPending
-        <3> QED BY <3>2, <3>3, <3>6
+        BY otherTransfers_moneyConstantForTrans
     <2> QED BY <2>1, <2>2
 <1>3 StateConstraints' BY stateConstraints
 <1> QED BY <1>1, <1>2, <1>3
@@ -91,15 +101,7 @@ PROVE IndInv'
         <3>8 pendingAmount(self)' = 0 BY <3>7
         <3> QED BY <3>3, <3>5, <3>8
     <2>2 ASSUME NEW t \in Transfer \ {self} PROVE moneyConstantForTrans(t)' = moneyConstantForTrans(t)
-        <3>1 NonEmptyAccounts(t)' = NonEmptyAccounts(t)
-            BY DEF NonEmptyAccounts
-        <3>2 debitAmount(t)' = debitAmount(t) BY <3>1
-        <3>3 creditAmount(t)' = creditAmount(t) BY <3>1
-        <3>4 pc[t]' = pc[t] BY DEF pcLabels
-        <3>5 creditPrecond(t)' = creditPrecond(t) BY DEF creditPrecond
-        <3>6 pendingAmount(t)' = pendingAmount(t)
-            BY <3>1, <3>4, <3>5 DEF AmountIsPending
-        <3> QED BY <3>2, <3>3, <3>6
+        BY otherTransfers_moneyConstantForTrans
     <2> QED BY <2>1, <2>2
 <1>3 StateConstraints' BY stateConstraints
 <1> QED BY <1>1, <1>2, <1>3
