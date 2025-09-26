@@ -196,15 +196,18 @@ Inv ==
     /\ TypeOK
     /\ MoneyConstant
 
-IndInv ==
-    /\ TypeOK
-    /\ MoneyConstant
+StateConstraints ==
     /\ \A t \in Transfer:
         \/ accounts[t] = EmptyAccounts
         \/ DifferentAccounts(t)
     /\ \A t \in Transfer: pc[t] \in {"choose_accounts", "choose_amount"} => debitPrecond(t)
     /\ \A t \in Transfer:
         pc[t] \notin {"choose_accounts"} => NonEmptyAccounts(t)
+
+IndInv ==
+    /\ TypeOK
+    /\ MoneyConstant
+    /\ StateConstraints
 
 IndSpec == IndInv /\ [][Next]_vars
 
