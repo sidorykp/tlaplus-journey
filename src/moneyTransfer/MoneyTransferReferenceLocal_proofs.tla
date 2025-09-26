@@ -163,9 +163,11 @@ PROVE IndInv'
 <1> QED BY <1>1, <1>2, <1>3
 
 
-THEOREM retryDebit_IndInv == ASSUME IndInv, NEW self \in Transfer, retryDebit(self)
+THEOREM retryDebitCredit_IndInv == ASSUME IndInv, NEW self \in Transfer,
+    \/ retryDebit(self)
+    \/ retryCredit(self)
 PROVE IndInv'
-<1> USE DEF retryDebit, IndInv, StateConstraints, TypeOK
+<1> USE DEF retryDebit, retryCredit, IndInv, StateConstraints, TypeOK
 <1>1 TypeOK'
     <2>1 accounts' \in [Transfer -> EAccounts] BY DEF EmptyAccounts, EAccounts, EAccount
     <2>2 pcLabels' BY DEF pcLabels
@@ -184,5 +186,6 @@ PROVE IndInv'
     <2> QED BY <2>1, <2>2
 <1>3 StateConstraints' BY stateConstraints
 <1> QED BY <1>1, <1>2, <1>3
+
 
 ====
