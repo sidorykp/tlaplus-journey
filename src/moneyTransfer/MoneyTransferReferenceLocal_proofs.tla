@@ -59,14 +59,14 @@ PROVE IndInv'
         <3>5 ~(AmountIsPending(self))' BY DEF AmountIsPending, creditPrecond, debitPrecond, isTransKnown
         <3>6 pendingAmount(self)' = 0 BY <3>5
         <3> QED BY <3>2, <3>3, <3>6
-    <2>2 \A t \in Transfer \ {self}: moneyConstantForTrans(t)' = moneyConstantForTrans(t)
-        <3>1 \A t \in Transfer \ {self}: NonEmptyAccounts(t)' = NonEmptyAccounts(t)
+    <2>2 ASSUME NEW t \in Transfer \ {self} PROVE moneyConstantForTrans(t)' = moneyConstantForTrans(t)
+        <3>1 NonEmptyAccounts(t)' = NonEmptyAccounts(t)
             BY DEF NonEmptyAccounts
-        <3>2 \A t \in Transfer \ {self}: debitAmount(t)' = debitAmount(t) BY <3>1
-        <3>3 \A t \in Transfer \ {self}: creditAmount(t)' = creditAmount(t) BY <3>1
-        <3>4 \A t \in Transfer \ {self}: pc[t]' = pc[t] BY DEF pcLabels
-        <3>5 \A t \in Transfer \ {self}: creditPrecond(t)' = creditPrecond(t) BY DEF creditPrecond
-        <3>6 \A t \in Transfer \ {self}: pendingAmount(t)' = pendingAmount(t)
+        <3>2 debitAmount(t)' = debitAmount(t) BY <3>1
+        <3>3 creditAmount(t)' = creditAmount(t) BY <3>1
+        <3>4 pc[t]' = pc[t] BY DEF pcLabels
+        <3>5 creditPrecond(t)' = creditPrecond(t) BY DEF creditPrecond
+        <3>6 pendingAmount(t)' = pendingAmount(t)
             BY <3>1, <3>4, <3>5 DEF AmountIsPending
         <3> QED BY <3>2, <3>3, <3>6
     <2> QED BY <2>1, <2>2
@@ -90,14 +90,14 @@ PROVE IndInv'
         <3>7 ~(AmountIsPending(self))' BY <3>1, <3>4 DEF AmountIsPending, creditPrecond, debitPrecond, isTransKnown
         <3>8 pendingAmount(self)' = 0 BY <3>7
         <3> QED BY <3>3, <3>5, <3>8
-    <2>2 \A t \in Transfer \ {self}: moneyConstantForTrans(t)' = moneyConstantForTrans(t)
-        <3>1 \A t \in Transfer \ {self}: NonEmptyAccounts(t)' = NonEmptyAccounts(t)
+    <2>2 ASSUME NEW t \in Transfer \ {self} PROVE moneyConstantForTrans(t)' = moneyConstantForTrans(t)
+        <3>1 NonEmptyAccounts(t)' = NonEmptyAccounts(t)
             BY DEF NonEmptyAccounts
-        <3>2 \A t \in Transfer \ {self}: debitAmount(t)' = debitAmount(t) BY <3>1
-        <3>3 \A t \in Transfer \ {self}: creditAmount(t)' = creditAmount(t) BY <3>1
-        <3>4 \A t \in Transfer \ {self}: pc[t]' = pc[t] BY DEF pcLabels
-        <3>5 \A t \in Transfer \ {self}: creditPrecond(t)' = creditPrecond(t) BY DEF creditPrecond
-        <3>6 \A t \in Transfer \ {self}: pendingAmount(t)' = pendingAmount(t)
+        <3>2 debitAmount(t)' = debitAmount(t) BY <3>1
+        <3>3 creditAmount(t)' = creditAmount(t) BY <3>1
+        <3>4 pc[t]' = pc[t] BY DEF pcLabels
+        <3>5 creditPrecond(t)' = creditPrecond(t) BY DEF creditPrecond
+        <3>6 pendingAmount(t)' = pendingAmount(t)
             BY <3>1, <3>4, <3>5 DEF AmountIsPending
         <3> QED BY <3>2, <3>3, <3>6
     <2> QED BY <2>1, <2>2
