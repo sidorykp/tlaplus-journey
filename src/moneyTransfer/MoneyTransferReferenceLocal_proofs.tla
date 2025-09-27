@@ -163,6 +163,55 @@ PROVE IndInv'
 <1> QED BY <1>1, <1>2, <1>3
 
 
+THEOREM credit_IndInv == ASSUME IndInv, NEW self \in Transfer, credit(self)
+PROVE IndInv'
+<1> USE DEF credit, IndInv, StateConstraints, TypeOK
+<1> DEFINE accountFrom == accounts[self].from
+<1> DEFINE accountTo == accounts[self].to
+<1>1 TypeOK' BY DEF pcLabels
+<1>2 MoneyConstant'
+    <2> USE DEF MoneyConstant, debitAmount, pendingAmount, creditAmount, moneyConstantForTrans
+    <2>1 moneyConstantForTrans(self)'
+        <3>1 CASE ~creditPrecond(self)
+            <4> QED BY <3>1 DEF AmountIsPending, creditPrecond, pcLabels
+        <3>2 CASE creditPrecond(self)
+            <4>1 CASE credits' # credits
+                <5>1 (self \in credits[accountTo])' BY <3>2, <4>1
+                <5>2 (creditAmount(self) = amount[self])' BY <5>1 DEF NonEmptyAccounts
+                <5>3 accountFrom \in Account BY DEF NonEmptyAccounts, EmptyAccounts, EAccounts, EAccount
+                <5>4 (self \in debits[accountFrom])' BY <3>2, <5>3 DEF creditPrecond, isTransKnown
+                <5>5 (debitAmount(self) = amount[self])' BY <5>4 DEF NonEmptyAccounts
+                <5>6 ~(self \in credits[accountTo]) BY <3>2, <4>1 DEF creditPrecond, isTransKnown
+                <5>7 accountTo # accountFrom BY DEF NonEmptyAccounts, DifferentAccounts, EmptyAccounts
+                <5>8 debits[accountTo]' = debits[accountTo] BY <3>2, <5>7 DEF debitPrecond
+                <5>9 (pendingAmount(self) = 0)' BY <3>2, <4>1, <5>4 DEF NonEmptyAccounts,
+                    AmountIsPending, creditPrecond, debitPrecond, isTransKnown, pcLabels
+                <5> QED BY <5>2, <5>5, <5>9
+            <4>2 CASE credits' = credits
+                <5> QED BY <3>2, <4>2 DEF AmountIsPending, creditPrecond, pcLabels
+            <4> QED BY <4>1, <4>2
+        <3> QED BY <3>1, <3>2
+    <2>2 ASSUME NEW t \in Transfer \ {self} PROVE moneyConstantForTrans(t)' = moneyConstantForTrans(t)
+        <3>1 CASE ~creditPrecond(self)
+            <4> QED BY <3>1 DEF moneyConstantForTrans, NonEmptyAccounts, AmountIsPending, creditPrecond, pcLabels
+        <3>2 CASE creditPrecond(self)
+            <4>1 CASE credits' # credits
+                <5>1 (t \in credits[accountTo])' <=> t \in credits[accountTo] BY <2>2, <4>1
+                <5>2 creditAmount(t)' = creditAmount(t) BY <5>1 DEF NonEmptyAccounts,
+                    EmptyAccounts, EAccounts, EAccount
+                <5>3 debitAmount(t)' = debitAmount(t) BY <2>2 DEF NonEmptyAccounts
+                <5>4 pendingAmount(t)' = pendingAmount(t) BY <2>2 DEF NonEmptyAccounts,
+                    AmountIsPending, EmptyAccounts, EAccounts, EAccount, creditPrecond, isTransKnown, pcLabels
+                <5> QED BY <5>2, <5>3, <5>4
+            <4>2 CASE credits' = credits
+                <5> QED BY <4>2 DEF moneyConstantForTrans, NonEmptyAccounts, AmountIsPending, creditPrecond, pcLabels
+            <4> QED BY <4>1, <4>2
+        <3> QED BY <3>1, <3>2
+    <2> QED BY <2>1, <2>2
+<1>3 StateConstraints' BY stateConstraints
+<1> QED BY <1>1, <1>2, <1>3
+
+
 THEOREM retryDebitCredit_IndInv == ASSUME IndInv, NEW self \in Transfer,
     \/ retryDebit(self)
     \/ retryCredit(self)
