@@ -195,7 +195,7 @@ PROVE IndInv'
     <2>1 moneyConstantForTrans(self)'
         <3>1 debitAmount(self)' = debitAmount(self) BY DEF NonEmptyAccounts
         <3>2 creditAmount(self)' = creditAmount(self) BY DEF NonEmptyAccounts
-        <3>3 (AmountIsPending(self))' = AmountIsPending(self) BY DEF AmountIsPending, creditPrecond, debitPrecond,
+        <3>3 AmountIsPending(self)' = AmountIsPending(self) BY DEF AmountIsPending, creditPrecond,
             isTransKnown, pcLabels
         <3>4 pendingAmount(self)' = pendingAmount(self) BY <3>3 DEF NonEmptyAccounts
         <3> QED BY <3>1, <3>2, <3>4
