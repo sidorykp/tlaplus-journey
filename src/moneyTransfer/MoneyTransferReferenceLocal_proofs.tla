@@ -119,18 +119,21 @@ PROVE IndInv'
         <3>1 CASE ~debitPrecond(self) \/ debits' = debits
             <4> QED BY <3>1 DEF AmountIsPending, creditPrecond, pcLabels
         <3>2 CASE debitPrecond(self) /\ debits' # debits
-            <4>1 (self \in debits[accountFrom])' BY <3>2
-            <4>2 (debitAmount(self) = amount[self])' BY <4>1 DEF NonEmptyAccounts
-            <4>3 accountTo \in Account BY DEF NonEmptyAccounts, EmptyAccounts, EAccounts, EAccount
-            <4>4 ~(self \in credits[accountTo])' BY <3>2, <4>3 DEF debitPrecond, isTransKnown
-            <4>5 (creditAmount(self) = 0)' BY <4>4
-            <4>6 ~(self \in debits[accountTo]) BY <3>2, <4>3 DEF debitPrecond, isTransKnown
-            <4>7 accountTo # accountFrom BY DEF NonEmptyAccounts, DifferentAccounts, EmptyAccounts
-            <4>8 debits[accountTo]' = debits[accountTo] BY <3>2, <4>3, <4>7
-            <4>9 ~(self \in debits[accountTo])' BY <4>6, <4>8
-            <4>10 (pendingAmount(self) = amount[self])' BY <3>2, <4>4, <4>9 DEF NonEmptyAccounts,
-                AmountIsPending, creditPrecond, debitPrecond, isTransKnown, pcLabels
-            <4> QED BY <4>2, <4>5, <4>10
+            <4>1 (debitAmount(self) = amount[self])'
+                <5>1 (self \in debits[accountFrom])' BY <3>2
+                <5> QED BY <5>1 DEF NonEmptyAccounts
+            <4>2 accountTo \in Account BY DEF NonEmptyAccounts, EmptyAccounts, EAccounts, EAccount
+            <4>3 (creditAmount(self) = 0)'
+                <5>1 ~(self \in credits[accountTo])' BY <3>2, <4>2 DEF debitPrecond, isTransKnown
+                <5> QED BY <5>1
+            <4>4 (pendingAmount(self) = amount[self])'
+                <5>1 ~(self \in debits[accountTo]) BY <3>2, <4>2 DEF debitPrecond, isTransKnown
+                <5>2 accountTo # accountFrom BY DEF NonEmptyAccounts, DifferentAccounts, EmptyAccounts
+                <5>3 debits[accountTo]' = debits[accountTo] BY <3>2, <4>2, <5>2
+                <5>4 ~(self \in debits[accountTo])' BY <5>1, <5>3
+                <5> QED BY <3>2, <5>4 DEF NonEmptyAccounts,
+                    AmountIsPending, creditPrecond, debitPrecond, isTransKnown, pcLabels
+            <4> QED BY <4>1, <4>3, <4>4
         <3> QED BY <3>1, <3>2
     <2>2 ASSUME NEW t \in Transfer \ {self} PROVE moneyConstantForTrans(t)' = moneyConstantForTrans(t)
         <3>1 (t \in debits[accountFrom])' <=> t \in debits[accountFrom] BY <2>2
