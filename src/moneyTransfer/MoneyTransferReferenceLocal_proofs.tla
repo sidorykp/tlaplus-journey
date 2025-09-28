@@ -163,15 +163,14 @@ PROVE IndInv'
             <4>1 CASE credits' # credits
                 <5>1 (self \in credits[accountTo])' BY <3>2, <4>1
                 <5>2 (creditAmount(self) = amount[self])' BY <5>1 DEF NonEmptyAccounts
-                <5>3 accountFrom \in Account BY DEF NonEmptyAccounts, EmptyAccounts, EAccounts, EAccount
-                <5>4 (self \in debits[accountFrom])' BY <3>2, <5>3 DEF creditPrecond, isTransKnown
-                <5>5 (debitAmount(self) = amount[self])' BY <5>4 DEF NonEmptyAccounts
-                <5>6 ~(self \in credits[accountTo]) BY <3>2, <4>1 DEF creditPrecond, isTransKnown
-                <5>7 accountTo # accountFrom BY DEF NonEmptyAccounts, DifferentAccounts, EmptyAccounts
-                <5>8 debits[accountTo]' = debits[accountTo] BY <3>2, <5>7 DEF debitPrecond
-                <5>9 (pendingAmount(self) = 0)' BY <3>2, <4>1, <5>4 DEF NonEmptyAccounts,
+                <5>3 (self \in debits[accountFrom])' BY <3>2 DEF creditPrecond, isTransKnown
+                <5>4 (debitAmount(self) = amount[self])' BY <5>3 DEF NonEmptyAccounts
+                <5>5 ~(self \in credits[accountTo]) BY <3>2, <4>1 DEF creditPrecond, isTransKnown
+                <5>6 accountTo # accountFrom BY DEF NonEmptyAccounts, DifferentAccounts, EmptyAccounts
+                <5>7 debits[accountTo]' = debits[accountTo] BY <3>2, <5>6 DEF debitPrecond
+                <5>8 (pendingAmount(self) = 0)' BY <3>2, <4>1, <5>3 DEF NonEmptyAccounts,
                     AmountIsPending, creditPrecond, debitPrecond, isTransKnown, pcLabels
-                <5> QED BY <5>2, <5>5, <5>9
+                <5> QED BY <5>2, <5>4, <5>8
             <4>2 CASE credits' = credits
                 <5> QED BY <3>2, <4>2 DEF AmountIsPending, creditPrecond, pcLabels
             <4> QED BY <4>1, <4>2
