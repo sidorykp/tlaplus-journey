@@ -1,7 +1,7 @@
 ---- MODULE MoneyTransferReferenceLocal_proofs ----
 EXTENDS MoneyTransferReference, MoneyTransfer_proofsCommon, TLAPS
 
-THEOREM initProperty == ASSUME Init PROVE IndInv
+THEOREM InitProperty == ASSUME Init PROVE IndInv
 <1> USE DEF Init, IndInv, StateConstraints, TypeOK
 <1>1 TypeOK
     <2>1 accounts \in [Transfer -> EAccounts] BY DEF EmptyAccounts, EAccounts, EAccount
@@ -205,4 +205,58 @@ PROVE IndInv'
 <1>3 StateConstraints' BY stateConstraints
 <1> QED BY <1>1, <1>2, <1>3
 
+THEOREM nextNonTerminating == ASSUME IndInv, NEW self \in Transfer, trans(self), ~Terminating
+PROVE IndInv'
+<1>1 CASE choose_accounts(self) BY <1>1, choose_accounts_IndInv
+<1>2 CASE choose_amount(self) BY <1>2, choose_amount_IndInv
+<1>3 CASE debit(self) BY <1>3, debit_IndInv
+<1>4 CASE retryDebit(self) BY <1>4, retryDebitCredit_IndInv
+<1>5 CASE credit(self) BY <1>5, credit_IndInv
+<1>6 CASE retryCredit(self) BY <1>6, retryDebitCredit_IndInv
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6 DEF trans
+
+THEOREM unchangedVarsProperty == ASSUME IndInv, UNCHANGED vars PROVE IndInv'
+<1> USE DEF vars
+<1>1 TypeOK' = TypeOK BY DEF TypeOK, pcLabels
+<1>2 StateConstraints' = StateConstraints
+    <2>1 (/\ \A t \in Transfer:
+            \/ accounts[t] = EmptyAccounts
+            \/ DifferentAccounts(t))' =
+          /\ \A t \in Transfer:
+            \/ accounts[t] = EmptyAccounts
+            \/ DifferentAccounts(t)
+        BY DEF DifferentAccounts, NonEmptyAccounts
+    <2>2 (/\ \A t \in Transfer: pc[t] \in {"choose_accounts", "choose_amount"} => debitPrecond(t))' =
+          /\ \A t \in Transfer: pc[t] \in {"choose_accounts", "choose_amount"} => debitPrecond(t)
+        BY DEF debitPrecond
+    <2>3 (/\ \A t \in Transfer:
+            pc[t] \notin {"choose_accounts"} => NonEmptyAccounts(t))' =
+          /\ \A t \in Transfer:
+            pc[t] \notin {"choose_accounts"} => NonEmptyAccounts(t)
+        BY DEF NonEmptyAccounts
+    <2> QED BY <2>1, <2>2, <2>3 DEF StateConstraints
+<1>3 MoneyConstant' = MoneyConstant
+    BY DEF MoneyConstant, moneyConstantForTrans, debitAmount, pendingAmount, creditAmount,
+        NonEmptyAccounts, AmountIsPending, creditPrecond
+<1> QED BY <1>1, <1>2, <1>3 DEF IndInv
+
+THEOREM NextProperty == IndInv /\ Next => IndInv'
+<1> USE DEF IndInv, Next, Terminating
+<1>1 CASE ~Terminating
+    <2> QED BY <1>1, nextNonTerminating
+<1>2 CASE Terminating
+    <2> QED BY <1>2, unchangedVarsProperty 
+<1> QED BY <1>1, <1>2
+
+THEOREM IndInvPreserved == Spec => []IndInv
+<1>1 IndInv /\ UNCHANGED vars => IndInv'
+    BY unchangedVarsProperty
+<1> QED BY PTL, InitProperty, NextProperty, <1>1 DEF Spec
+
+THEOREM ImplicationProperty == IndInv => Inv
+BY DEF IndInv, Inv
+
+THEOREM InvPreserved == Spec => []Inv
+BY PTL, IndInvPreserved, ImplicationProperty
+    
 ====
