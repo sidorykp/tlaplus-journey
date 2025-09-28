@@ -1,7 +1,6 @@
 ---- MODULE MoneyTransferReferenceLocal_proofs ----
 EXTENDS MoneyTransferReference, MoneyTransfer_proofsCommon, TLAPS
 
-
 THEOREM initProperty == ASSUME Init PROVE IndInv
 <1> USE DEF Init, IndInv, StateConstraints, TypeOK
 <1>1 TypeOK
@@ -18,7 +17,6 @@ THEOREM initProperty == ASSUME Init PROVE IndInv
     <2>1 \A t \in Transfer: pc[t] \in {"choose_accounts"} BY DEF ProcSet
     <2> QED BY <2>1 DEF NonEmptyAccounts, EmptyAccounts
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5
-
 
 LEMMA stateConstraints == ASSUME IndInv, NEW self \in Transfer,
     \/ choose_accounts(self)
@@ -45,7 +43,6 @@ PROVE StateConstraints'
     <2> QED BY <2>1
 <1> QED BY <1>1, <1>2, <1>3
 
-
 LEMMA otherTransfers_moneyConstantForTrans == ASSUME IndInv, NEW self \in Transfer,
     NEW t \in Transfer \ {self},
     \/ choose_accounts(self)
@@ -64,7 +61,6 @@ PROVE moneyConstantForTrans(t)' = moneyConstantForTrans(t)
 <1>6 pendingAmount(t)' = pendingAmount(t)
     BY <1>1, <1>4, <1>5 DEF AmountIsPending
 <1> QED BY <1>2, <1>3, <1>6
-
 
 THEOREM choose_accounts_IndInv == ASSUME IndInv, NEW self \in Transfer, choose_accounts(self)
 PROVE IndInv'
@@ -89,7 +85,6 @@ PROVE IndInv'
 <1>3 StateConstraints' BY stateConstraints
 <1> QED BY <1>1, <1>2, <1>3
 
-
 THEOREM choose_amount_IndInv == ASSUME IndInv, NEW self \in Transfer, choose_amount(self)
 PROVE IndInv'
 <1> USE DEF choose_amount, IndInv, StateConstraints, TypeOK
@@ -111,7 +106,6 @@ PROVE IndInv'
     <2> QED BY <2>1, <2>2
 <1>3 StateConstraints' BY stateConstraints
 <1> QED BY <1>1, <1>2, <1>3
-
 
 THEOREM debit_IndInv == ASSUME IndInv, NEW self \in Transfer, debit(self)
 PROVE IndInv'
@@ -143,25 +137,16 @@ PROVE IndInv'
             <4> QED BY <4>1, <4>2
         <3> QED BY <3>1, <3>2
     <2>2 ASSUME NEW t \in Transfer \ {self} PROVE moneyConstantForTrans(t)' = moneyConstantForTrans(t)
-        <3>1 CASE ~debitPrecond(self)
-            <4> QED BY <3>1 DEF moneyConstantForTrans, NonEmptyAccounts, AmountIsPending, creditPrecond, pcLabels
-        <3>2 CASE debitPrecond(self)
-            <4>1 CASE debits' # debits
-                <5>1 (t \in debits[accountFrom])' <=> t \in debits[accountFrom] BY <2>2, <4>1
-                <5>2 debitAmount(t)' = debitAmount(t) BY <5>1 DEF NonEmptyAccounts,
-                    EmptyAccounts, EAccounts, EAccount
-                <5>3 creditAmount(t)' = creditAmount(t) BY <2>2 DEF NonEmptyAccounts
-                <5>4 pendingAmount(t)' = pendingAmount(t) BY <2>2 DEF NonEmptyAccounts,
-                    AmountIsPending, EmptyAccounts, EAccounts, EAccount, creditPrecond, isTransKnown, pcLabels
-                <5> QED BY <5>2, <5>3, <5>4
-            <4>2 CASE debits' = debits
-                <5> QED BY <4>2 DEF moneyConstantForTrans, NonEmptyAccounts, AmountIsPending, creditPrecond, pcLabels
-            <4> QED BY <4>1, <4>2
-        <3> QED BY <3>1, <3>2
+        <3>1 (t \in debits[accountFrom])' <=> t \in debits[accountFrom] BY <2>2
+        <3>2 debitAmount(t)' = debitAmount(t) BY <3>1 DEF NonEmptyAccounts,
+            EmptyAccounts, EAccounts, EAccount
+        <3>3 creditAmount(t)' = creditAmount(t) BY <3>2 DEF NonEmptyAccounts
+        <3>4 pendingAmount(t)' = pendingAmount(t) BY <3>2 DEF NonEmptyAccounts,
+            AmountIsPending, EmptyAccounts, EAccounts, EAccount, creditPrecond, isTransKnown, pcLabels
+        <3> QED BY <3>2, <3>3, <3>4
     <2> QED BY <2>1, <2>2
 <1>3 StateConstraints' BY stateConstraints
 <1> QED BY <1>1, <1>2, <1>3
-
 
 THEOREM credit_IndInv == ASSUME IndInv, NEW self \in Transfer, credit(self)
 PROVE IndInv'
@@ -192,25 +177,16 @@ PROVE IndInv'
             <4> QED BY <4>1, <4>2
         <3> QED BY <3>1, <3>2
     <2>2 ASSUME NEW t \in Transfer \ {self} PROVE moneyConstantForTrans(t)' = moneyConstantForTrans(t)
-        <3>1 CASE ~creditPrecond(self)
-            <4> QED BY <3>1 DEF moneyConstantForTrans, NonEmptyAccounts, AmountIsPending, creditPrecond, pcLabels
-        <3>2 CASE creditPrecond(self)
-            <4>1 CASE credits' # credits
-                <5>1 (t \in credits[accountTo])' <=> t \in credits[accountTo] BY <2>2, <4>1
-                <5>2 creditAmount(t)' = creditAmount(t) BY <5>1 DEF NonEmptyAccounts,
-                    EmptyAccounts, EAccounts, EAccount
-                <5>3 debitAmount(t)' = debitAmount(t) BY <2>2 DEF NonEmptyAccounts
-                <5>4 pendingAmount(t)' = pendingAmount(t) BY <2>2 DEF NonEmptyAccounts,
-                    AmountIsPending, EmptyAccounts, EAccounts, EAccount, creditPrecond, isTransKnown, pcLabels
-                <5> QED BY <5>2, <5>3, <5>4
-            <4>2 CASE credits' = credits
-                <5> QED BY <4>2 DEF moneyConstantForTrans, NonEmptyAccounts, AmountIsPending, creditPrecond, pcLabels
-            <4> QED BY <4>1, <4>2
-        <3> QED BY <3>1, <3>2
+        <3>1 (t \in credits[accountTo])' <=> t \in credits[accountTo] BY <2>2
+        <3>2 creditAmount(t)' = creditAmount(t) BY <3>1 DEF NonEmptyAccounts,
+            EmptyAccounts, EAccounts, EAccount
+        <3>3 debitAmount(t)' = debitAmount(t) BY <2>2 DEF NonEmptyAccounts
+        <3>4 pendingAmount(t)' = pendingAmount(t) BY <2>2 DEF NonEmptyAccounts,
+            AmountIsPending, EmptyAccounts, EAccounts, EAccount, creditPrecond, isTransKnown, pcLabels
+        <3> QED BY <3>2, <3>3, <3>4
     <2> QED BY <2>1, <2>2
 <1>3 StateConstraints' BY stateConstraints
 <1> QED BY <1>1, <1>2, <1>3
-
 
 THEOREM retryDebitCredit_IndInv == ASSUME IndInv, NEW self \in Transfer,
     \/ retryDebit(self)
@@ -235,6 +211,5 @@ PROVE IndInv'
     <2> QED BY <2>1, <2>2
 <1>3 StateConstraints' BY stateConstraints
 <1> QED BY <1>1, <1>2, <1>3
-
 
 ====
