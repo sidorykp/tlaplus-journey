@@ -156,16 +156,15 @@ PROVE IndInv'
         <3>1 CASE ~creditPrecond(self) \/ credits' = credits
             <4> QED BY <3>1 DEF AmountIsPending, creditPrecond, pcLabels
         <3>2 CASE creditPrecond(self) /\ credits' # credits
-            <4>1 (self \in credits[accountTo])' BY <3>2
-            <4>2 (creditAmount(self) = amount[self])' BY <4>1 DEF NonEmptyAccounts
-            <4>3 (self \in debits[accountFrom])' BY <3>2 DEF creditPrecond, isTransKnown
-            <4>4 (debitAmount(self) = amount[self])' BY <4>3 DEF NonEmptyAccounts
-            <4>5 ~(self \in credits[accountTo]) BY <3>2 DEF creditPrecond, isTransKnown
-            <4>6 accountTo # accountFrom BY DEF NonEmptyAccounts, DifferentAccounts, EmptyAccounts
-            <4>7 debits[accountTo]' = debits[accountTo] BY <3>2, <4>6
-            <4>8 (pendingAmount(self) = 0)' BY <3>2, <4>3 DEF NonEmptyAccounts,
+            <4>1 (creditAmount(self) = amount[self])'
+                <5>1 (self \in credits[accountTo])' BY <3>2
+                <5> QED BY <5>1 DEF NonEmptyAccounts
+            <4>2 (debitAmount(self) = amount[self])'
+                <5>1 (self \in debits[accountFrom])' BY <3>2 DEF creditPrecond, isTransKnown
+                <5> QED BY <5>1 DEF NonEmptyAccounts
+            <4>3 (pendingAmount(self) = 0)' BY <3>2 DEF NonEmptyAccounts,
                 AmountIsPending, creditPrecond, isTransKnown
-            <4> QED BY <4>2, <4>4, <4>8
+            <4> QED BY <4>1, <4>2, <4>3
         <3> QED BY <3>1, <3>2
     <2>2 ASSUME NEW t \in Transfer \ {self} PROVE moneyConstantForTrans(t)' = moneyConstantForTrans(t)
         <3>1 (t \in credits[accountTo])' <=> t \in credits[accountTo] BY <2>2
