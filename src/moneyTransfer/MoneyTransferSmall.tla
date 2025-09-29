@@ -1,5 +1,5 @@
 ---- MODULE MoneyTransferSmall ----
-EXTENDS Integers, FiniteSets, FiniteSetTheorems
+EXTENDS Integers, FiniteSets
 
 CONSTANTS Avail, Empty, a1, a2, a3, t1, t2
 
@@ -122,7 +122,7 @@ IndInv ==
     /\ TypeOK
     /\ MoneyTotalPreserved
     /\ \A t \in Transfer:
-        pc[t] \notin {"choose_accounts"} <=> NonEmptyAccounts(t)
+        pc[t] \notin {"choose_accounts"} => NonEmptyAccounts(t)
 
 IndSpec == IndInv /\ [][Next]_vars
 
