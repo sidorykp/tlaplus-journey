@@ -41,16 +41,22 @@ PROVE IndInv
     BY EmptyAssumption DEF ProcSet, NonEmptyAccounts, EmptyAccounts
 <1> QED BY <1>1, <1>2, <1>3
 
-LEMMA stateConstraints == ASSUME IndInv, NEW self \in Transfer,
+LEMMA TypeOK_StateConstraints == ASSUME IndInv, NEW self \in Transfer,
     \/ choose_accounts(self)
     \/ choose_amount(self)
     \/ debit(self)
     \/ credit(self)
-PROVE StateConstraints'
+PROVE TypeOK' /\ StateConstraints'
 <1> USE DEF IndInv, StateConstraints, TypeOK, Account, Transfer, choose_accounts, choose_amount, debit, credit
-<1>1 \A t \in Transfer: (pc[t] \notin {"choose_accounts"})' => NonEmptyAccounts(t)'
+<1>1 TypeOK'
+    <2>1 pcLabels' BY DEF pcLabels
+    <2>2 bal' \in [Account -> Int] BY AvailAssumption
+    <2>3 accounts' \in [Transfer -> EAccounts] BY EmptyAssumption
+        DEF EmptyAccounts, EAccounts, EAccount
+    <2> QED BY <2>1, <2>2, <2>3
+<1>2 \A t \in Transfer: (pc[t] \notin {"choose_accounts"})' => NonEmptyAccounts(t)'
     BY EmptyAssumption DEF NonEmptyAccounts, pcLabels
-<1> QED BY <1>1
+<1> QED BY <1>1, <1>2
 
 LEMMA otherTransfersAmountPending == ASSUME IndInv, NEW self \in Transfer,
     \/ debit(self)
@@ -64,33 +70,21 @@ THEOREM choose_accounts_amount_IndInv == ASSUME IndInv, NEW self \in Transfer,
     \/ choose_amount(self)
 PROVE IndInv'
 <1> USE DEF IndInv, StateConstraints, TypeOK, Account, Transfer, choose_accounts, choose_amount
-<1>1 TypeOK'
-    <2>1 pcLabels' BY DEF pcLabels
-    <2>2 bal' \in [Account -> Int] BY AvailAssumption
-    <2>3 accounts' \in [Transfer -> EAccounts] BY EmptyAssumption
-        DEF EmptyAccounts, EAccounts, EAccount
-    <2> QED BY <2>1, <2>2, <2>3
-<1>2 MoneyTotalPreserved'
+<1>1 MoneyTotalPreserved'
     <2>1 \A t \in Transfer: amountPending(t)' = amountPending(t) BY DEF amountPending, pcLabels
     <2> QED BY <2>1 DEF MoneyTotalPreserved, MoneyTotal
-<1>3 StateConstraints' BY stateConstraints
-<1> QED BY <1>1, <1>2, <1>3
+<1> QED BY <1>1, TypeOK_StateConstraints
 
 THEOREM debit_IndInv == ASSUME IndInv, NEW self \in Transfer, debit(self)
 PROVE IndInv'
 <1> USE DEF IndInv, StateConstraints, TypeOK, Account, Transfer, debit
-<1>1 TypeOK'
-    <2>1 pcLabels' BY DEF pcLabels
-    <2>2 bal' \in [Account -> Int] BY AvailAssumption
-    <2>3 accounts' \in [Transfer -> EAccounts] BY EmptyAssumption
-        DEF EmptyAccounts, EAccounts, EAccount
-    <2> QED BY <2>1, <2>2, <2>3
 <1> DEFINE a == accounts[self].from
+<1> DEFINE balInv == bal[a] + amountPending(self)
 <1> DEFINE selfMoneyTotal == bal[a1] + bal[a2] + bal[a3] + amountPending(self)
-<1>2 MoneyTotalPreserved'
+<1>1 MoneyTotalPreserved'
     <2>1 a \in Account BY DEF EAccounts, EAccount, NonEmptyAccounts
     <2>2 bal[a] \in Int BY <2>1
-    <2>3 /\ (bal[a] + amountPending(self))' = bal[a] + amountPending(self)
+    <2>3 /\ balInv' = balInv
          /\ bal[a]' \in Int
         <3>1 bal[a]' = bal[a] - amount[self] BY <2>1
         <3>2 amountPending(self) = 0 BY DEF amountPending
@@ -102,24 +96,18 @@ PROVE IndInv'
         BY AccountsUniqueAssumption, <2>2, <2>3, <2>4, <2>5 DEF amountPending
     <2> QED BY <2>6, otherTransfersAmountPending, TransfersUniqueAssumption
         DEF MoneyTotalPreserved, MoneyTotal, amountPending
-<1>3 StateConstraints' BY stateConstraints
-<1> QED BY <1>1, <1>2, <1>3
+<1> QED BY <1>1, TypeOK_StateConstraints
 
 THEOREM credit_IndInv == ASSUME IndInv, NEW self \in Transfer, credit(self)
 PROVE IndInv'
 <1> USE DEF IndInv, StateConstraints, TypeOK, Account, Transfer, credit
-<1>1 TypeOK'
-    <2>1 pcLabels' BY DEF pcLabels
-    <2>2 bal' \in [Account -> Int] BY AvailAssumption
-    <2>3 accounts' \in [Transfer -> EAccounts] BY EmptyAssumption
-        DEF EmptyAccounts, EAccounts, EAccount
-    <2> QED BY <2>1, <2>2, <2>3
 <1> DEFINE a == accounts[self].to
+<1> DEFINE balInv == bal[a] + amountPending(self)
 <1> DEFINE selfMoneyTotal == bal[a1] + bal[a2] + bal[a3] + amountPending(self)
-<1>2 MoneyTotalPreserved'
+<1>1 MoneyTotalPreserved'
     <2>1 a \in Account BY DEF EAccounts, EAccount, NonEmptyAccounts
     <2>2 bal[a] \in Int BY <2>1
-    <2>3 /\ (bal[a] + amountPending(self))' = bal[a] + amountPending(self)
+    <2>3 /\ balInv' = balInv
          /\ bal[a]' \in Int
         <3>1 bal[a]' = bal[a] + amount[self] BY <2>1
         <3>2 amountPending(self) = amount[self] BY DEF amountPending
@@ -131,8 +119,7 @@ PROVE IndInv'
         BY AccountsUniqueAssumption, <2>2, <2>3, <2>4, <2>5 DEF amountPending
     <2> QED BY <2>6, otherTransfersAmountPending, TransfersUniqueAssumption
         DEF MoneyTotalPreserved, MoneyTotal, amountPending
-<1>3 StateConstraints' BY stateConstraints
-<1> QED BY <1>1, <1>2, <1>3
+<1> QED BY <1>1, TypeOK_StateConstraints
 
 THEOREM NextNonTerminating == ASSUME IndInv, NEW self \in Transfer, trans(self), ~Terminating
 PROVE IndInv'
