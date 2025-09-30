@@ -33,12 +33,12 @@ PROVE IndInv
     <2> QED BY <2>1, <2>2, <2>3
 <1>2 MoneyTotalPreserved
     <2>1 bal[a1] + bal[a2] + bal[a3] = 3 * Avail BY AvailAssumption
-    <2>2 \A t \in Transfer: amountPending(t) = 0 BY DEF amountPending, pcLabels
+    <2>2 \A t \in Transfer: amountPending(t) = 0 BY DEF amountPending
     <2>3 \A a \in Account: bal[a] \in Int BY AvailAssumption
     <2>4 bal[a1] + bal[a2] + bal[a3] \in Int BY <2>3
     <2> QED BY <2>1, <2>2, <2>3, AccountCardinality DEF MoneyTotalPreserved, MoneyTotal
 <1>3 \A t \in Transfer: pc[t] \notin {"choose_accounts"} => NonEmptyAccounts(t)
-    BY EmptyAssumption DEF pcLabels, ProcSet, NonEmptyAccounts, EmptyAccounts
+    BY EmptyAssumption DEF ProcSet, NonEmptyAccounts, EmptyAccounts
 <1> QED BY <1>1, <1>2, <1>3
 
 THEOREM choose_accounts_amount_IndInv == ASSUME IndInv, NEW self \in Transfer,
@@ -72,7 +72,7 @@ PROVE IndInv'
 <1>2 MoneyTotalPreserved'
     <2>1 a \in Account BY DEF EAccounts, EAccount, NonEmptyAccounts
     <2>2 bal[a]' = bal[a] - amount[self] BY <2>1
-    <2>3 amountPending(self) = 0 BY DEF amountPending, pcLabels
+    <2>3 amountPending(self) = 0 BY DEF amountPending
     <2>4 amountPending(self)' = amount[self] BY DEF amountPending, pcLabels
     <2>5 (bal[a] + amountPending(self))' = bal[a] + amountPending(self) BY <2>1, <2>3, <2>4
     <2>6 bal[a1] + bal[a2] + bal[a3] + amountPending(self) \in Int BY DEF amountPending
@@ -104,7 +104,7 @@ PROVE IndInv'
     <2>1 a \in Account BY DEF EAccounts, EAccount, NonEmptyAccounts
     <2>2 bal[a]' = bal[a] + amount[self] BY <2>1
     <2>3 amountPending(self)' = 0 BY DEF amountPending, pcLabels
-    <2>4 amountPending(self) = amount[self] BY DEF amountPending, pcLabels
+    <2>4 amountPending(self) = amount[self] BY DEF amountPending
     <2>5 (bal[a] + amountPending(self))' = bal[a] + amountPending(self) BY <2>1, <2>3, <2>4
     <2>6 bal[a1] + bal[a2] + bal[a3] + amountPending(self) \in Int BY DEF amountPending
     <2>7 (bal[a1] + bal[a2] + bal[a3] + amountPending(self))' \in Int BY DEF amountPending
