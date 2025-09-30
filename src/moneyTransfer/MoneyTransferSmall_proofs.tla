@@ -24,7 +24,7 @@ LEMMA AccountCardinality == Cardinality(Account) = 3
 
 THEOREM InitProperty == ASSUME Init
 PROVE IndInv
-<1> USE DEF Init, IndInv, TypeOK, Account, Transfer
+<1> USE DEF Init, IndInv, StateConstraints, TypeOK, Account, Transfer
 <1>1 TypeOK
     <2>1 pcLabels BY DEF pcLabels, ProcSet
     <2>2 bal \in [Account -> Int] BY AvailAssumption
@@ -37,15 +37,26 @@ PROVE IndInv
     <2>3 \A a \in Account: bal[a] \in Int BY AvailAssumption
     <2>4 bal[a1] + bal[a2] + bal[a3] \in Int BY <2>3
     <2> QED BY <2>1, <2>2, <2>3, AccountCardinality DEF MoneyTotalPreserved, MoneyTotal
-<1>3 \A t \in Transfer: pc[t] \notin {"choose_accounts"} => NonEmptyAccounts(t)
+<1>3 StateConstraints
     BY EmptyAssumption DEF ProcSet, NonEmptyAccounts, EmptyAccounts
 <1> QED BY <1>1, <1>2, <1>3
+
+LEMMA stateConstraints == ASSUME IndInv, NEW self \in Transfer,
+    \/ choose_accounts(self)
+    \/ choose_amount(self)
+    \/ debit(self)
+    \/ credit(self)
+PROVE StateConstraints'
+<1> USE DEF IndInv, StateConstraints, TypeOK, Account, Transfer, choose_accounts, choose_amount, debit, credit
+<1>1 \A t \in Transfer: (pc[t] \notin {"choose_accounts"})' => NonEmptyAccounts(t)'
+    BY EmptyAssumption DEF NonEmptyAccounts, pcLabels
+<1> QED BY <1>1
 
 THEOREM choose_accounts_amount_IndInv == ASSUME IndInv, NEW self \in Transfer,
     \/ choose_accounts(self)
     \/ choose_amount(self)
 PROVE IndInv'
-<1> USE DEF Init, IndInv, TypeOK, Account, Transfer, choose_accounts, choose_amount
+<1> USE DEF IndInv, StateConstraints, TypeOK, Account, Transfer, choose_accounts, choose_amount
 <1>1 TypeOK'
     <2>1 pcLabels' BY DEF pcLabels
     <2>2 bal' \in [Account -> Int] BY AvailAssumption
@@ -55,13 +66,12 @@ PROVE IndInv'
 <1>2 MoneyTotalPreserved'
     <2>1 \A t \in Transfer: amountPending(t)' = amountPending(t) BY DEF amountPending, pcLabels
     <2> QED BY <2>1 DEF MoneyTotalPreserved, MoneyTotal
-<1>3 \A t \in Transfer: (pc[t] \notin {"choose_accounts"})' => NonEmptyAccounts(t)'
-    BY EmptyAssumption DEF NonEmptyAccounts, pcLabels
+<1>3 StateConstraints' BY stateConstraints
 <1> QED BY <1>1, <1>2, <1>3
 
 THEOREM debit_IndInv == ASSUME IndInv, NEW self \in Transfer, debit(self)
 PROVE IndInv'
-<1> USE DEF Init, IndInv, TypeOK, Account, Transfer, debit
+<1> USE DEF IndInv, StateConstraints, TypeOK, Account, Transfer, debit
 <1>1 TypeOK'
     <2>1 pcLabels' BY DEF pcLabels
     <2>2 bal' \in [Account -> Int] BY AvailAssumption
@@ -86,13 +96,12 @@ PROVE IndInv'
         BY DEF amountPending, pcLabels
     <2> QED BY AccountsUniqueAssumption, <2>10, <2>11, TransfersUniqueAssumption
         DEF MoneyTotalPreserved, MoneyTotal, amountPending
-<1>3 \A t \in Transfer: (pc[t] \notin {"choose_accounts"})' => NonEmptyAccounts(t)'
-    BY EmptyAssumption DEF NonEmptyAccounts, pcLabels
+<1>3 StateConstraints' BY stateConstraints
 <1> QED BY <1>1, <1>2, <1>3
 
 THEOREM credit_IndInv == ASSUME IndInv, NEW self \in Transfer, credit(self)
 PROVE IndInv'
-<1> USE DEF Init, IndInv, TypeOK, Account, Transfer, credit
+<1> USE DEF IndInv, StateConstraints, TypeOK, Account, Transfer, credit
 <1>1 TypeOK'
     <2>1 pcLabels' BY DEF pcLabels
     <2>2 bal' \in [Account -> Int] BY AvailAssumption
@@ -117,8 +126,7 @@ PROVE IndInv'
         BY DEF amountPending, pcLabels
     <2> QED BY AccountsUniqueAssumption, <2>10, <2>11, TransfersUniqueAssumption
         DEF MoneyTotalPreserved, MoneyTotal, amountPending
-<1>3 \A t \in Transfer: (pc[t] \notin {"choose_accounts"})' => NonEmptyAccounts(t)'
-    BY EmptyAssumption DEF NonEmptyAccounts, pcLabels
+<1>3 StateConstraints' BY stateConstraints
 <1> QED BY <1>1, <1>2, <1>3
 
 THEOREM NextNonTerminating == ASSUME IndInv, NEW self \in Transfer, trans(self), ~Terminating
@@ -134,8 +142,8 @@ THEOREM unchangedVarsProperty == ASSUME IndInv, UNCHANGED vars PROVE IndInv'
 <1>1 TypeOK' = TypeOK BY DEF TypeOK, pcLabels
 <1>2 MoneyTotalPreserved' BY DEF MoneyTotalPreserved, MoneyTotal, amountPending,
     IndInv, TypeOK
-<1>3 \A t \in Transfer: pc[t]' \notin {"choose_accounts"} => NonEmptyAccounts(t)'
-    BY DEF IndInv, TypeOK, NonEmptyAccounts
+<1>3 StateConstraints'
+    BY DEF IndInv, StateConstraints, TypeOK, NonEmptyAccounts
 <1> QED BY <1>1, <1>2, <1>3 DEF IndInv
 
 THEOREM NextProperty == IndInv /\ Next => IndInv'

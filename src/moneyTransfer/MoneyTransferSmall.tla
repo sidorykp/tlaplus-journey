@@ -118,11 +118,13 @@ Inv ==
     /\ TypeOK
     /\ MoneyTotalPreserved
 
+StateConstraints == \A t \in Transfer:
+    pc[t] \notin {"choose_accounts"} => NonEmptyAccounts(t)
+
 IndInv ==
     /\ TypeOK
     /\ MoneyTotalPreserved
-    /\ \A t \in Transfer:
-        pc[t] \notin {"choose_accounts"} => NonEmptyAccounts(t)
+    /\ StateConstraints
 
 IndSpec == IndInv /\ [][Next]_vars
 
@@ -130,8 +132,7 @@ IndInt == -3..3
 IndNat == 0..2
 IntSmall == -1..1
 
-StateConstraint ==
-    /\ bal \in [Account -> IntSmall]
+IndInvInteractiveStateConstraints == bal \in [Account -> IntSmall]
 
 
 ====
