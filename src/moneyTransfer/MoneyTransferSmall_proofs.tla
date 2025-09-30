@@ -52,6 +52,13 @@ PROVE StateConstraints'
     BY EmptyAssumption DEF NonEmptyAccounts, pcLabels
 <1> QED BY <1>1
 
+LEMMA otherTransfersAmountPending == ASSUME IndInv, NEW self \in Transfer,
+    \/ debit(self)
+    \/ credit(self)
+PROVE \A t \in Transfer \ {self}: amountPending(t)' = amountPending(t)
+BY DEF IndInv, StateConstraints, TypeOK, Transfer, debit, credit,
+    amountPending, pcLabels
+
 THEOREM choose_accounts_amount_IndInv == ASSUME IndInv, NEW self \in Transfer,
     \/ choose_accounts(self)
     \/ choose_amount(self)
@@ -79,22 +86,20 @@ PROVE IndInv'
         DEF EmptyAccounts, EAccounts, EAccount
     <2> QED BY <2>1, <2>2, <2>3
 <1> DEFINE a == accounts[self].from
+<1> DEFINE selfMoneyTotal == bal[a1] + bal[a2] + bal[a3] + amountPending(self)
 <1>2 MoneyTotalPreserved'
     <2>1 a \in Account BY DEF EAccounts, EAccount, NonEmptyAccounts
     <2>2 bal[a]' = bal[a] - amount[self] BY <2>1
     <2>3 amountPending(self) = 0 BY DEF amountPending
     <2>4 amountPending(self)' = amount[self] BY DEF amountPending, pcLabels
     <2>5 (bal[a] + amountPending(self))' = bal[a] + amountPending(self) BY <2>1, <2>3, <2>4
-    <2>6 bal[a1] + bal[a2] + bal[a3] + amountPending(self) \in Int BY DEF amountPending
-    <2>7 (bal[a1] + bal[a2] + bal[a3] + amountPending(self))' \in Int BY DEF amountPending
+    <2>6 selfMoneyTotal \in Int BY DEF amountPending
+    <2>7 selfMoneyTotal' \in Int BY DEF amountPending
     <2>8 bal[a] \in Int BY <2>1
     <2>9 bal[a]' \in Int BY <2>8, <2>2
-    <2>10 (bal[a1] + bal[a2] + bal[a3] + amountPending(self))'
-        = bal[a1] + bal[a2] + bal[a3] + amountPending(self)
+    <2>10 selfMoneyTotal' = selfMoneyTotal
         BY AccountsUniqueAssumption, <2>5, <2>6, <2>7, <2>8, <2>9 DEF amountPending
-    <2>11 \A t \in Transfer \ {self}: amountPending(t)' = amountPending(t)
-        BY DEF amountPending, pcLabels
-    <2> QED BY AccountsUniqueAssumption, <2>10, <2>11, TransfersUniqueAssumption
+    <2> QED BY <2>10, otherTransfersAmountPending, TransfersUniqueAssumption
         DEF MoneyTotalPreserved, MoneyTotal, amountPending
 <1>3 StateConstraints' BY stateConstraints
 <1> QED BY <1>1, <1>2, <1>3
@@ -109,22 +114,20 @@ PROVE IndInv'
         DEF EmptyAccounts, EAccounts, EAccount
     <2> QED BY <2>1, <2>2, <2>3
 <1> DEFINE a == accounts[self].to
+<1> DEFINE selfMoneyTotal == bal[a1] + bal[a2] + bal[a3] + amountPending(self)
 <1>2 MoneyTotalPreserved'
     <2>1 a \in Account BY DEF EAccounts, EAccount, NonEmptyAccounts
     <2>2 bal[a]' = bal[a] + amount[self] BY <2>1
     <2>3 amountPending(self)' = 0 BY DEF amountPending, pcLabels
     <2>4 amountPending(self) = amount[self] BY DEF amountPending
     <2>5 (bal[a] + amountPending(self))' = bal[a] + amountPending(self) BY <2>1, <2>3, <2>4
-    <2>6 bal[a1] + bal[a2] + bal[a3] + amountPending(self) \in Int BY DEF amountPending
-    <2>7 (bal[a1] + bal[a2] + bal[a3] + amountPending(self))' \in Int BY DEF amountPending
+    <2>6 selfMoneyTotal \in Int BY DEF amountPending
+    <2>7 selfMoneyTotal' \in Int BY DEF amountPending
     <2>8 bal[a] \in Int BY <2>1
     <2>9 bal[a]' \in Int BY <2>8, <2>2
-    <2>10 (bal[a1] + bal[a2] + bal[a3] + amountPending(self))'
-        = bal[a1] + bal[a2] + bal[a3] + amountPending(self)
+    <2>10 selfMoneyTotal' = selfMoneyTotal
         BY AccountsUniqueAssumption, <2>5, <2>6, <2>7, <2>8, <2>9 DEF amountPending
-    <2>11 \A t \in Transfer \ {self}: amountPending(t)' = amountPending(t)
-        BY DEF amountPending, pcLabels
-    <2> QED BY AccountsUniqueAssumption, <2>10, <2>11, TransfersUniqueAssumption
+    <2> QED BY <2>10, otherTransfersAmountPending, TransfersUniqueAssumption
         DEF MoneyTotalPreserved, MoneyTotal, amountPending
 <1>3 StateConstraints' BY stateConstraints
 <1> QED BY <1>1, <1>2, <1>3
