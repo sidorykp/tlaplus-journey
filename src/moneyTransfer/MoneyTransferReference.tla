@@ -6,8 +6,8 @@ EmptyAccounts == [from |-> Empty, to |-> Empty]
 (***************************************************************************
 --algorithm MoneyTransferReference {
     variables
-       credits = [a \in Account |-> {}],
-       debits = [a \in Account |-> {}],
+       credits = [a \in EAccount |-> {}],
+       debits = [a \in EAccount |-> {}],
        amount = [t \in Transfer |-> 0],
        accounts = [t \in Transfer |-> EmptyAccounts]
 
@@ -66,7 +66,7 @@ EmptyAccounts == [from |-> Empty, to |-> Empty]
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "a7717038" /\ chksum(tla) = "a13efd4f")
+\* BEGIN TRANSLATION (chksum(pcal) = "9a82b256" /\ chksum(tla) = "a24df805")
 VARIABLES credits, debits, amount, accounts, pc
 
 (* define statement *)
@@ -95,8 +95,8 @@ vars == << credits, debits, amount, accounts, pc >>
 ProcSet == (Transfer)
 
 Init == (* Global variables *)
-        /\ credits = [a \in Account |-> {}]
-        /\ debits = [a \in Account |-> {}]
+        /\ credits = [a \in EAccount |-> {}]
+        /\ debits = [a \in EAccount |-> {}]
         /\ amount = [t \in Transfer |-> 0]
         /\ accounts = [t \in Transfer |-> EmptyAccounts]
         /\ pc = [self \in ProcSet |-> "choose_accounts"]
@@ -173,14 +173,13 @@ NonEmptyAccounts(t) ==
     /\ accounts[t].from # Empty
     /\ accounts[t].to # Empty
     
-debitAmount(t) == IF NonEmptyAccounts(t) /\ t \in debits[accounts[t].from] THEN amount[t] ELSE 0
-creditAmount(t) == IF NonEmptyAccounts(t) /\ t \in credits[accounts[t].to] THEN amount[t] ELSE 0
-pendingAmount(t) == IF NonEmptyAccounts(t) /\ AmountIsPending(t) THEN amount[t] ELSE 0
+debitAmount(t) == IF t \in debits[accounts[t].from] THEN amount[t] ELSE 0
+creditAmount(t) == IF t \in credits[accounts[t].to] THEN amount[t] ELSE 0
+pendingAmount(t) == IF AmountIsPending(t) THEN amount[t] ELSE 0
 moneyConstantForTrans(t) == debitAmount(t) = pendingAmount(t) + creditAmount(t)
 MoneyConstant == \A t \in Transfer: moneyConstantForTrans(t)
 
-transferIndivisible(t) == NonEmptyAccounts(t) => 
-    AmountIsPending(t) <=> (t \in debits[accounts[t].from]) # (t \in credits[accounts[t].to])
+transferIndivisible(t) == AmountIsPending(t) <=> (t \in debits[accounts[t].from]) # (t \in credits[accounts[t].to])
 TransfersIndivisible == \A t \in Transfer: transferIndivisible(t)
     
 DifferentAccounts(t) == accounts[t].from # accounts[t].to
@@ -190,8 +189,8 @@ EAccounts == [from: EAccount, to: EAccount]
 pcLabels == pc \in [Transfer -> {"choose_accounts", "choose_amount", "debit", "retryDebit", "credit", "retryCredit", "Done"}]
 
 TypeOK ==
-    /\ credits \in [Account -> SUBSET Transfer]
-    /\ debits \in [Account -> SUBSET Transfer]
+    /\ credits \in [EAccount -> SUBSET Transfer]
+    /\ debits \in [EAccount -> SUBSET Transfer]
     /\ amount \in [Transfer -> Nat]
     /\ accounts \in [Transfer -> EAccounts]
     /\ pcLabels
