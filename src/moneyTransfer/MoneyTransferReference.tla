@@ -178,6 +178,10 @@ creditAmount(t) == IF NonEmptyAccounts(t) /\ t \in credits[accounts[t].to] THEN 
 pendingAmount(t) == IF NonEmptyAccounts(t) /\ AmountIsPending(t) THEN amount[t] ELSE 0
 moneyConstantForTrans(t) == debitAmount(t) = pendingAmount(t) + creditAmount(t)
 MoneyConstant == \A t \in Transfer: moneyConstantForTrans(t)
+
+transferIndivisible(t) == NonEmptyAccounts(t) => 
+    AmountIsPending(t) <=> (t \in debits[accounts[t].from]) # (t \in credits[accounts[t].to])
+TransfersIndivisible == \A t \in Transfer: transferIndivisible(t)
     
 DifferentAccounts(t) == accounts[t].from # accounts[t].to
 
@@ -195,6 +199,7 @@ TypeOK ==
 Inv ==
     /\ TypeOK
     /\ MoneyConstant
+    /\ TransfersIndivisible
 
 StateConstraints ==
     /\ \A t \in Transfer:
@@ -207,6 +212,7 @@ StateConstraints ==
 IndInv ==
     /\ TypeOK
     /\ MoneyConstant
+    /\ TransfersIndivisible
     /\ StateConstraints
 
 IndSpec == IndInv /\ [][Next]_vars
