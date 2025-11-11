@@ -168,10 +168,6 @@ Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 AmountIsPending(t) ==
     /\ pc[t] \in {"debit", "retryDebit", "credit", "retryCredit"}
     /\ creditPrecond(t)
-
-NonEmptyAccounts(t) ==
-    /\ accounts[t].from # Empty
-    /\ accounts[t].to # Empty
     
 debitAmount(t) == IF t \in debits[accounts[t].from] THEN amount[t] ELSE 0
 creditAmount(t) == IF t \in credits[accounts[t].to] THEN amount[t] ELSE 0
@@ -199,6 +195,10 @@ Inv ==
     /\ TypeOK
     /\ MoneyConstant
     /\ TransfersIndivisible
+
+NonEmptyAccounts(t) ==
+    /\ accounts[t].from # Empty
+    /\ accounts[t].to # Empty
 
 StateConstraints ==
     /\ \A t \in Transfer:
