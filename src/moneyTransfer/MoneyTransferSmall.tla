@@ -132,7 +132,7 @@ IndInt == -3..3
 IndNat == 0..2
 IntSmall == -1..1
 
-IndInvInteractiveStateConstraints == bal \in [Account -> IntSmall]
+IndInvStateConstraints == bal \in [Account -> IntSmall]
 
 
 ====
