@@ -52,9 +52,7 @@ PROVE StateConstraints'
     <2>1 (pc[self] \notin {"choose_accounts"} => NonEmptyAccounts(self))'
         <3>1 (accounts[self].from)' # Empty BY EmptyAssumption, AccountAssumption
         <3>2 (accounts[self].to)' # Empty BY EmptyAssumption, AccountAssumption
-        <3>3 NonEmptyAccounts(self)'
-            BY <3>1, <3>2
-        <3> QED BY <3>3
+        <3> QED BY <3>1, <3>2
     <2> QED BY <2>1
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5
 
@@ -118,7 +116,7 @@ PROVE IndInv'
         <3>4 accounts[self].to \in Account BY DEF NonEmptyAccounts, EmptyAccounts, EAccounts, EAccount
         <3>5 ~(self \in credits[accounts[self].to])' BY <3>4 DEF debitPrecond, isTransKnown
         <3>6 creditAmount(self)' = 0 BY <3>5
-        <3>7 ~(AmountIsPending(self))' BY <3>1 DEF AmountIsPending, creditPrecond, debitPrecond, isTransKnown
+        <3>7 ~(AmountIsPending(self))' BY DEF AmountIsPending, creditPrecond, debitPrecond, isTransKnown
         <3>8 pendingAmount(self)' = 0 BY <3>7
         <3>9 transferIndivisible(self)' BY <3>2, <3>5, <3>7
         <3> QED BY <3>3, <3>5, <3>8, <3>9
@@ -258,7 +256,7 @@ THEOREM unchangedVarsProperty == ASSUME IndInv, UNCHANGED vars PROVE IndInv'
           /\ \A t \in Transfer:
             \/ accounts[t] = EmptyAccounts
             \/ DifferentAccounts(t)
-        BY DEF DifferentAccounts, NonEmptyAccounts
+        BY DEF DifferentAccounts
     <2>2 (/\ \A t \in Transfer: pc[t] \in {"choose_accounts", "choose_amount"} => ~\E a \in Account: isTransKnown(t, a, debits) \/ isTransKnown(t, a, credits))' =
           /\ \A t \in Transfer: pc[t] \in {"choose_accounts", "choose_amount"} => ~\E a \in Account: isTransKnown(t, a, debits) \/ isTransKnown(t, a, credits)
         BY DEF isTransKnown
