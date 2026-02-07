@@ -56,9 +56,9 @@ PROVE
 <1>1 pc[t]' = pc[t] BY DEF pcLabels
 <1>2 creditPrecond(t)' = creditPrecond(t) BY DEF creditPrecond
 <1>3 pendingAmount(t)' = pendingAmount(t)
-    BY <1>1, <1>2 DEF AmountIsPending
+    BY <1>1, <1>2 DEF AmountIsPending, debitPrecond
 <1>4 transferIndivisible(t)' = transferIndivisible(t)
-    BY <1>1, <1>2 DEF transferIndivisible, AmountIsPending
+    BY <1>1, <1>2 DEF transferIndivisible, AmountIsPending, debitPrecond
 <1> QED BY <1>3, <1>4
 
 THEOREM choose_accounts_IndInv == ASSUME IndInv, NEW self \in Transfer, choose_accounts(self)
