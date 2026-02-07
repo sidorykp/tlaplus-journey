@@ -81,8 +81,10 @@ IndSpec == IndInv /\ [][Next]_vars
 
 IntSmall == -2..2
 
+NatSmall == 0..2
+
 StateConstraint ==
-    /\ bal1 \in IntSmall
-    /\ bal2 \in IntSmall
+    /\ bal1 \in NatSmall
+    /\ bal2 \in NatSmall
 
 ====

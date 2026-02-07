@@ -22,7 +22,6 @@ THEOREM UnchangedVarsProperty == ASSUME IndInv, UNCHANGED vars
 PROVE IndInv'
 BY DEF vars, IndInv, TypeOK, pcLabels, MoneyTotal, amountPending
 
-
 THEOREM IndInvPreserved == Spec => []IndInv
 <1>1 IndInv /\ UNCHANGED vars => IndInv'
     BY UnchangedVarsProperty
