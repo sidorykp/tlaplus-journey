@@ -135,7 +135,7 @@ PROVE IndInv'
     <2> USE DEF MoneyConstant, debitAmount, pendingAmount, creditAmount, moneyConstantForTrans,
         TransfersIndivisible, transferIndivisible
     <2>1 moneyConstantForTrans(self)' /\ transferIndivisible(self)'
-        <3>1 CASE ~debitPrecond(self) \/ debits' = debits BY <3>1 DEF AmountIsPending, creditPrecond, pcLabels
+        <3>1 CASE ~debitPrecond(self) \/ debits' = debits BY <3>1 DEF AmountIsPending, creditPrecond, debitPrecond, pcLabels
         <3>2 CASE debitPrecond(self) /\ debits' # debits
             <4>1 (self \in debits[accountFrom])' BY <3>2
             <4>2 accountTo \in Account BY DEF NonEmptyAccounts, EmptyAccounts, EAccounts, EAccount
@@ -162,9 +162,9 @@ PROVE IndInv'
         <3>2 debitAmount(t)' = debitAmount(t) BY <3>1 DEF EmptyAccounts, EAccounts, EAccount
         <3>3 creditAmount(t)' = creditAmount(t) BY <3>2
         <3>4 pendingAmount(t)' = pendingAmount(t) BY <3>2 DEF
-            AmountIsPending, EmptyAccounts, EAccounts, EAccount, creditPrecond, isTransKnown, pcLabels
+            AmountIsPending, EmptyAccounts, EAccounts, EAccount, creditPrecond, debitPrecond, isTransKnown, pcLabels
         <3>5 transferIndivisible(t)' = transferIndivisible(t)
-            BY <3>1 DEF AmountIsPending, EmptyAccounts, EAccounts, EAccount, creditPrecond, isTransKnown, pcLabels
+            BY <3>1 DEF AmountIsPending, EmptyAccounts, EAccounts, EAccount, creditPrecond, debitPrecond, isTransKnown, pcLabels
         <3> QED BY <3>2, <3>3, <3>4, <3>5
     <2> QED BY <2>1, <2>2
 <1>3 StateConstraints' BY stateConstraints
@@ -180,10 +180,10 @@ PROVE IndInv'
     <2> USE DEF MoneyConstant, debitAmount, pendingAmount, creditAmount, moneyConstantForTrans,
         TransfersIndivisible, transferIndivisible
     <2>1 moneyConstantForTrans(self)' /\ transferIndivisible(self)'
-        <3>1 CASE ~creditPrecond(self) \/ credits' = credits BY <3>1 DEF AmountIsPending, creditPrecond, pcLabels
+        <3>1 CASE ~creditPrecond(self) \/ credits' = credits BY <3>1 DEF AmountIsPending, creditPrecond, debitPrecond, pcLabels
         <3>2 CASE creditPrecond(self) /\ credits' # credits
             <4>1 (self \in credits[accountTo])' BY <3>2
-            <4>2 (self \in debits[accountFrom])' BY <3>2 DEF creditPrecond, isTransKnown
+            <4>2 (self \in debits[accountFrom])' BY <3>2 DEF creditPrecond, debitPrecond, isTransKnown
             <4>3 moneyConstantForTrans(self)'
                 <5>1 (creditAmount(self) = amount[self])' BY <4>1
                 <5>2 (debitAmount(self) = amount[self])' BY <4>2
@@ -203,9 +203,9 @@ PROVE IndInv'
             EmptyAccounts, EAccounts, EAccount
         <3>3 debitAmount(t)' = debitAmount(t) BY <2>2
         <3>4 pendingAmount(t)' = pendingAmount(t) BY <2>2 DEF
-            AmountIsPending, EmptyAccounts, EAccounts, EAccount, creditPrecond, isTransKnown, pcLabels
+            AmountIsPending, EmptyAccounts, EAccounts, EAccount, creditPrecond, debitPrecond, isTransKnown, pcLabels
         <3>5 transferIndivisible(t)' = transferIndivisible(t)
-            BY <3>1 DEF AmountIsPending, EmptyAccounts, EAccounts, EAccount, creditPrecond, isTransKnown, pcLabels
+            BY <3>1 DEF AmountIsPending, EmptyAccounts, EAccounts, EAccount, creditPrecond, debitPrecond, isTransKnown, pcLabels
         <3> QED BY <3>2, <3>3, <3>4, <3>5
     <2> QED BY <2>1, <2>2
 <1>3 StateConstraints' BY stateConstraints
