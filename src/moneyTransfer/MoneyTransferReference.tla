@@ -13,23 +13,14 @@ EmptyAccounts == [from |-> Empty, to |-> Empty]
 
     define {
         transAmount(t) == amount[t]
-    
-        accountCredits(a) == MapThenSumSet(transAmount, credits[a])
         
-        accountDebits(a) == MapThenSumSet(transAmount, debits[a])
-        
-        amountAvail(a) == Avail + accountCredits(a) - accountDebits(a)
+        amountAvail(a) == Avail + MapThenSumSet(transAmount, credits[a]) - MapThenSumSet(transAmount, debits[a])
         
         isTransKnown(t, a, balanceComponent) == t \in balanceComponent[a]
         
-        debitPrecond(t) == ~\E a \in Account:
-            \/ isTransKnown(t, a, debits)
-            \/ isTransKnown(t, a, credits)
+        debitPrecond(t) == ~isTransKnown(t, accounts[t].from, debits)
         
-        creditPrecond(t) ==
-            /\ ~\E a \in Account: isTransKnown(t, a, credits)
-            /\ ~isTransKnown(t, accounts[t].to, debits)
-            /\ isTransKnown(t, accounts[t].from, debits)
+        creditPrecond(t) == ~isTransKnown(t, accounts[t].to, credits)
     }
 
     process (trans \in Transfer)    
@@ -40,7 +31,7 @@ EmptyAccounts == [from |-> Empty, to |-> Empty]
             };
             
         choose_amount:
-            with (a = accounts[self].from; am \in 1..amountAvail(accounts[self].from)) {
+            with (am \in 1..amountAvail(accounts[self].from)) {
                 amount[self] := am;
             };
             
@@ -66,28 +57,19 @@ EmptyAccounts == [from |-> Empty, to |-> Empty]
     }
 }
 ***************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "9a82b256" /\ chksum(tla) = "a24df805")
+\* BEGIN TRANSLATION (chksum(pcal) = "bd1a5f9a" /\ chksum(tla) = "66548bbe")
 VARIABLES credits, debits, amount, accounts, pc
 
 (* define statement *)
 transAmount(t) == amount[t]
 
-accountCredits(a) == MapThenSumSet(transAmount, credits[a])
-
-accountDebits(a) == MapThenSumSet(transAmount, debits[a])
-
-amountAvail(a) == Avail + accountCredits(a) - accountDebits(a)
+amountAvail(a) == Avail + MapThenSumSet(transAmount, credits[a]) - MapThenSumSet(transAmount, debits[a])
 
 isTransKnown(t, a, balanceComponent) == t \in balanceComponent[a]
 
-debitPrecond(t) == ~\E a \in Account:
-    \/ isTransKnown(t, a, debits)
-    \/ isTransKnown(t, a, credits)
+debitPrecond(t) == ~isTransKnown(t, accounts[t].from, debits)
 
-creditPrecond(t) ==
-    /\ ~\E a \in Account: isTransKnown(t, a, credits)
-    /\ ~isTransKnown(t, accounts[t].to, debits)
-    /\ isTransKnown(t, accounts[t].from, debits)
+creditPrecond(t) == ~isTransKnown(t, accounts[t].to, credits)
 
 
 vars == << credits, debits, amount, accounts, pc >>
@@ -109,9 +91,8 @@ choose_accounts(self) == /\ pc[self] = "choose_accounts"
                          /\ UNCHANGED << credits, debits, amount >>
 
 choose_amount(self) == /\ pc[self] = "choose_amount"
-                       /\ LET a == accounts[self].from IN
-                            \E am \in 1..amountAvail(accounts[self].from):
-                              amount' = [amount EXCEPT ![self] = am]
+                       /\ \E am \in 1..amountAvail(accounts[self].from):
+                            amount' = [amount EXCEPT ![self] = am]
                        /\ pc' = [pc EXCEPT ![self] = "debit"]
                        /\ UNCHANGED << credits, debits, accounts >>
 
@@ -168,6 +149,7 @@ Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 AmountIsPending(t) ==
     /\ pc[t] \in {"debit", "retryDebit", "credit", "retryCredit"}
     /\ creditPrecond(t)
+    /\ ~debitPrecond(t)
     
 debitAmount(t) == IF t \in debits[accounts[t].from] THEN amount[t] ELSE 0
 creditAmount(t) == IF t \in credits[accounts[t].to] THEN amount[t] ELSE 0
@@ -177,8 +159,12 @@ MoneyConstant == \A t \in Transfer: moneyConstantForTrans(t)
 
 transferIndivisible(t) == AmountIsPending(t) <=> (t \in debits[accounts[t].from]) # (t \in credits[accounts[t].to])
 TransfersIndivisible == \A t \in Transfer: transferIndivisible(t)
-    
-DifferentAccounts(t) == accounts[t].from # accounts[t].to
+
+NonEmptyAccounts(t) ==
+    /\ accounts[t].from # Empty
+    /\ accounts[t].to # Empty
+
+DifferentAccounts(t) == accounts[t].from # accounts[t].to /\ NonEmptyAccounts(t)
 
 EAccounts == [from: EAccount, to: EAccount]
 
@@ -196,17 +182,14 @@ Inv ==
     /\ MoneyConstant
     /\ TransfersIndivisible
 
-NonEmptyAccounts(t) ==
-    /\ accounts[t].from # Empty
-    /\ accounts[t].to # Empty
-
 StateConstraints ==
     /\ \A t \in Transfer:
         \/ accounts[t] = EmptyAccounts
         \/ DifferentAccounts(t)
-    /\ \A t \in Transfer: pc[t] \in {"choose_accounts", "choose_amount"} => debitPrecond(t)
-    /\ \A t \in Transfer:
-        pc[t] \notin {"choose_accounts"} => NonEmptyAccounts(t)
+    /\ \A t \in Transfer: pc[t] \in {"choose_accounts"} => ~\E a \in Account:
+        \/ isTransKnown(t, a, debits)
+        \/ isTransKnown(t, a, credits)
+    /\ \A t \in Transfer: pc[t] \in {"credit", "retryCredit"} => ~debitPrecond(t)
 
 IndInv ==
     /\ TypeOK
