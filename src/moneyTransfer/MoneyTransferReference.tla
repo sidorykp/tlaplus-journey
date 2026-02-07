@@ -164,7 +164,7 @@ NonEmptyAccounts(t) ==
     /\ accounts[t].from # Empty
     /\ accounts[t].to # Empty
 
-DifferentAccounts(t) == accounts[t].from # accounts[t].to /\ NonEmptyAccounts(t)
+DifferentAccounts(t) == accounts[t].from # accounts[t].to
 
 EAccounts == [from: EAccount, to: EAccount]
 
@@ -186,10 +186,11 @@ StateConstraints ==
     /\ \A t \in Transfer:
         \/ accounts[t] = EmptyAccounts
         \/ DifferentAccounts(t)
-    /\ \A t \in Transfer: pc[t] \in {"choose_accounts"} => ~\E a \in Account:
+    /\ \A t \in Transfer: pc[t] \in {"choose_accounts", "choose_amount"} => ~\E a \in Account:
         \/ isTransKnown(t, a, debits)
         \/ isTransKnown(t, a, credits)
-    /\ \A t \in Transfer: pc[t] \in {"credit", "retryCredit"} => ~debitPrecond(t)
+    /\ \A t \in Transfer:
+        pc[t] \notin {"choose_accounts"} => NonEmptyAccounts(t)
 
 IndInv ==
     /\ TypeOK
