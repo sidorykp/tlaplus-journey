@@ -11,14 +11,15 @@ THEOREM InitProperty == ASSUME Init PROVE IndInv
     BY DEF MoneyConstant, moneyConstantForTrans, debitAmount, pendingAmount, creditAmount
 <1>3 TransfersIndivisible
     BY DEF TransfersIndivisible, transferIndivisible, AmountIsPending,
-        creditPrecond, isTransKnown, EmptyAccounts, EAccounts, EAccount
+        creditPrecond, debitPrecond, isTransKnown, EmptyAccounts, EAccounts, EAccount
 <1>4 \A t \in Transfer: accounts[t] = EmptyAccounts \/ DifferentAccounts(t)
     BY DEF EmptyAccounts, DifferentAccounts
-<1>5 \A t \in Transfer: pc[t] \in {"choose_accounts", "choose_amount"} => debitPrecond(t)
-    BY DEF debitPrecond, isTransKnown, EmptyAccounts, EAccounts, EAccount
-<1>6 \A t \in Transfer: pc[t] \notin {"choose_accounts"} => NonEmptyAccounts(t)
-    <2>1 \A t \in Transfer: pc[t] \in {"choose_accounts"} BY DEF ProcSet
-    <2> QED BY <2>1 DEF NonEmptyAccounts, EmptyAccounts
+<1>5 \A t \in Transfer: pc[t] \in {"credit", "retryCredit"} => ~debitPrecond(t)
+    BY DEF ProcSet
+<1>6 \A t \in Transfer: pc[t] \in {"choose_accounts"} => ~\E a \in Account:
+    \/ isTransKnown(t, a, debits)
+    \/ isTransKnown(t, a, credits)
+    BY DEF isTransKnown, EmptyAccounts, EAccounts, EAccount
 <1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6
 
 LEMMA stateConstraints == ASSUME IndInv, NEW self \in Transfer,
