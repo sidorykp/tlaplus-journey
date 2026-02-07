@@ -191,6 +191,8 @@ StateConstraints ==
         \/ isTransKnown(t, a, credits)
     /\ \A t \in Transfer:
         pc[t] \notin {"choose_accounts"} => NonEmptyAccounts(t)
+    /\ \A t \in Transfer: pc[t] \in {"debit", "retryDebit"} => creditPrecond(t)
+    /\ \A t \in Transfer: pc[t] \in {"credit", "retryCredit"} => ~debitPrecond(t)
 
 IndInv ==
     /\ TypeOK
