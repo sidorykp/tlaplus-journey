@@ -33,18 +33,13 @@ PROVE StateConstraints'
 <1> USE DEF IndInv, StateConstraints, TypeOK,
     choose_accounts, choose_amount, debit, retryDebit, credit, retryCredit
 <1>1 \A t \in Transfer: (accounts[t] = EmptyAccounts \/ DifferentAccounts(t))'
-    BY DEF DifferentAccounts, EmptyAccounts, EAccounts, EAccount
-<1>2 \A t \in Transfer: (pc[t] \in {"choose_accounts", "choose_amount"} => debitPrecond(t))'
+    BY AccountAssumption, EmptyAssumption DEF DifferentAccounts, NonEmptyAccounts
+<1>2 \A t \in Transfer: (pc[t] \in {"credit", "retryCredit"} => ~debitPrecond(t))'
     BY DEF pcLabels, debitPrecond, isTransKnown, EmptyAccounts, EAccounts, EAccount
-<1>3 \A t \in Transfer: (pc[t] \notin {"choose_accounts"} => NonEmptyAccounts(t))'
-    <2> USE DEF pcLabels, NonEmptyAccounts
-    <2>1 (pc[self] \notin {"choose_accounts"} => NonEmptyAccounts(self))'
-        <3>1 (accounts[self].from)' # Empty BY EmptyAssumption, AccountAssumption
-        <3>2 (accounts[self].to)' # Empty BY EmptyAssumption, AccountAssumption
-        <3>3 NonEmptyAccounts(self)'
-            BY <3>1, <3>2
-        <3> QED BY <3>3
-    <2> QED BY <2>1
+<1>3 \A t \in Transfer: (pc[t] \in {"choose_accounts"} => ~\E a \in Account:
+    \/ isTransKnown(t, a, debits)
+    \/ isTransKnown(t, a, credits))'
+    BY DEF pcLabels, isTransKnown, EmptyAccounts, EAccounts, EAccount
 <1> QED BY <1>1, <1>2, <1>3
 
 LEMMA otherTransfers_moneyConstantForTrans == ASSUME IndInv, NEW self \in Transfer,
