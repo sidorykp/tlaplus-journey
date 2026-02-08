@@ -223,9 +223,7 @@ PROVE IndInv'
     <2>1 moneyConstantForTrans(self)' /\ transferIndivisible(self)'
         <3>1 AmountIsPending(self)' = AmountIsPending(self) BY DEF AmountIsPending, creditPrecond, debitPrecond,
             isTransKnown, pcLabels
-        <3>2 moneyConstantForTrans(self)'
-            <4>1 pendingAmount(self)' = pendingAmount(self) BY <3>1
-            <4> QED BY <4>1
+        <3>2 moneyConstantForTrans(self)' BY <3>1
         <3>3 transferIndivisible(self)' BY <3>1
         <3> QED BY <3>2, <3>3
     <2>2 ASSUME NEW t \in Transfer \ {self} PROVE
@@ -250,28 +248,7 @@ THEOREM unchangedVarsProperty == ASSUME IndInv, UNCHANGED vars PROVE IndInv'
 <1> USE DEF vars
 <1>1 TypeOK' = TypeOK BY DEF TypeOK, pcLabels
 <1>2 StateConstraints' = StateConstraints
-    <2>1 (/\ \A t \in Transfer:
-            \/ accounts[t] = EmptyAccounts
-            \/ DifferentAccounts(t))' =
-          /\ \A t \in Transfer:
-            \/ accounts[t] = EmptyAccounts
-            \/ DifferentAccounts(t)
-        BY DEF DifferentAccounts
-    <2>2 (/\ \A t \in Transfer: pc[t] \in {"choose_accounts", "choose_amount"} => ~\E a \in Account: isTransKnown(t, a, debits) \/ isTransKnown(t, a, credits))' =
-          /\ \A t \in Transfer: pc[t] \in {"choose_accounts", "choose_amount"} => ~\E a \in Account: isTransKnown(t, a, debits) \/ isTransKnown(t, a, credits)
-        BY DEF isTransKnown
-    <2>3 (/\ \A t \in Transfer:
-            pc[t] \notin {"choose_accounts"} => NonEmptyAccounts(t))' =
-          /\ \A t \in Transfer:
-            pc[t] \notin {"choose_accounts"} => NonEmptyAccounts(t)
-        BY DEF NonEmptyAccounts
-    <2>4 (\A t \in Transfer: pc[t] \in {"credit", "retryCredit"} => ~debitPrecond(t))' =
-        \A t \in Transfer: pc[t] \in {"credit", "retryCredit"} => ~debitPrecond(t) 
-        BY DEF debitPrecond
-    <2>5 (\A t \in Transfer: pc[t] \in {"debit", "retryDebit"} => creditPrecond(t))' =
-        \A t \in Transfer: pc[t] \in {"debit", "retryDebit"} => creditPrecond(t) 
-        BY DEF creditPrecond
-    <2> QED BY <2>1, <2>2, <2>3, <2>4, <2>5 DEF StateConstraints
+    BY DEF StateConstraints, DifferentAccounts, NonEmptyAccounts, isTransKnown, debitPrecond, creditPrecond
 <1>3 MoneyConstant' = MoneyConstant
     BY DEF MoneyConstant, moneyConstantForTrans, debitAmount, pendingAmount, creditAmount,
         AmountIsPending, creditPrecond, debitPrecond
