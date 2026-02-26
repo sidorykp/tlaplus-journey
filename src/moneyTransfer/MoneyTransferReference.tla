@@ -160,13 +160,9 @@ MoneyConstant == \A t \in Transfer: moneyConstantForTrans(t)
 transferIndivisible(t) == AmountIsPending(t) <=> (t \in debits[accounts[t].from]) # (t \in credits[accounts[t].to])
 TransfersIndivisible == \A t \in Transfer: transferIndivisible(t)
 
-NonEmptyAccounts(t) ==
-    /\ accounts[t].from # Empty
-    /\ accounts[t].to # Empty
+Accounts == [from: Account, to: Account]
 
-DifferentAccounts(t) == accounts[t].from # accounts[t].to
-
-EAccounts == [from: EAccount, to: EAccount]
+NonEmptyAccounts(t) == accounts[t] \in Accounts
 
 pcLabels == pc \in [Transfer -> {"choose_accounts", "choose_amount", "debit", "retryDebit", "credit", "retryCredit", "Done"}]
 
@@ -174,7 +170,7 @@ TypeOK ==
     /\ credits \in [EAccount -> SUBSET Transfer]
     /\ debits \in [EAccount -> SUBSET Transfer]
     /\ amount \in [Transfer -> Nat]
-    /\ accounts \in [Transfer -> EAccounts]
+    /\ accounts \in [Transfer -> {accs \in Accounts: accs.from # accs.to} \cup {EmptyAccounts}]
     /\ pcLabels
 
 Inv ==
@@ -183,9 +179,6 @@ Inv ==
     /\ TransfersIndivisible
 
 StateConstraints ==
-    /\ \A t \in Transfer:
-        \/ accounts[t] = EmptyAccounts
-        \/ DifferentAccounts(t)
     /\ \A t \in Transfer: pc[t] \in {"choose_accounts", "choose_amount"} => ~\E a \in Account:
         \/ isTransKnown(t, a, debits)
         \/ isTransKnown(t, a, credits)

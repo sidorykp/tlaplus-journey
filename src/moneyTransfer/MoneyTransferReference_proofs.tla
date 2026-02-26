@@ -4,27 +4,25 @@ EXTENDS MoneyTransferReference, MoneyTransfer_proofsCommon, TLAPS
 THEOREM InitProperty == ASSUME Init PROVE IndInv
 <1> USE DEF Init, IndInv, StateConstraints, TypeOK
 <1>1 TypeOK
-    <2>1 accounts \in [Transfer -> EAccounts] BY DEF EmptyAccounts, EAccounts, EAccount
+    <2>1 accounts \in [Transfer -> Accounts \cup {EmptyAccounts}] BY DEF EmptyAccounts, Accounts, EAccount
     <2>2 pcLabels BY DEF ProcSet, pcLabels
     <2> QED BY <2>1, <2>2
 <1>2 MoneyConstant
     BY DEF MoneyConstant, moneyConstantForTrans, debitAmount, pendingAmount, creditAmount
 <1>3 TransfersIndivisible
     BY DEF TransfersIndivisible, transferIndivisible, AmountIsPending,
-        creditPrecond, debitPrecond, isTransKnown, EmptyAccounts, EAccounts, EAccount
-<1>4 \A t \in Transfer: accounts[t] = EmptyAccounts \/ DifferentAccounts(t)
-    BY DEF EmptyAccounts, DifferentAccounts
-<1>5 \A t \in Transfer: pc[t] \in {"credit", "retryCredit"} => ~debitPrecond(t)
+        creditPrecond, debitPrecond, isTransKnown, EmptyAccounts, Accounts, EAccount
+<1>4 \A t \in Transfer: pc[t] \in {"credit", "retryCredit"} => ~debitPrecond(t)
     BY DEF ProcSet
-<1>6 \A t \in Transfer: pc[t] \in {"debit", "retryDebit"} => creditPrecond(t)
+<1>5 \A t \in Transfer: pc[t] \in {"debit", "retryDebit"} => creditPrecond(t)
     BY DEF ProcSet
-<1>7 \A t \in Transfer: pc[t] \in {"choose_accounts", "choose_amount"} => ~\E a \in Account:
+<1>6 \A t \in Transfer: pc[t] \in {"choose_accounts", "choose_amount"} => ~\E a \in Account:
     \/ isTransKnown(t, a, debits)
     \/ isTransKnown(t, a, credits)
-    BY DEF isTransKnown, EmptyAccounts, EAccounts, EAccount
-<1>8 \A t \in Transfer: pc[t] \notin {"choose_accounts"} => NonEmptyAccounts(t)
+    BY DEF isTransKnown, EmptyAccounts, Accounts, EAccount
+<1>7 \A t \in Transfer: pc[t] \notin {"choose_accounts"} => NonEmptyAccounts(t)
     BY DEF ProcSet, NonEmptyAccounts, EmptyAccounts
-<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>7, <1>8
+<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5, <1>6, <1>7
 
 LEMMA stateConstraints == ASSUME IndInv, NEW self \in Transfer,
     \/ choose_accounts(self)
@@ -36,25 +34,23 @@ LEMMA stateConstraints == ASSUME IndInv, NEW self \in Transfer,
 PROVE StateConstraints'
 <1> USE DEF IndInv, StateConstraints, TypeOK,
     choose_accounts, choose_amount, debit, retryDebit, credit, retryCredit
-<1>1 \A t \in Transfer: (accounts[t] = EmptyAccounts \/ DifferentAccounts(t))'
-    BY AccountAssumption, EmptyAssumption DEF DifferentAccounts
-<1>2 \A t \in Transfer: (pc[t] \in {"credit", "retryCredit"} => ~debitPrecond(t))'
-    BY DEF pcLabels, debitPrecond, isTransKnown, EmptyAccounts, EAccounts, EAccount
-<1>3 \A t \in Transfer: (pc[t] \in {"debit", "retryDebit"} => creditPrecond(t))'
+<1>1 \A t \in Transfer: (pc[t] \in {"credit", "retryCredit"} => ~debitPrecond(t))'
+    BY DEF pcLabels, debitPrecond, isTransKnown, EmptyAccounts, Accounts, EAccount
+<1>2 \A t \in Transfer: (pc[t] \in {"debit", "retryDebit"} => creditPrecond(t))'
     BY DEF pcLabels, creditPrecond, isTransKnown, EmptyAccounts, NonEmptyAccounts,
-    EAccounts, EAccount
-<1>4 \A t \in Transfer: (pc[t] \in {"choose_accounts", "choose_amount"} => ~\E a \in Account:
+    Accounts, EAccount
+<1>3 \A t \in Transfer: (pc[t] \in {"choose_accounts", "choose_amount"} => ~\E a \in Account:
     \/ isTransKnown(t, a, debits)
     \/ isTransKnown(t, a, credits))'
-    BY DEF pcLabels, isTransKnown, EmptyAccounts, EAccounts, EAccount
-<1>5 \A t \in Transfer: (pc[t] \notin {"choose_accounts"} => NonEmptyAccounts(t))'
-    <2> USE DEF pcLabels, NonEmptyAccounts
+    BY DEF pcLabels, isTransKnown, EmptyAccounts, Accounts, EAccount
+<1>4 \A t \in Transfer: (pc[t] \notin {"choose_accounts"} => NonEmptyAccounts(t))'
+    <2> USE DEF pcLabels, NonEmptyAccounts, Accounts
     <2>1 (pc[self] \notin {"choose_accounts"} => NonEmptyAccounts(self))'
         <3>1 (accounts[self].from)' # Empty BY EmptyAssumption, AccountAssumption
         <3>2 (accounts[self].to)' # Empty BY EmptyAssumption, AccountAssumption
         <3> QED BY <3>1, <3>2
     <2> QED BY <2>1
-<1> QED BY <1>1, <1>2, <1>3, <1>4, <1>5
+<1> QED BY <1>1, <1>2, <1>3, <1>4
 
 LEMMA otherTransfers_moneyConstantForTrans == ASSUME IndInv, NEW self \in Transfer,
     NEW t \in Transfer \ {self},
@@ -79,7 +75,7 @@ THEOREM choose_accounts_IndInv == ASSUME IndInv, NEW self \in Transfer, choose_a
 PROVE IndInv'
 <1> USE DEF choose_accounts, IndInv, StateConstraints, TypeOK
 <1>1 TypeOK'
-    <2>1 accounts' \in [Transfer -> EAccounts] BY DEF EmptyAccounts, EAccounts, EAccount
+    <2>1 accounts' \in [Transfer -> Accounts \cup {EmptyAccounts}] BY DEF EmptyAccounts, Accounts, EAccount
     <2>2 pcLabels' BY DEF pcLabels
     <2> QED BY <2>1, <2>2
 <1>2 MoneyConstant' /\ TransfersIndivisible'
@@ -110,10 +106,10 @@ PROVE IndInv'
     <2> USE DEF MoneyConstant, debitAmount, pendingAmount, creditAmount, moneyConstantForTrans,
         TransfersIndivisible, transferIndivisible
     <2>1 moneyConstantForTrans(self)' /\ transferIndivisible(self)'
-        <3>1 accounts[self].from \in Account BY DEF NonEmptyAccounts, EmptyAccounts, EAccounts, EAccount
+        <3>1 accounts[self].from \in Account BY DEF NonEmptyAccounts, EmptyAccounts, Accounts, EAccount
         <3>2 ~(self \in debits[accounts[self].from])' BY <3>1 DEF debitPrecond, isTransKnown
         <3>3 debitAmount(self)' = 0 BY <3>2
-        <3>4 accounts[self].to \in Account BY DEF NonEmptyAccounts, EmptyAccounts, EAccounts, EAccount
+        <3>4 accounts[self].to \in Account BY DEF NonEmptyAccounts, EmptyAccounts, Accounts, EAccount
         <3>5 ~(self \in credits[accounts[self].to])' BY <3>4 DEF debitPrecond, isTransKnown
         <3>6 creditAmount(self)' = 0 BY <3>5
         <3>7 ~(AmountIsPending(self))' BY DEF AmountIsPending, creditPrecond, debitPrecond, isTransKnown
@@ -156,12 +152,12 @@ PROVE IndInv'
         /\ moneyConstantForTrans(t)' = moneyConstantForTrans(t)
         /\ transferIndivisible(t)' = transferIndivisible(t)
         <3>1 (t \in debits[accountFrom])' <=> t \in debits[accountFrom] BY <2>2
-        <3>2 debitAmount(t)' = debitAmount(t) BY <3>1 DEF EmptyAccounts, EAccounts, EAccount
+        <3>2 debitAmount(t)' = debitAmount(t) BY <3>1 DEF EmptyAccounts, Accounts, EAccount
         <3>3 creditAmount(t)' = creditAmount(t) BY <3>2
         <3>4 pendingAmount(t)' = pendingAmount(t) BY <3>2 DEF
-            AmountIsPending, EmptyAccounts, EAccounts, EAccount, creditPrecond, debitPrecond, isTransKnown, pcLabels
+            AmountIsPending, EmptyAccounts, Accounts, EAccount, creditPrecond, debitPrecond, isTransKnown, pcLabels
         <3>5 transferIndivisible(t)' = transferIndivisible(t)
-            BY <3>1 DEF AmountIsPending, EmptyAccounts, EAccounts, EAccount, creditPrecond, debitPrecond, isTransKnown, pcLabels
+            BY <3>1 DEF AmountIsPending, EmptyAccounts, Accounts, EAccount, creditPrecond, debitPrecond, isTransKnown, pcLabels
         <3> QED BY <3>2, <3>3, <3>4, <3>5
     <2> QED BY <2>1, <2>2
 <1>3 StateConstraints' BY stateConstraints
@@ -185,11 +181,11 @@ PROVE IndInv'
                 <5>1 (creditAmount(self) = amount[self])' BY <4>1
                 <5>2 (debitAmount(self) = amount[self])' BY <4>2
                 <5>3 (pendingAmount(self) = 0)' BY <3>2 DEF NonEmptyAccounts,
-                    AmountIsPending, creditPrecond, isTransKnown, EmptyAccounts, EAccounts, EAccount
+                    AmountIsPending, creditPrecond, isTransKnown, EmptyAccounts, Accounts, EAccount
                 <5> QED BY <5>1, <5>2, <5>3
             <4>4 transferIndivisible(self)' BY <3>2, <4>1, <4>2 DEF AmountIsPending,
                 creditPrecond, debitPrecond, isTransKnown,
-                NonEmptyAccounts, EmptyAccounts, EAccounts, EAccount
+                NonEmptyAccounts, EmptyAccounts, Accounts, EAccount
             <4> QED BY <4>3, <4>4
         <3> QED BY <3>1, <3>2
     <2>2 ASSUME NEW t \in Transfer \ {self} PROVE
@@ -197,12 +193,12 @@ PROVE IndInv'
         /\ transferIndivisible(t)' = transferIndivisible(t)
         <3>1 (t \in credits[accountTo])' <=> t \in credits[accountTo] BY <2>2
         <3>2 creditAmount(t)' = creditAmount(t) BY <3>1 DEF
-            EmptyAccounts, EAccounts, EAccount
+            EmptyAccounts, Accounts, EAccount
         <3>3 debitAmount(t)' = debitAmount(t) BY <2>2
         <3>4 pendingAmount(t)' = pendingAmount(t) BY <2>2 DEF
-            AmountIsPending, EmptyAccounts, EAccounts, EAccount, creditPrecond, debitPrecond, isTransKnown, pcLabels
+            AmountIsPending, EmptyAccounts, Accounts, EAccount, creditPrecond, debitPrecond, isTransKnown, pcLabels
         <3>5 transferIndivisible(t)' = transferIndivisible(t)
-            BY <3>1 DEF AmountIsPending, EmptyAccounts, EAccounts, EAccount, creditPrecond, debitPrecond, isTransKnown, pcLabels
+            BY <3>1 DEF AmountIsPending, EmptyAccounts, Accounts, EAccount, creditPrecond, debitPrecond, isTransKnown, pcLabels
         <3> QED BY <3>2, <3>3, <3>4, <3>5
     <2> QED BY <2>1, <2>2
 <1>3 StateConstraints' BY stateConstraints
@@ -214,7 +210,7 @@ THEOREM retryDebitCredit_IndInv == ASSUME IndInv, NEW self \in Transfer,
 PROVE IndInv'
 <1> USE DEF retryDebit, retryCredit, IndInv, StateConstraints, TypeOK
 <1>1 TypeOK'
-    <2>1 accounts' \in [Transfer -> EAccounts] BY DEF EmptyAccounts, EAccounts, EAccount
+    <2>1 accounts' \in [Transfer -> Accounts \cup {EmptyAccounts}] BY DEF EmptyAccounts, Accounts, EAccount
     <2>2 pcLabels' BY DEF pcLabels
     <2> QED BY <2>1, <2>2
 <1>2 MoneyConstant' /\ TransfersIndivisible'
@@ -248,7 +244,7 @@ THEOREM unchangedVarsProperty == ASSUME IndInv, UNCHANGED vars PROVE IndInv'
 <1> USE DEF vars
 <1>1 TypeOK' = TypeOK BY DEF TypeOK, pcLabels
 <1>2 StateConstraints' = StateConstraints
-    BY DEF StateConstraints, DifferentAccounts, NonEmptyAccounts, isTransKnown, debitPrecond, creditPrecond
+    BY DEF StateConstraints, NonEmptyAccounts, isTransKnown, debitPrecond, creditPrecond
 <1>3 MoneyConstant' = MoneyConstant
     BY DEF MoneyConstant, moneyConstantForTrans, debitAmount, pendingAmount, creditAmount,
         AmountIsPending, creditPrecond, debitPrecond
