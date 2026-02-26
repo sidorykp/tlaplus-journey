@@ -170,7 +170,7 @@ TypeOK ==
     /\ credits \in [EAccount -> SUBSET Transfer]
     /\ debits \in [EAccount -> SUBSET Transfer]
     /\ amount \in [Transfer -> Nat]
-    /\ accounts \in [Transfer -> Accounts \cup {EmptyAccounts}]
+    /\ accounts \in [Transfer -> {accs \in Accounts: accs.from # accs.to} \cup {EmptyAccounts}]
     /\ pcLabels
 
 Inv ==
