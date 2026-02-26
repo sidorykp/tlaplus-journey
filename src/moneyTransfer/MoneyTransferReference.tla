@@ -164,8 +164,6 @@ Accounts == [from: Account, to: Account]
 
 NonEmptyAccounts(t) == accounts[t] \in Accounts
 
-DifferentAccounts(t) == accounts[t].from # accounts[t].to
-
 pcLabels == pc \in [Transfer -> {"choose_accounts", "choose_amount", "debit", "retryDebit", "credit", "retryCredit", "Done"}]
 
 TypeOK ==
@@ -181,9 +179,6 @@ Inv ==
     /\ TransfersIndivisible
 
 StateConstraints ==
-    /\ \A t \in Transfer:
-        \/ accounts[t] = EmptyAccounts
-        \/ DifferentAccounts(t)
     /\ \A t \in Transfer: pc[t] \in {"choose_accounts", "choose_amount"} => ~\E a \in Account:
         \/ isTransKnown(t, a, debits)
         \/ isTransKnown(t, a, credits)
